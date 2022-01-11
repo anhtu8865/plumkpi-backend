@@ -1,6 +1,6 @@
 export class UpdateDeptDto {
-  id: number;
-  name: string;
+  dept_id: number;
+  dept_name: string;
 }
 
 export default UpdateDeptDto;
