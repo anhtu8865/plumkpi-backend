@@ -1,48 +1,47 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import CreateDeptDto from './dto/createDept.dto';
-import Dept from './dept.interface';
+import Dept from './dept.entity';
 import UpdateDeptDto from './dto/updateDept.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export default class DeptsService {
-  private lastDeptId = 0;
-  private depts: Dept[] = [];
+  constructor(
+    @InjectRepository(Dept)
+    private deptsRepository: Repository<Dept>,
+  ) {}
 
   getAllDepts() {
-    return this.depts;
+    return this.deptsRepository.find();
   }
 
-  getDeptById(id: number) {
-    const dept = this.depts.find((dept) => dept.id === id);
+  async getDeptById(id: number) {
+    const dept = await this.deptsRepository.findOne(id);
     if (dept) {
       return dept;
     }
     throw new HttpException('Dept not found', HttpStatus.NOT_FOUND);
   }
 
-  replaceDept(id: number, dept: UpdateDeptDto) {
-    const deptIndex = this.depts.findIndex((dept) => dept.id === id);
-    if (deptIndex > -1) {
-      this.depts[deptIndex] = dept;
-      return dept;
+  async createDept(dept: CreateDeptDto) {
+    const newDept = await this.deptsRepository.create(dept);
+    await this.deptsRepository.save(newDept);
+    return newDept;
+  }
+
+  async updateDept(id: number, dept: UpdateDeptDto) {
+    await this.deptsRepository.update(id, dept);
+    const UpdatedDept = await this.deptsRepository.findOne(id);
+    if (UpdatedDept) {
+      return UpdatedDept;
     }
     throw new HttpException('Dept not found', HttpStatus.NOT_FOUND);
   }
 
-  createDept(dept: CreateDeptDto) {
-    const newDept = {
-      id: ++this.lastDeptId,
-      ...dept,
-    };
-    this.depts.push(newDept);
-    return newDept;
-  }
-
-  deleteDept(id: number) {
-    const deptIndex = this.depts.findIndex((dept) => dept.id === id);
-    if (deptIndex > -1) {
-      this.depts.splice(deptIndex, 1);
-    } else {
+  async deleteDept(id: number) {
+    const deleteResponse = await this.deptsRepository.delete(id);
+    if (!deleteResponse.affected) {
       throw new HttpException('Dept not found', HttpStatus.NOT_FOUND);
     }
   }
