@@ -32,11 +32,11 @@ export default class DeptsController {
 
   @Put(':id')
   async replaceDept(@Param('id') id: string, @Body() dept: UpdateDeptDto) {
-    return this.deptsService.replaceDept(Number(id), dept);
+    return this.deptsService.updateDept(Number(id), dept);
   }
 
   @Delete(':id')
   async deleteDept(@Param('id') id: string) {
-    this.deptsService.deleteDept(Number(id));
+    return this.deptsService.deleteDept(Number(id));
   }
 }

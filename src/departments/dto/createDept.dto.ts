@@ -1,5 +1,5 @@
 export class CreateDeptDto {
-  name: string;
+  dept_name: string;
 }
 
 export default CreateDeptDto;
