@@ -22,6 +22,17 @@ export class UsersService {
     );
   }
 
+  async getById(user_id: number) {
+    const user = await this.usersRepository.findOne({ user_id });
+    if (user) {
+      return user;
+    }
+    throw new HttpException(
+      'User with this id does not exist',
+      HttpStatus.NOT_FOUND,
+    );
+  }
+
   async create(userData: CreateUserDto) {
     const newUser = await this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
