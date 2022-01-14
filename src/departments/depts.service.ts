@@ -17,7 +17,9 @@ export default class DeptsService {
   }
 
   async getDeptById(id: number) {
-    const dept = await this.deptsRepository.findOne(id);
+    const dept = await this.deptsRepository.findOne(id, {
+      relations: ['users'],
+    });
     if (dept) {
       return dept;
     }
@@ -32,7 +34,9 @@ export default class DeptsService {
 
   async updateDept(id: number, dept: UpdateDeptDto) {
     await this.deptsRepository.update(id, dept);
-    const UpdatedDept = await this.deptsRepository.findOne(id);
+    const UpdatedDept = await this.deptsRepository.findOne(id, {
+      relations: ['users'],
+    });
     if (UpdatedDept) {
       return UpdatedDept;
     }
