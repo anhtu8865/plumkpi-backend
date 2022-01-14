@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import Dept from 'src/departments/dept.entity';
 
 @Entity({ name: 'users' })
 class User {
@@ -21,6 +22,11 @@ class User {
 
   @Column({ default: true })
   public is_active: boolean;
+
+  @ManyToOne(() => Dept, (dept: Dept) => dept.users, {
+    eager: true,
+  })
+  public dept: Dept;
 }
 
 export default User;

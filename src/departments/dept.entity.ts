@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import User from 'src/users/user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'departments' })
 class Dept {
@@ -11,6 +12,9 @@ class Dept {
 
   @Column({ nullable: true })
   public description?: string;
+
+  @OneToMany(() => User, (user: User) => user.dept)
+  public users: User[];
 }
 
 export default Dept;
