@@ -13,7 +13,7 @@ export default class DeptsService {
   ) {}
 
   getAllDepts() {
-    return this.deptsRepository.find({ relations: ['users'] });
+    return this.deptsRepository.find();
   }
 
   async getDeptById(id: number) {

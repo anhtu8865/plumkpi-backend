@@ -7,6 +7,8 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import FindOneParams from 'src/utils/findOneParams';
@@ -15,6 +17,8 @@ import CreateDeptDto from './dto/createDept.dto';
 import UpdateDeptDto from './dto/updateDept.dto';
 
 @Controller('depts')
+@UseInterceptors(ClassSerializerInterceptor)
+//@UseGuards(JwtAuthenticationGuard)
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
@@ -29,7 +33,6 @@ export default class DeptsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthenticationGuard)
   async createDept(@Body() dept: CreateDeptDto) {
     return this.deptsService.createDept(dept);
   }
