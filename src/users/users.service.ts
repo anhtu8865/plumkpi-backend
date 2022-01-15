@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from './user.entity';
 import CreateUserDto from './dto/createUser.dto';
+import UpdateUserDto from './dto/updateUser.dto';
+import * as bcrypt from 'bcrypt';
+import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
 
 @Injectable()
 export class UsersService {
@@ -10,6 +13,10 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
+
+  getAllUsers() {
+    return this.usersRepository.find();
+  }
 
   async getByEmail(email: string) {
     const user = await this.usersRepository.findOne({ email });
@@ -33,9 +40,46 @@ export class UsersService {
     );
   }
 
-  async create(userData: CreateUserDto) {
-    const newUser = await this.usersRepository.create(userData);
-    await this.usersRepository.save(newUser);
-    return newUser;
+  async createUser(userData: CreateUserDto) {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    try {
+      const newUser = await this.usersRepository.create({
+        ...userData,
+        password: hashedPassword,
+      });
+      await this.usersRepository.save(newUser);
+      return newUser;
+    } catch (error) {
+      if (error?.code === PostgresErrorCodes.UniqueViolation) {
+        throw new HttpException(
+          'User with that email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateUser(id: number, user: UpdateUserDto) {
+    if (user?.password) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      user.password = hashedPassword;
+    }
+    await this.usersRepository.update(id, user);
+    const UpdatedUser = await this.usersRepository.findOne(id);
+    if (UpdatedUser) {
+      return UpdatedUser;
+    }
+    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  }
+
+  async deleteUser(id: number) {
+    const deleteResponse = await this.usersRepository.delete(id);
+    if (!deleteResponse.affected) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
   }
 }
