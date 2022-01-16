@@ -1,9 +1,12 @@
+import { UpdateUserDto } from './../users/dto/updateUser.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import TokenPayload from './tokenPayload.interface';
+import { ChangePasswordDto } from './dto/changePassword.dto';
+import User from 'src/users/user.entity';
 
 @Injectable()
 export class AuthenticationService {
@@ -53,5 +56,35 @@ export class AuthenticationService {
 
   public getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+  }
+
+  public async changePassword(
+    user: User,
+    changePasswordData: ChangePasswordDto,
+  ) {
+    try {
+      await this.verifyPassword(changePasswordData.oldPassword, user.password);
+      const updateUserData: UpdateUserDto = {
+        ...user,
+        password: changePasswordData.newPassword,
+      };
+      return this.usersService.updateUser(user.user_id, updateUserData);
+    } catch (error) {
+      throw new HttpException(
+        'Wrong credentials provided',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  public async updateInfo(user: User, updateUserData: UpdateUserDto) {
+    try {
+      return this.usersService.updateUser(user.user_id, updateUserData);
+    } catch (error) {
+      throw new HttpException(
+        'Wrong credentials provided',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
