@@ -1,3 +1,4 @@
+import { UpdateUserDto } from './../users/dto/updateUser.dto';
 import {
   Body,
   Req,
@@ -8,11 +9,13 @@ import {
   Get,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Put,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import RequestWithUser from './requestWithUser.interface';
 import { LocalAuthenticationGuard } from './localAuthentication.guard';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor) //do not return password
@@ -45,5 +48,26 @@ export class AuthenticationController {
   @Get()
   authenticate(@Req() request: RequestWithUser) {
     return request.user;
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Put('password')
+  async changePassword(
+    @Body() changePasswordData: ChangePasswordDto,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.authenticationService.changePassword(
+      request.user,
+      changePasswordData,
+    );
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Put('update')
+  async updateInfo(
+    @Body() updateUserData: UpdateUserDto,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.authenticationService.updateInfo(request.user, updateUserData);
   }
 }
