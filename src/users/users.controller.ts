@@ -10,15 +10,15 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
-//import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import FindOneParams from 'src/utils/findOneParams';
 import { UsersService } from './users.service';
 import UpdateUserDto from './dto/updateUser.dto';
 import CreateUserDto from './dto/createUser.dto';
+import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
-//@UseGuards(JwtAuthenticationGuard)
+@UseGuards(JwtAuthenticationGuard)
 export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -44,11 +44,6 @@ export default class UsersController {
   ) {
     return this.usersService.updateUser(Number(id), user);
   }
-
-  // @Put('password')
-  // async changePassword(@Body() ) {
-
-  // }
 
   @Delete(':id')
   async deleteUser(@Param() { id }: FindOneParams) {

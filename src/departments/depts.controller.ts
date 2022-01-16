@@ -18,7 +18,7 @@ import UpdateDeptDto from './dto/updateDept.dto';
 
 @Controller('depts')
 @UseInterceptors(ClassSerializerInterceptor)
-//@UseGuards(JwtAuthenticationGuard)
+@UseGuards(JwtAuthenticationGuard)
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 

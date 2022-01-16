@@ -5,7 +5,7 @@ import Dept from 'src/departments/dept.entity';
 @Entity({ name: 'users' })
 class User {
   @PrimaryGeneratedColumn()
-  public user_id?: number;
+  public user_id: number;
 
   @Column()
   public user_name: string;

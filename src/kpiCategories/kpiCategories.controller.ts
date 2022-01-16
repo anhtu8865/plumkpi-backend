@@ -18,7 +18,7 @@ import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
 
 @Controller('kpi-categories')
 @UseInterceptors(ClassSerializerInterceptor)
-//@UseGuards(JwtAuthenticationGuard)
+@UseGuards(JwtAuthenticationGuard)
 export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 

@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity({ name: 'kpi_categories' })
 class KpiCategory {
   @PrimaryGeneratedColumn()
-  public kpi_category_id?: number;
+  public kpi_category_id: number;
 
   @Column({ unique: true })
   public kpi_category_name: string;
