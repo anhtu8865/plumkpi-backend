@@ -15,9 +15,12 @@ import { UsersService } from './users.service';
 import UpdateUserDto from './dto/updateUser.dto';
 import CreateUserDto from './dto/createUser.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
+import RoleGuard from './role.guard';
+import Role from './role.enum';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(RoleGuard(Role.Admin))
 @UseGuards(JwtAuthenticationGuard)
 export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
