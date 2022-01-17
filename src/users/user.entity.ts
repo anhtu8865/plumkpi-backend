@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
+import Role from './role.enum';
 
 @Entity({ name: 'users' })
 class User {
@@ -17,8 +18,15 @@ class User {
   @Exclude()
   public password: string;
 
-  @Column()
-  public role: string;
+  // @Column()
+  // public role: string;
+
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.Employee,
+  })
+  public role: Role;
 
   @Column({ default: true })
   public is_active: boolean;

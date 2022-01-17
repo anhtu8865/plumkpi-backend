@@ -15,9 +15,12 @@ import FindOneParams from 'src/utils/findOneParams';
 import KpiCategoriesService from './kpiCategories.service';
 import CreateKpiCategoryDto from './dto/createKpiCategory.dto';
 import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
+import RoleGuard from 'src/users/role.guard';
+import Role from 'src/users/role.enum';
 
 @Controller('kpi-categories')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(RoleGuard(Role.Admin))
 @UseGuards(JwtAuthenticationGuard)
 export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
