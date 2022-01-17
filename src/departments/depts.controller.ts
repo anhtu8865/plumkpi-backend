@@ -11,6 +11,8 @@ import {
   ClassSerializerInterceptor,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
+import Role from 'src/users/role.enum';
+import RoleGuard from 'src/users/role.guard';
 import FindOneParams from 'src/utils/findOneParams';
 import DeptsService from './depts.service';
 import CreateDeptDto from './dto/createDept.dto';
@@ -18,6 +20,7 @@ import UpdateDeptDto from './dto/updateDept.dto';
 
 @Controller('depts')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(RoleGuard(Role.Admin))
 @UseGuards(JwtAuthenticationGuard)
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}

@@ -7,6 +7,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import Role from '../role.enum';
 
 export class UpdateUserDto {
   @IsNumber()
@@ -31,7 +32,7 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  role: string;
+  role: Role;
 
   @IsBoolean()
   @IsOptional()
