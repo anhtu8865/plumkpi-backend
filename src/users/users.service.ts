@@ -6,12 +6,14 @@ import CreateUserDto from './dto/createUser.dto';
 import UpdateUserDto from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly filesService: FilesService,
   ) {}
 
   getAllUsers() {
@@ -80,6 +82,38 @@ export class UsersService {
     const deleteResponse = await this.usersRepository.delete(id);
     if (!deleteResponse.affected) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    const user = await this.getById(userId);
+    if (user.avatar) {
+      await this.usersRepository.update(userId, {
+        ...user,
+        avatar: null,
+      });
+      await this.filesService.deletePublicFile(user.avatar.id);
+    }
+    const avatar = await this.filesService.uploadPublicFile(
+      imageBuffer,
+      filename,
+    );
+    await this.usersRepository.update(userId, {
+      ...user,
+      avatar,
+    });
+    return avatar;
+  }
+
+  async deleteAvatar(userId: number) {
+    const user = await this.getById(userId);
+    const fileId = user.avatar?.id;
+    if (fileId) {
+      await this.usersRepository.update(userId, {
+        ...user,
+        avatar: null,
+      });
+      await this.filesService.deletePublicFile(fileId);
     }
   }
 }
