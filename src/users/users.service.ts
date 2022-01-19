@@ -16,8 +16,19 @@ export class UsersService {
     private readonly filesService: FilesService,
   ) {}
 
-  getAllUsers() {
-    return this.usersRepository.find();
+  async getAllUsers(offset?: number, limit?: number) {
+    const [items, count] = await this.usersRepository.findAndCount({
+      order: {
+        user_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 
   async getByEmail(email: string) {
