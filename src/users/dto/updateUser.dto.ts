@@ -7,6 +7,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import Dept from 'src/departments/dept.entity';
 import Role from '../role.enum';
 
 export class UpdateUserDto {
@@ -37,6 +38,9 @@ export class UpdateUserDto {
   @IsBoolean()
   @IsOptional()
   is_active: boolean;
+
+  @IsOptional()
+  dept: Dept;
 }
 
 export default UpdateUserDto;

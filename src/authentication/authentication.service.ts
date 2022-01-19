@@ -79,6 +79,10 @@ export class AuthenticationService {
 
   public async updateInfo(user: User, updateUserData: UpdateUserDto) {
     try {
+      delete updateUserData.is_active;
+      delete updateUserData.password;
+      delete updateUserData.role;
+      delete updateUserData.dept;
       return this.usersService.updateUser(user.user_id, updateUserData);
     } catch (error) {
       throw new HttpException(

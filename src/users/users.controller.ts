@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Query,
 } from '@nestjs/common';
 import FindOneParams from 'src/utils/findOneParams';
 import { UsersService } from './users.service';
@@ -17,6 +18,7 @@ import CreateUserDto from './dto/createUser.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import RoleGuard from './role.guard';
 import Role from './role.enum';
+import { PaginationParams } from 'src/utils/types/paginationParams';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -26,8 +28,8 @@ export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getAllUsers() {
-    return this.usersService.getAllUsers();
+  getAllUsers(@Query() { offset, limit }: PaginationParams) {
+    return this.usersService.getAllUsers(offset, limit);
   }
 
   @Get(':id')

@@ -12,8 +12,19 @@ export default class KpiCategoriesService {
     private kpiCategoriesRepository: Repository<KpiCategory>,
   ) {}
 
-  getAllKpiCategories() {
-    return this.kpiCategoriesRepository.find();
+  async getAllKpiCategories(offset?: number, limit?: number) {
+    const [items, count] = await this.kpiCategoriesRepository.findAndCount({
+      order: {
+        kpi_category_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 
   async getKpiCategoryById(id: number) {
