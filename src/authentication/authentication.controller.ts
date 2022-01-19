@@ -1,3 +1,4 @@
+import { UsersService } from './../users/users.service';
 import { UpdateUserDto } from './../users/dto/updateUser.dto';
 import {
   Body,
@@ -10,17 +11,23 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Put,
+  UploadedFile,
+  Delete,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import RequestWithUser from './requestWithUser.interface';
 import { LocalAuthenticationGuard } from './localAuthentication.guard';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor) //do not return password
 export class AuthenticationController {
-  constructor(private readonly authenticationService: AuthenticationService) {}
+  constructor(
+    private readonly authenticationService: AuthenticationService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @HttpCode(200)
   @UseGuards(LocalAuthenticationGuard)
@@ -69,5 +76,25 @@ export class AuthenticationController {
     @Req() request: RequestWithUser,
   ) {
     return this.authenticationService.updateInfo(request.user, updateUserData);
+  }
+
+  @Post('avatar')
+  @UseGuards(JwtAuthenticationGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async addAvatar(
+    @Req() request: RequestWithUser,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.usersService.addAvatar(
+      request.user.user_id,
+      file.buffer,
+      file.originalname,
+    );
+  }
+
+  @Delete('avatar')
+  @UseGuards(JwtAuthenticationGuard)
+  async deleteAvatar(@Req() request: RequestWithUser) {
+    return this.usersService.deleteAvatar(request.user.user_id);
   }
 }

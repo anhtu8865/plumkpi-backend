@@ -9,11 +9,13 @@ import {
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Query,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import Role from 'src/users/role.enum';
 import RoleGuard from 'src/users/role.guard';
 import FindOneParams from 'src/utils/findOneParams';
+import { PaginationParams } from 'src/utils/types/paginationParams';
 import DeptsService from './depts.service';
 import CreateDeptDto from './dto/createDept.dto';
 import UpdateDeptDto from './dto/updateDept.dto';
@@ -26,8 +28,8 @@ export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
   @Get()
-  getAllDepts() {
-    return this.deptsService.getAllDepts();
+  getAllDepts(@Query() { offset, limit }: PaginationParams) {
+    return this.deptsService.getAllDepts(offset, limit);
   }
 
   @Get(':id')

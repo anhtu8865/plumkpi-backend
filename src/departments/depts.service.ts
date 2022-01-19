@@ -12,8 +12,19 @@ export default class DeptsService {
     private deptsRepository: Repository<Dept>,
   ) {}
 
-  getAllDepts() {
-    return this.deptsRepository.find();
+  async getAllDepts(offset?: number, limit?: number) {
+    const [items, count] = await this.deptsRepository.findAndCount({
+      order: {
+        dept_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 
   async getDeptById(id: number) {

@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Query,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import FindOneParams from 'src/utils/findOneParams';
@@ -17,6 +18,7 @@ import CreateKpiCategoryDto from './dto/createKpiCategory.dto';
 import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
 import RoleGuard from 'src/users/role.guard';
 import Role from 'src/users/role.enum';
+import { PaginationParams } from 'src/utils/types/paginationParams';
 
 @Controller('kpi-categories')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -26,8 +28,8 @@ export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 
   @Get()
-  getAllKpiCategories() {
-    return this.kpiCategoriesService.getAllKpiCategories();
+  getAllKpiCategories(@Query() { offset, limit }: PaginationParams) {
+    return this.kpiCategoriesService.getAllKpiCategories(offset, limit);
   }
 
   @Get(':id')

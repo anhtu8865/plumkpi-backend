@@ -1,7 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
 import Role from './role.enum';
+import PublicFile from 'src/files/publicFile.entity';
 
 @Entity({ name: 'users' })
 class User {
@@ -18,9 +26,6 @@ class User {
   @Exclude()
   public password: string;
 
-  // @Column()
-  // public role: string;
-
   @Column({
     type: 'enum',
     enum: Role,
@@ -35,6 +40,13 @@ class User {
     eager: true,
   })
   public dept: Dept;
+
+  @JoinColumn()
+  @OneToOne(() => PublicFile, {
+    eager: true,
+    nullable: true,
+  })
+  public avatar?: PublicFile;
 }
 
 export default User;
