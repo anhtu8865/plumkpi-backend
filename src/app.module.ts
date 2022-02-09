@@ -1,3 +1,4 @@
+import { KpiTemplatesModule } from './kpiTemplates/kpiTemplates.module';
 import { KpiCategoriesModule } from './kpiCategories/kpiCategories.module';
 import { DatabaseModule } from './database/database.module';
 import { Module } from '@nestjs/common';
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     AuthenticationModule,
     UsersModule,
     KpiCategoriesModule,
+    KpiTemplatesModule,
   ],
   controllers: [],
   providers: [],
