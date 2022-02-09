@@ -28,7 +28,9 @@ export default class KpiCategoriesService {
   }
 
   async getKpiCategoryById(id: number) {
-    const kpiCategory = await this.kpiCategoriesRepository.findOne(id);
+    const kpiCategory = await this.kpiCategoriesRepository.findOne(id, {
+      relations: ['kpi_templates'],
+    });
     if (kpiCategory) {
       return kpiCategory;
     }
