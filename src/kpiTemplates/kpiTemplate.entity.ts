@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import Direction from './direction.enum';
 import Frequency from './frequency.enum';
 
@@ -32,6 +33,15 @@ class KpiTemplate {
 
   @Column({ nullable: true })
   public formula: string;
+
+  @ManyToOne(
+    () => KpiCategory,
+    (kpi_category: KpiCategory) => kpi_category.kpi_templates,
+    {
+      eager: true,
+    },
+  )
+  public kpi_category: KpiCategory;
 }
 
 export default KpiTemplate;
