@@ -28,8 +28,8 @@ export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 
   @Get()
-  getAllKpiCategories(@Query() { offset, limit }: PaginationParams) {
-    return this.kpiCategoriesService.getAllKpiCategories(offset, limit);
+  getAllKpiCategories(@Query() { offset, limit, name }: PaginationParams) {
+    return this.kpiCategoriesService.getAllKpiCategories(offset, limit, name);
   }
 
   @Get(':id')

@@ -1,6 +1,8 @@
+import { UserParams } from './../utils/types/userParams';
+import Role from 'src/users/role.enum';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import User from './user.entity';
 import CreateUserDto from './dto/createUser.dto';
 import UpdateUserDto from './dto/updateUser.dto';
@@ -16,13 +18,23 @@ export class UsersService {
     private readonly filesService: FilesService,
   ) {}
 
-  async getAllUsers(offset?: number, limit?: number) {
+  async getAllUsers(userParams?: UserParams) {
+    const whereCondition = {
+      ...userParams,
+      user_name: Like(`%${userParams.user_name ? userParams.user_name : ''}%`),
+      email: Like(`%${userParams.email ? userParams.email : ''}%`),
+    };
+    delete whereCondition.offset;
+    delete whereCondition.limit;
+    console.log(whereCondition);
+
     const [items, count] = await this.usersRepository.findAndCount({
+      where: [whereCondition],
       order: {
         user_id: 'ASC',
       },
-      skip: offset,
-      take: limit,
+      skip: userParams.offset,
+      take: userParams.limit,
     });
 
     return {

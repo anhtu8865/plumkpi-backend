@@ -3,7 +3,7 @@ import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
 import KpiTemplate from './kpiTemplate.entity';
 import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 @Injectable()
 export default class KpiTemplatesService {
@@ -12,8 +12,9 @@ export default class KpiTemplatesService {
     private kpiTemplatesRepository: Repository<KpiTemplate>,
   ) {}
 
-  async getAllKpiTemplates(offset?: number, limit?: number) {
+  async getAllKpiTemplates(offset?: number, limit?: number, name?: string) {
     const [items, count] = await this.kpiTemplatesRepository.findAndCount({
+      where: [{ kpi_template_name: Like(`%${name ? name : ''}%`) }],
       order: {
         kpi_template_id: 'ASC',
       },

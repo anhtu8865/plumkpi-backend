@@ -28,8 +28,8 @@ export default class KpiTemplatesController {
   constructor(private readonly kpiTemplatesService: KpiTemplatesService) {}
 
   @Get()
-  getAllKpiTemplates(@Query() { offset, limit }: PaginationParams) {
-    return this.kpiTemplatesService.getAllKpiTemplates(offset, limit);
+  getAllKpiTemplates(@Query() { offset, limit, name }: PaginationParams) {
+    return this.kpiTemplatesService.getAllKpiTemplates(offset, limit, name);
   }
 
   @Get(':id')

@@ -28,8 +28,8 @@ export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
   @Get()
-  getAllDepts(@Query() { offset, limit }: PaginationParams) {
-    return this.deptsService.getAllDepts(offset, limit);
+  getAllDepts(@Query() { offset, limit, name }: PaginationParams) {
+    return this.deptsService.getAllDepts(offset, limit, name);
   }
 
   @Get(':id')

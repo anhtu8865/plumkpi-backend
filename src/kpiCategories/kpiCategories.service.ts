@@ -3,7 +3,7 @@ import CreateKpiCategoryDto from './dto/createKpiCategory.dto';
 import KpiCategory from './kpiCategory.entity';
 import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 @Injectable()
 export default class KpiCategoriesService {
@@ -12,8 +12,9 @@ export default class KpiCategoriesService {
     private kpiCategoriesRepository: Repository<KpiCategory>,
   ) {}
 
-  async getAllKpiCategories(offset?: number, limit?: number) {
+  async getAllKpiCategories(offset?: number, limit?: number, name?: string) {
     const [items, count] = await this.kpiCategoriesRepository.findAndCount({
+      where: [{ kpi_category_name: Like(`%${name ? name : ''}%`) }],
       order: {
         kpi_category_id: 'ASC',
       },

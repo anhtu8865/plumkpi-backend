@@ -1,3 +1,4 @@
+import { UserParams } from './../utils/types/userParams';
 import {
   Body,
   Controller,
@@ -18,7 +19,6 @@ import CreateUserDto from './dto/createUser.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import RoleGuard from './role.guard';
 import Role from './role.enum';
-import { PaginationParams } from 'src/utils/types/paginationParams';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -28,8 +28,8 @@ export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getAllUsers(@Query() { offset, limit }: PaginationParams) {
-    return this.usersService.getAllUsers(offset, limit);
+  getAllUsers(@Query() userParams: UserParams) {
+    return this.usersService.getAllUsers(userParams);
   }
 
   @Get(':id')
