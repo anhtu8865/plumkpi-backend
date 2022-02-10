@@ -3,7 +3,7 @@ import CreateDeptDto from './dto/createDept.dto';
 import Dept from './dept.entity';
 import UpdateDeptDto from './dto/updateDept.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 @Injectable()
 export default class DeptsService {
@@ -12,8 +12,9 @@ export default class DeptsService {
     private deptsRepository: Repository<Dept>,
   ) {}
 
-  async getAllDepts(offset?: number, limit?: number) {
+  async getAllDepts(offset?: number, limit?: number, name?: string) {
     const [items, count] = await this.deptsRepository.findAndCount({
+      where: [{ dept_name: Like(`%${name ? name : ''}%`) }],
       order: {
         dept_id: 'ASC',
       },
