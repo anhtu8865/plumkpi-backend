@@ -1,3 +1,4 @@
+import { KpiTemplateParams } from './../utils/types/kpiTemplateParams';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
 import KpiTemplate from './kpiTemplate.entity';
@@ -12,14 +13,26 @@ export default class KpiTemplatesService {
     private kpiTemplatesRepository: Repository<KpiTemplate>,
   ) {}
 
-  async getAllKpiTemplates(offset?: number, limit?: number, name?: string) {
+  async getAllKpiTemplates(kpiTemplateParams?: KpiTemplateParams) {
+    const whereCondition = {
+      ...kpiTemplateParams,
+      kpi_template_name: Like(
+        `%${
+          kpiTemplateParams.kpi_template_name
+            ? kpiTemplateParams.kpi_template_name
+            : ''
+        }%`,
+      ),
+    };
+    delete whereCondition.offset;
+    delete whereCondition.limit;
     const [items, count] = await this.kpiTemplatesRepository.findAndCount({
-      where: [{ kpi_template_name: Like(`%${name ? name : ''}%`) }],
+      where: [whereCondition],
       order: {
         kpi_template_id: 'ASC',
       },
-      skip: offset,
-      take: limit,
+      skip: kpiTemplateParams.offset,
+      take: kpiTemplateParams.limit,
     });
 
     return {
