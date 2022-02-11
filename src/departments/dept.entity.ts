@@ -1,5 +1,12 @@
 import User from 'src/users/user.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity({ name: 'departments' })
 class Dept {
@@ -14,6 +21,12 @@ class Dept {
 
   @OneToMany(() => User, (user: User) => user.dept)
   public users: User[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
 
 export default Dept;

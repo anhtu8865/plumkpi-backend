@@ -19,6 +19,7 @@ import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
 import RoleGuard from 'src/users/role.guard';
 import Role from 'src/users/role.enum';
 import { PaginationParams } from 'src/utils/types/paginationParams';
+import { KpiTemplateParams } from 'src/utils/types/kpiTemplateParams';
 
 @Controller('kpi-templates')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -28,8 +29,8 @@ export default class KpiTemplatesController {
   constructor(private readonly kpiTemplatesService: KpiTemplatesService) {}
 
   @Get()
-  getAllKpiTemplates(@Query() { offset, limit, name }: PaginationParams) {
-    return this.kpiTemplatesService.getAllKpiTemplates(offset, limit, name);
+  getAllKpiTemplates(@Query() kpiTemplateParams: KpiTemplateParams) {
+    return this.kpiTemplatesService.getAllKpiTemplates(kpiTemplateParams);
   }
 
   @Get(':id')

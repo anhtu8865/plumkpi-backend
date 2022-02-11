@@ -8,6 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 import Dept from 'src/departments/dept.entity';
+import Gender from '../gender.enum';
 import Role from '../role.enum';
 
 export class UpdateUserDto {
@@ -41,6 +42,26 @@ export class UpdateUserDto {
 
   @IsOptional()
   dept: Dept;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  phone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  gender: Gender;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  dob: string;
 }
 
 export default UpdateUserDto;
