@@ -26,7 +26,6 @@ export class UsersService {
     };
     delete whereCondition.offset;
     delete whereCondition.limit;
-    console.log(whereCondition);
 
     const [items, count] = await this.usersRepository.findAndCount({
       where: [whereCondition],
@@ -36,6 +35,8 @@ export class UsersService {
       skip: userParams.offset,
       take: userParams.limit,
     });
+
+    console.log(items);
 
     return {
       items,

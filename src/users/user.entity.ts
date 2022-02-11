@@ -5,11 +5,15 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform, Type } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
 import Role from './role.enum';
 import PublicFile from 'src/files/publicFile.entity';
+import Gender from './gender.enum';
 
 @Entity({ name: 'users' })
 class User {
@@ -47,6 +51,31 @@ class User {
     nullable: true,
   })
   public avatar?: PublicFile;
+
+  @Column({ unique: true, nullable: true })
+  public phone: string;
+
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    default: Gender.None,
+  })
+  public gender: Gender;
+
+  @Column({ nullable: true })
+  public address: string;
+
+  @Column({ type: 'date', nullable: true })
+  public dob: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  // @DeleteDateColumn()
+  // public deletedDate: Date;
 }
 
 export default User;

@@ -1,5 +1,12 @@
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import Direction from './direction.enum';
 import Frequency from './frequency.enum';
 
@@ -42,6 +49,12 @@ class KpiTemplate {
     },
   )
   public kpi_category: KpiCategory;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
 
 export default KpiTemplate;
