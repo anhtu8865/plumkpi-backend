@@ -8,12 +8,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Exclude, Transform, Type } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
 import Role from './role.enum';
 import PublicFile from 'src/files/publicFile.entity';
 import Gender from './gender.enum';
+import Plan from 'src/plans/plan.entity';
 
 @Entity({ name: 'users' })
 class User {
@@ -73,6 +75,9 @@ class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Plan, (plan: Plan) => plan.user)
+  public plans: Plan[];
 
   // @DeleteDateColumn()
   // public deletedDate: Date;

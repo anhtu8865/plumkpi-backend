@@ -36,8 +36,6 @@ export class UsersService {
       take: userParams.limit,
     });
 
-    console.log(items);
-
     return {
       items,
       count,
