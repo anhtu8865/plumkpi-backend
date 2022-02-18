@@ -1,5 +1,4 @@
-import User from 'src/users/user.entity';
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePlanDto {
   @IsString()

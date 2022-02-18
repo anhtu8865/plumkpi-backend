@@ -31,7 +31,7 @@ class KpiCategory {
 
   @OneToMany(
     () => PlanKpiCategories,
-    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.kpi_categories,
+    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.kpi_category,
   )
   public plan_kpi_categories: PlanKpiCategories[];
 

@@ -1,5 +1,3 @@
-import { DeleteKpiCategoryParams } from './types/deleteKpiCategoryParams';
-import { AddKpiCategoryDto } from './dto/addKpiCategory.dto';
 import {
   Body,
   Controller,
@@ -23,7 +21,7 @@ import PlansService from './plans.service';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
-import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
+import { AddKpiCategoriesDto } from './dto/addKpiCategories.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -53,12 +51,6 @@ export default class PlansController {
   }
 
   @UseGuards(RoleGuard([Role.Director]))
-  @Put('update-kpi-category')
-  async replaceKpiCategory(@Body() kpiCategory: UpdateKpiCategoryDto) {
-    return this.plansService.updateKpiCategory(kpiCategory);
-  }
-
-  @UseGuards(RoleGuard([Role.Director]))
   @Put(':id')
   async replacePlan(
     @Param() { id }: FindOneParams,
@@ -68,22 +60,13 @@ export default class PlansController {
   }
 
   @UseGuards(RoleGuard([Role.Director]))
-  @Delete('/delete-kpi-category')
-  async deleteKpiCategory(
-    @Query() { plan_id, kpi_category_id }: DeleteKpiCategoryParams,
-  ) {
-    return this.plansService.deleteKpiCategory(plan_id, kpi_category_id);
-  }
-
-  @UseGuards(RoleGuard([Role.Director]))
   @Delete(':id')
   async deletePlan(@Param() { id }: FindOneParams) {
     return this.plansService.deletePlan(Number(id));
   }
 
-  @UseGuards(RoleGuard([Role.Director]))
-  @Post('/add-kpi-category')
-  async addKpiCategory(@Body() kpiCategory: AddKpiCategoryDto) {
-    return this.plansService.addKpiCategory(kpiCategory);
+  @Post('add-kpi-categories')
+  async addKpiCategories(@Body() body: AddKpiCategoriesDto) {
+    return this.plansService.addKpiCategories(body);
   }
 }

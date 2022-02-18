@@ -9,7 +9,7 @@ class PlanKpiCategories {
   @ManyToOne(() => Plan, (plan: Plan) => plan.plan_kpi_categories, {
     primary: true,
   })
-  public plans: Plan[];
+  public plan: Plan;
 
   @ManyToOne(
     () => KpiCategory,
@@ -19,7 +19,7 @@ class PlanKpiCategories {
       eager: true,
     },
   )
-  public kpi_categories: KpiCategory[];
+  public kpi_category: KpiCategory;
 }
 
 export default PlanKpiCategories;

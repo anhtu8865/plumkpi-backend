@@ -30,17 +30,12 @@ class Plan {
   @Column({ type: 'date' })
   public end_date: string;
 
-  @ManyToOne(
-    () => User,
-    (user: User) => user.plans,
-    // { eager: true }
-  )
+  @ManyToOne(() => User, (user: User) => user.plans)
   public user: User;
 
   @OneToMany(
     () => PlanKpiCategories,
-    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.plans,
-    //{ eager: true },
+    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.plan,
   )
   public plan_kpi_categories: PlanKpiCategories[];
 

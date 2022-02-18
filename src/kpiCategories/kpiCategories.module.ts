@@ -8,5 +8,6 @@ import KpiCategory from './kpiCategory.entity';
   imports: [TypeOrmModule.forFeature([KpiCategory])],
   controllers: [KpiCategoriesController],
   providers: [KpiCategoriesService],
+  exports: [KpiCategoriesService],
 })
 export class KpiCategoriesModule {}

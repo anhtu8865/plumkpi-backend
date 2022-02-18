@@ -1,4 +1,3 @@
-import { UpdateKpiCategoryDto } from './../plans/dto/updateKpiCategory.dto';
 import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import Plan from './plan.entity';
@@ -6,7 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
-import AddKpiCategoryDto from './dto/addKpiCategory.dto';
+import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
+import AddKpiCategoriesDto from './dto/addKpiCategories.dto';
 
 @Injectable()
 export default class PlansService {
@@ -16,6 +16,8 @@ export default class PlansService {
 
     @InjectRepository(PlanKpiCategories)
     private plansKpiCategories: Repository<PlanKpiCategories>,
+
+    private readonly kpiCategoriesService: KpiCategoriesService,
   ) {}
 
   async getAllPlans(offset?: number, limit?: number, name?: string) {
@@ -66,15 +68,10 @@ export default class PlansService {
     }
   }
 
-  async addKpiCategory(kpiCategory: AddKpiCategoryDto) {
-    const temp = await this.plansKpiCategories.create(kpiCategory);
-    await this.plansKpiCategories.save(temp);
-  }
-
   async deleteKpiCategory(plan_id: number, kpi_category_id: number) {
     const temp = await this.plansKpiCategories.findOne({
-      where: { plans: plan_id, kpi_categories: kpi_category_id },
-      relations: ['plans'],
+      where: { plan: plan_id, kpi_category: kpi_category_id },
+      relations: ['plan'],
     });
     if (!temp) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
@@ -82,20 +79,30 @@ export default class PlansService {
     await this.plansKpiCategories.remove(temp);
   }
 
-  async updateKpiCategory(kpiCategory: UpdateKpiCategoryDto) {
-    const UpdatedPlan = await this.plansKpiCategories.findOne({
-      where: {
-        plans: kpiCategory.plan_id,
-        kpi_categories: kpiCategory.kpi_category_id,
-      },
-      relations: ['plans'],
+  async addKpiCategories(body: AddKpiCategoriesDto) {
+    await this.plansKpiCategories.delete({
+      plan: { plan_id: body.plan_id },
     });
+    const sum = body.kpi_categories.reduce(function (result, item) {
+      return result + item.weight;
+    }, 0);
 
-    if (UpdatedPlan) {
-      UpdatedPlan.weight = kpiCategory.weight;
-      await this.plansKpiCategories.save(UpdatedPlan);
-      return UpdatedPlan;
+    if (sum !== 100) {
+      throw new HttpException('Sum must be 100', HttpStatus.BAD_REQUEST);
     }
-    throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
+
+    for (const temp of body.kpi_categories) {
+      const plan = await this.getPlanById(body.plan_id);
+      const kpi_category = await this.kpiCategoriesService.getKpiCategoryById(
+        temp.kpi_category_id,
+      );
+
+      const newRecord = await this.plansKpiCategories.create({
+        weight: temp.weight,
+        plan: plan,
+        kpi_category: kpi_category,
+      });
+      await this.plansKpiCategories.save(newRecord);
+    }
   }
 }
