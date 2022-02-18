@@ -1,6 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePlanDto {
+  @IsNumber()
+  @IsOptional()
+  plan_id: number;
+
   @IsString()
   @IsNotEmpty()
   @IsOptional()

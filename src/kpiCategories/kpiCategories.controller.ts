@@ -22,26 +22,29 @@ import { PaginationParams } from 'src/utils/types/paginationParams';
 
 @Controller('kpi-categories')
 @UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(RoleGuard(Role.Admin))
 @UseGuards(JwtAuthenticationGuard)
 export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getAllKpiCategories(@Query() { offset, limit, name }: PaginationParams) {
     return this.kpiCategoriesService.getAllKpiCategories(offset, limit, name);
   }
 
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get(':id')
   getKpiCategoryById(@Param() { id }: FindOneParams) {
     return this.kpiCategoriesService.getKpiCategoryById(Number(id));
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Post()
   async createKpiCategory(@Body() kpiCategory: CreateKpiCategoryDto) {
     return this.kpiCategoriesService.createKpiCategory(kpiCategory);
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Put(':id')
   async replaceKpiCategory(
     @Param() { id }: FindOneParams,
@@ -50,6 +53,7 @@ export default class KpiCategoriesController {
     return this.kpiCategoriesService.updateKpiCategory(Number(id), kpiCategory);
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Delete(':id')
   async deleteKpiCategory(@Param() { id }: FindOneParams) {
     return this.kpiCategoriesService.deleteKpiCategory(Number(id));

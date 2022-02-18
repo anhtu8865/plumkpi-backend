@@ -22,7 +22,7 @@ import Role from './role.enum';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(RoleGuard(Role.Admin))
+@UseGuards(RoleGuard([Role.Admin]))
 @UseGuards(JwtAuthenticationGuard)
 export default class UsersController {
   constructor(private readonly usersService: UsersService) {}

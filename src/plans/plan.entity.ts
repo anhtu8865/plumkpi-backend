@@ -1,12 +1,17 @@
+import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
 import User from 'src/users/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import PlanKpiCategories from './planKpiCategories.entity';
 
 @Entity({ name: 'plans' })
 class Plan {
@@ -25,8 +30,19 @@ class Plan {
   @Column({ type: 'date' })
   public end_date: string;
 
-  @ManyToOne(() => User, (user: User) => user.plans, { eager: true })
+  @ManyToOne(
+    () => User,
+    (user: User) => user.plans,
+    // { eager: true }
+  )
   public user: User;
+
+  @OneToMany(
+    () => PlanKpiCategories,
+    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.plans,
+    //{ eager: true },
+  )
+  public plan_kpi_categories: PlanKpiCategories[];
 
   @CreateDateColumn()
   createdAt: Date;
