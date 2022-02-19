@@ -7,6 +7,8 @@ import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
 import AddKpiCategoriesDto from './dto/addKpiCategories.dto';
+import PlanKpiTemplates from './planKpiTemplates.entity';
+import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 
 @Injectable()
 export default class PlansService {
@@ -18,6 +20,11 @@ export default class PlansService {
     private plansKpiCategories: Repository<PlanKpiCategories>,
 
     private readonly kpiCategoriesService: KpiCategoriesService,
+
+    @InjectRepository(PlanKpiTemplates)
+    private planKpiTemplates: Repository<PlanKpiTemplates>,
+
+    private readonly kpiTemplatesService: KpiTemplatesService,
   ) {}
 
   async getAllPlans(offset?: number, limit?: number, name?: string) {
@@ -38,7 +45,7 @@ export default class PlansService {
 
   async getPlanById(id: number) {
     const plan = await this.plansRepository.findOne(id, {
-      relations: ['user', 'plan_kpi_categories'],
+      relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
     });
     if (plan) {
       return plan;
@@ -80,15 +87,33 @@ export default class PlansService {
   }
 
   async addKpiCategories(body: AddKpiCategoriesDto) {
+    await this.planKpiTemplates.delete({
+      plan: { plan_id: body.plan_id },
+    });
     await this.plansKpiCategories.delete({
       plan: { plan_id: body.plan_id },
     });
-    const sum = body.kpi_categories.reduce(function (result, item) {
+
+    const sumCategories = body.kpi_categories.reduce(function (result, item) {
       return result + item.weight;
     }, 0);
+    if (sumCategories !== 100) {
+      throw new HttpException(
+        'Sum Of categories must be 100',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-    if (sum !== 100) {
-      throw new HttpException('Sum must be 100', HttpStatus.BAD_REQUEST);
+    for (const temp of body.kpi_categories) {
+      const sumTemplates = temp.kpi_templates.reduce(function (result, item) {
+        return result + item.weight;
+      }, 0);
+      if (sumTemplates !== 100) {
+        throw new HttpException(
+          'Sum Of templates must be 100',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     for (const temp of body.kpi_categories) {
@@ -103,6 +128,19 @@ export default class PlansService {
         kpi_category: kpi_category,
       });
       await this.plansKpiCategories.save(newRecord);
+
+      for (const temp2 of temp.kpi_templates) {
+        const kpi_template = await this.kpiTemplatesService.getKpiTemplateById(
+          temp2.kpi_template_id,
+        );
+
+        const newRecord = await this.planKpiTemplates.create({
+          weight: temp2.weight,
+          plan: plan,
+          kpi_template: kpi_template,
+        });
+        await this.planKpiTemplates.save(newRecord);
+      }
     }
   }
 }

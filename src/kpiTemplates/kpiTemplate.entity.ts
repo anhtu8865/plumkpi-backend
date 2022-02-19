@@ -1,9 +1,11 @@
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
+import PlanKpiTemplates from 'src/plans/planKpiTemplates.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -49,6 +51,12 @@ class KpiTemplate {
     },
   )
   public kpi_category: KpiCategory;
+
+  @OneToMany(
+    () => PlanKpiTemplates,
+    (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.kpi_template,
+  )
+  public plan_kpi_templates: PlanKpiTemplates[];
 
   @CreateDateColumn()
   createdAt: Date;

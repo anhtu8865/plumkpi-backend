@@ -8,5 +8,6 @@ import KpiTemplate from './kpiTemplate.entity';
   imports: [TypeOrmModule.forFeature([KpiTemplate])],
   controllers: [KpiTemplatesController],
   providers: [KpiTemplatesService],
+  exports: [KpiTemplatesService],
 })
 export class KpiTemplatesModule {}

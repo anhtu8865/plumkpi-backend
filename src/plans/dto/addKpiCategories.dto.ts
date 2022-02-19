@@ -7,7 +7,11 @@ export class AddKpiCategoriesDto {
   plan_id: number;
 
   @IsNotEmpty()
-  kpi_categories: { kpi_category_id: number; weight: number }[];
+  kpi_categories: {
+    kpi_category_id: number;
+    weight: number;
+    kpi_templates: { kpi_template_id: number; weight: number }[];
+  }[];
 }
 
 export default AddKpiCategoriesDto;

@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import PlanKpiCategories from './planKpiCategories.entity';
+import PlanKpiTemplates from './planKpiTemplates.entity';
 
 @Entity({ name: 'plans' })
 class Plan {
@@ -38,6 +39,12 @@ class Plan {
     (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.plan,
   )
   public plan_kpi_categories: PlanKpiCategories[];
+
+  @OneToMany(
+    () => PlanKpiTemplates,
+    (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.plan,
+  )
+  public plan_kpi_templates: PlanKpiTemplates[];
 
   @CreateDateColumn()
   createdAt: Date;
