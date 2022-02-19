@@ -1,3 +1,4 @@
+import User from 'src/users/user.entity';
 import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import Plan from './plan.entity';
@@ -43,8 +44,40 @@ export default class PlansService {
     };
   }
 
+  async getAllPlansOfUser(
+    user: User,
+    offset?: number,
+    limit?: number,
+    name?: string,
+  ) {
+    const [items, count] = await this.plansRepository.findAndCount({
+      where: [{ plan_name: Like(`%${name ? name : ''}%`), user }],
+      order: {
+        plan_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
+  }
+
   async getPlanById(id: number) {
     const plan = await this.plansRepository.findOne(id, {
+      relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
+    });
+    if (plan) {
+      return plan;
+    }
+    throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
+  }
+
+  async getPlanOfUserById(id: number, user: User) {
+    const plan = await this.plansRepository.findOne({
+      where: { plan_id: id, user: user },
       relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
     });
     if (plan) {

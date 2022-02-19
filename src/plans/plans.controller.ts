@@ -35,9 +35,31 @@ export default class PlansController {
     return this.plansService.getAllPlans(offset, limit, name);
   }
 
+  @Get('user')
+  getAllPlansOfUser(
+    @Query() { offset, limit, name }: PaginationParams,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.plansService.getAllPlansOfUser(
+      request.user,
+      offset,
+      limit,
+      name,
+    );
+  }
+
   @Get(':id')
+  @UseGuards(RoleGuard([Role.Director]))
   getPlanById(@Param() { id }: FindOneParams) {
     return this.plansService.getPlanById(Number(id));
+  }
+
+  @Get('user/:id')
+  getPlanOfUserById(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.plansService.getPlanOfUserById(Number(id), request.user);
   }
 
   @UseGuards(RoleGuard([Role.Director]))
@@ -65,6 +87,7 @@ export default class PlansController {
     return this.plansService.deletePlan(Number(id));
   }
 
+  @UseGuards(RoleGuard([Role.Director]))
   @Post('add-kpi-categories')
   async addKpiCategories(@Body() body: AddKpiCategoriesDto) {
     return this.plansService.addKpiCategories(body);
