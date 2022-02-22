@@ -10,8 +10,10 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Query,
+  Req,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
+import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import Role from 'src/users/role.enum';
 import RoleGuard from 'src/users/role.guard';
 import FindOneParams from 'src/utils/findOneParams';
@@ -30,6 +32,12 @@ export default class DeptsController {
   @Get()
   getAllDepts(@Query() { offset, limit, name }: PaginationParams) {
     return this.deptsService.getAllDepts(offset, limit, name);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get('manager')
+  getDeptByManager(@Req() request: RequestWithUser) {
+    return this.deptsService.getDeptByManager(request.user);
   }
 
   @UseGuards(RoleGuard([Role.Admin, Role.Director]))

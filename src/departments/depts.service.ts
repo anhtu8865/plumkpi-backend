@@ -4,6 +4,7 @@ import Dept from './dept.entity';
 import UpdateDeptDto from './dto/updateDept.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import User from 'src/users/user.entity';
 
 @Injectable()
 export default class DeptsService {
@@ -33,6 +34,19 @@ export default class DeptsService {
     const dept = await this.deptsRepository.findOne(id, {
       relations: ['users', 'manager'],
     });
+    if (dept) {
+      return dept;
+    }
+    throw new HttpException('Dept not found', HttpStatus.NOT_FOUND);
+  }
+
+  async getDeptByManager(user: User) {
+    const dept = await this.deptsRepository.findOne(
+      {
+        manager: user,
+      },
+      { relations: ['users'] },
+    );
     if (dept) {
       return dept;
     }
