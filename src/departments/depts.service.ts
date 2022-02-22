@@ -20,6 +20,7 @@ export default class DeptsService {
       },
       skip: offset,
       take: limit,
+      relations: ['manager'],
     });
 
     return {
@@ -30,7 +31,7 @@ export default class DeptsService {
 
   async getDeptById(id: number) {
     const dept = await this.deptsRepository.findOne(id, {
-      relations: ['users'],
+      relations: ['users', 'manager'],
     });
     if (dept) {
       return dept;
@@ -47,7 +48,7 @@ export default class DeptsService {
   async updateDept(id: number, dept: UpdateDeptDto) {
     await this.deptsRepository.update(id, dept);
     const UpdatedDept = await this.deptsRepository.findOne(id, {
-      relations: ['users'],
+      relations: ['manager'],
     });
     if (UpdatedDept) {
       return UpdatedDept;

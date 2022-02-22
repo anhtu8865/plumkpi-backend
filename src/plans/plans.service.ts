@@ -10,6 +10,7 @@ import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
 import AddKpiCategoriesDto from './dto/addKpiCategories.dto';
 import PlanKpiTemplates from './planKpiTemplates.entity';
 import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
+import AssignKpi from './dto/assignKpi.dto';
 
 @Injectable()
 export default class PlansService {
@@ -120,14 +121,7 @@ export default class PlansService {
   }
 
   async addKpiCategories(body: AddKpiCategoriesDto) {
-    await this.planKpiTemplates.delete({
-      plan: { plan_id: body.plan_id },
-    });
-    await this.plansKpiCategories.delete({
-      plan: { plan_id: body.plan_id },
-    });
-
-    const sumCategories = body.kpi_categories.reduce(function (result, item) {
+    const sumCategories = body?.kpi_categories.reduce(function (result, item) {
       return result + item.weight;
     }, 0);
     if (sumCategories !== 100) {
@@ -136,9 +130,8 @@ export default class PlansService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
     for (const temp of body.kpi_categories) {
-      const sumTemplates = temp.kpi_templates.reduce(function (result, item) {
+      const sumTemplates = temp?.kpi_templates.reduce(function (result, item) {
         return result + item.weight;
       }, 0);
       if (sumTemplates !== 100) {
@@ -148,6 +141,13 @@ export default class PlansService {
         );
       }
     }
+
+    await this.planKpiTemplates.delete({
+      plan: { plan_id: body.plan_id },
+    });
+    await this.plansKpiCategories.delete({
+      plan: { plan_id: body.plan_id },
+    });
 
     for (const temp of body.kpi_categories) {
       const plan = await this.getPlanById(body.plan_id);
@@ -174,6 +174,73 @@ export default class PlansService {
         });
         await this.planKpiTemplates.save(newRecord);
       }
+    }
+  }
+
+  async assignKpi(body: AssignKpi) {
+    if (body.parent_target) {
+      const sumTarget = body.children.reduce(function (result, item) {
+        return result + item.target;
+      }, 0);
+      if (sumTarget !== body.parent_target) {
+        throw new HttpException(
+          'Sum Of categories must be the same as parent target',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      body.parent_target = null;
+    }
+
+    // TODO: update target of parent plan
+    const planKpiTemplate = await this.planKpiTemplates.findOne({
+      where: {
+        plan: { plan_id: body.parent_plan_id },
+        kpi_template: { kpi_template_id: body.kpi_template_id },
+      },
+      relations: ['plan', 'kpi_template'],
+    });
+    await this.planKpiTemplates.save({
+      ...planKpiTemplate,
+      target: body.parent_target,
+    });
+
+    // TODO: create child plan if it doest not exist for managers and assign kpi template
+    const parent_plan = await this.getPlanById(body.parent_plan_id);
+    const children_plan = await this.plansRepository.find({
+      plan_parent: parent_plan,
+    });
+    for (const child of children_plan) {
+      await this.planKpiTemplates.delete({
+        plan: child,
+        kpi_template: { kpi_template_id: body.kpi_template_id },
+      });
+    }
+
+    for (const child of body.children) {
+      let child_plan = await this.plansRepository.findOne({
+        where: { plan_parent: parent_plan, user: { user_id: child.user_id } },
+        relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
+      });
+      if (!child_plan) {
+        const createPlanDto = {
+          plan_name: parent_plan.plan_name,
+          description: parent_plan.description,
+          start_date: parent_plan.start_date,
+          end_date: parent_plan.end_date,
+          user: { user_id: child.user_id },
+          plan_parent: parent_plan,
+        };
+        child_plan = await this.createPlan(createPlanDto);
+      }
+
+      const newRecord = await this.planKpiTemplates.create({
+        target: child.target,
+        plan: child_plan,
+        kpi_template: { kpi_template_id: body.kpi_template_id },
+      });
+
+      await this.planKpiTemplates.save(newRecord);
     }
   }
 }

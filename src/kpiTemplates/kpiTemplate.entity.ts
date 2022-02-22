@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import Direction from './direction.enum';
 import Frequency from './frequency.enum';
+import Aggregation from './aggregation.enum';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {
@@ -36,6 +37,13 @@ class KpiTemplate {
     default: Direction.Up,
   })
   public direction: Direction;
+
+  @Column({
+    type: 'enum',
+    enum: Aggregation,
+    default: Aggregation.Sum,
+  })
+  public aggregation: Aggregation;
 
   @Column()
   public unit: string;

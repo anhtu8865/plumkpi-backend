@@ -42,9 +42,7 @@ class User {
   @Column({ default: true })
   public is_active: boolean;
 
-  @ManyToOne(() => Dept, (dept: Dept) => dept.users, {
-    eager: true,
-  })
+  @ManyToOne(() => Dept, (dept: Dept) => dept.users, { eager: true })
   public dept: Dept;
 
   @JoinColumn()
@@ -69,6 +67,9 @@ class User {
 
   @Column({ type: 'date', nullable: true })
   public dob: string;
+
+  @OneToOne(() => Dept, (manage: Dept) => manage.manager, { cascade: true })
+  public manage: Dept;
 
   @CreateDateColumn()
   createdAt: Date;

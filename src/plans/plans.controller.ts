@@ -22,6 +22,7 @@ import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import { AddKpiCategoriesDto } from './dto/addKpiCategories.dto';
+import AssignKpi from './dto/assignKpi.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -91,5 +92,11 @@ export default class PlansController {
   @Post('add-kpi-categories')
   async addKpiCategories(@Body() body: AddKpiCategoriesDto) {
     return this.plansService.addKpiCategories(body);
+  }
+
+  @UseGuards(RoleGuard([Role.Director, Role.Manager]))
+  @Post('assign-kpi')
+  async assignKpi(@Body() body: AssignKpi) {
+    return this.plansService.assignKpi(body);
   }
 }

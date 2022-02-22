@@ -3,7 +3,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -21,6 +23,10 @@ class Dept {
 
   @OneToMany(() => User, (user: User) => user.dept)
   public users: User[];
+
+  @OneToOne(() => User, (manager: User) => manager.manage)
+  @JoinColumn()
+  public manager: User;
 
   @CreateDateColumn()
   createdAt: Date;

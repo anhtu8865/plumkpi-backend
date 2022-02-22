@@ -62,6 +62,10 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   dob: string;
+
+  @IsNotEmpty()
+  @IsOptional()
+  manage: Dept;
 }
 
 export default UpdateUserDto;

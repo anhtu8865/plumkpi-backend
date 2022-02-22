@@ -4,7 +4,7 @@ import Plan from './plan.entity';
 
 @Entity({ name: 'plan_kpi_templates' })
 class PlanKpiTemplates {
-  @Column()
+  @Column({ nullable: true })
   weight: number;
 
   @Column({ nullable: true })
