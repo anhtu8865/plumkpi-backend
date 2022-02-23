@@ -11,6 +11,8 @@ import AddKpiCategoriesDto from './dto/addKpiCategories.dto';
 import PlanKpiTemplates from './planKpiTemplates.entity';
 import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 import AssignKpi from './dto/assignKpi.dto';
+import RegisterPersonalKpiDto from './dto/registerPersonalKpi.dto';
+import ApproveRegistration from './approveRegistration.enum';
 
 @Injectable()
 export default class PlansService {
@@ -242,5 +244,46 @@ export default class PlansService {
 
       await this.planKpiTemplates.save(newRecord);
     }
+  }
+
+  async registerPersonalKpi(body: RegisterPersonalKpiDto) {
+    const newRecord = await this.planKpiTemplates.create({
+      ...body,
+      approve_registration: ApproveRegistration.Pending,
+    });
+    await this.planKpiTemplates.save(newRecord);
+    return newRecord;
+  }
+
+  async deletePersonalKpi(plan_id: number, kpi_template_id: number) {
+    const temp = await this.planKpiTemplates.findOne({
+      where: { plan: plan_id, kpi_template: kpi_template_id },
+      relations: ['plan'],
+    });
+    if (!temp) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+    await this.planKpiTemplates.remove(temp);
+  }
+
+  async getPersonalKpis(
+    parent_plan_id: number,
+    offset?: number,
+    limit?: number,
+    name?: string,
+  ) {
+    const [items, count] = await this.plansRepository.findAndCount({
+      where: [{ plan_parent: { plan_id: parent_plan_id } }],
+      order: {
+        plan_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 }

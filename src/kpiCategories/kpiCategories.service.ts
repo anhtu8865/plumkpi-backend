@@ -28,6 +28,19 @@ export default class KpiCategoriesService {
     };
   }
 
+  async getPersonalKpis() {
+    const kpiCategory = await this.kpiCategoriesRepository.findOne(
+      { kpi_category_name: 'Personal KPIs' },
+      {
+        relations: ['kpi_templates'],
+      },
+    );
+    if (kpiCategory) {
+      return kpiCategory;
+    }
+    throw new HttpException('Kpi category not found', HttpStatus.NOT_FOUND);
+  }
+
   async getKpiCategoryById(id: number) {
     const kpiCategory = await this.kpiCategoriesRepository.findOne(id, {
       relations: ['kpi_templates'],

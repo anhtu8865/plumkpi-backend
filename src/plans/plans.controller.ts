@@ -23,6 +23,8 @@ import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import { AddKpiCategoriesDto } from './dto/addKpiCategories.dto';
 import AssignKpi from './dto/assignKpi.dto';
+import registerPersonalKpiDto from './dto/registerPersonalKpi.dto';
+import DeletePersonalKpiParams from './params/deletePersonalKpiParams';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -99,4 +101,29 @@ export default class PlansController {
   async assignKpi(@Body() body: AssignKpi) {
     return this.plansService.assignKpi(body);
   }
+
+  @UseGuards(RoleGuard([Role.Employee, Role.Manager]))
+  @Post('register-personal-kpi')
+  async registerPersonalKpi(@Body() body: registerPersonalKpiDto) {
+    return this.plansService.registerPersonalKpi(body);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager, Role.Employee]))
+  @Delete('plan/:plan_id/kpi-template/:kpi_template_id')
+  async deletePersonalKpi(
+    @Param() { plan_id, kpi_template_id }: DeletePersonalKpiParams,
+  ) {
+    return this.plansService.deletePersonalKpi(
+      Number(plan_id),
+      Number(kpi_template_id),
+    );
+  }
+
+  // @Get(':id/personal-kpis')
+  // getPersonalKpis(
+  //   @Query() { offset, limit, name }: PaginationParams,
+  //   @Param() { id }: FindOneParams,
+  // ) {
+  //   return this.plansService.getPersonalKpis(Number(id), offset, limit, name);
+  // }
 }
