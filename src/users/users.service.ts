@@ -158,7 +158,7 @@ export class UsersService {
       imageBuffer,
       filename,
     );
-    await this.usersRepository.update(userId, {
+    await this.usersRepository.save({
       ...user,
       avatar,
     });
