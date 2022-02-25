@@ -3,7 +3,7 @@ import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
@@ -13,6 +13,7 @@ import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 import AssignKpi from './dto/assignKpi.dto';
 import RegisterPersonalKpiDto from './dto/registerPersonalKpi.dto';
 import ApproveRegistration from './approveRegistration.enum';
+import ApprovePersonalKpisDto from './dto/approvePersonalKpis.dto';
 
 @Injectable()
 export default class PlansService {
@@ -266,17 +267,34 @@ export default class PlansService {
     await this.planKpiTemplates.remove(temp);
   }
 
+  async getInfoAssignKpi(plan_id: number, kpi_template_id: number) {
+    const parent_plan_id = plan_id;
+    const result = await this.planKpiTemplates.find({
+      select: ['target'],
+      relations: ['plan', 'plan.user'],
+      where: {
+        plan: { plan_parent: { plan_id: parent_plan_id } },
+        kpi_template: { kpi_template_id: kpi_template_id },
+      },
+    });
+    for (const record of result) {
+      delete record.kpi_template;
+    }
+    return result;
+  }
+
   async getPersonalKpis(
     parent_plan_id: number,
     offset?: number,
     limit?: number,
     name?: string,
   ) {
-    const [items, count] = await this.plansRepository.findAndCount({
-      where: [{ plan_parent: { plan_id: parent_plan_id } }],
-      order: {
-        plan_id: 'ASC',
+    const [items, count] = await this.planKpiTemplates.findAndCount({
+      where: {
+        approve_registration: Not(ApproveRegistration.None),
+        plan: { plan_parent: { plan_id: parent_plan_id } },
       },
+      relations: ['plan', 'plan.user'],
       skip: offset,
       take: limit,
     });
@@ -285,5 +303,18 @@ export default class PlansService {
       items,
       count,
     };
+  }
+
+  async approvePersonalKpis(id: number, body: ApprovePersonalKpisDto) {
+    for (const row of body.rows) {
+      // const updateRow = await this.planKpiTemplates.findOne(row);
+      // console.log(
+      //   '🚀 ~ file: plans.service.ts ~ line 311 ~ PlansService ~ approvePersonalKpis ~ updateRow',
+      //   updateRow,
+      // );
+      // photoToUpdate.name = 'Me, my friends and polar bears';
+
+      await this.planKpiTemplates.save(row);
+    }
   }
 }
