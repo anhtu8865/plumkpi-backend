@@ -124,10 +124,10 @@ export default class PlansService {
   }
 
   async addKpiCategories(body: AddKpiCategoriesDto) {
-    const sumCategories = body?.kpi_categories.reduce(function (result, item) {
+    const sumCategories = body.kpi_categories.reduce(function (result, item) {
       return result + item.weight;
     }, 0);
-    if (sumCategories !== 100) {
+    if (sumCategories !== 100 && body.kpi_categories.length !== 0) {
       throw new HttpException(
         'Sum Of categories must be 100',
         HttpStatus.BAD_REQUEST,
