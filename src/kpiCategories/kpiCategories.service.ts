@@ -30,7 +30,7 @@ export default class KpiCategoriesService {
 
   async getPersonalKpis() {
     const kpiCategory = await this.kpiCategoriesRepository.findOne(
-      { kpi_category_name: 'Personal KPIs' },
+      { kpi_category_name: 'Cá nhân' },
       {
         relations: ['kpi_templates'],
       },
