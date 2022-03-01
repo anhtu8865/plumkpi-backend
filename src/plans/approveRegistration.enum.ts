@@ -1,8 +1,8 @@
 enum ApproveRegistration {
-  Pending = 'Pending',
-  Accepted = 'Accepted',
-  Denied = 'Denied',
-  None = 'None',
+  Pending = 'Đang xử lý',
+  Accepted = 'Chấp nhận',
+  Denied = 'Từ chối',
+  None = 'Không',
 }
 
 export default ApproveRegistration;

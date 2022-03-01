@@ -1,7 +1,7 @@
 enum Direction {
-  Up = 'Up',
-  Down = 'Down',
-  None = 'None',
+  Up = 'Lên',
+  Down = 'Xuống',
+  None = 'Không',
 }
 
 export default Direction;

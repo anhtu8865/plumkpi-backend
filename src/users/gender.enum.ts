@@ -1,7 +1,7 @@
 enum Gender {
-  Male = 'Male',
-  Female = 'Female',
-  None = 'None',
+  Male = 'Nam',
+  Female = 'Nữ',
+  None = 'Không',
 }
 
 export default Gender;

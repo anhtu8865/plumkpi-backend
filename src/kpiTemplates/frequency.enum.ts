@@ -1,9 +1,9 @@
 enum Frequency {
-  Daily = 'Daily',
-  Weekly = 'Weekly',
-  Monthly = 'Monthly',
-  Quarterly = 'Quarterly',
-  Yearly = 'Yearly',
+  Daily = 'Ngày',
+  Weekly = 'Tuần',
+  Monthly = 'Tháng',
+  Quarterly = 'Quý',
+  Yearly = 'Năm',
 }
 
 export default Frequency;

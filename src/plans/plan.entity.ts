@@ -47,7 +47,7 @@ class Plan {
   public plan_kpi_templates: PlanKpiTemplates[];
 
   @ManyToOne(() => Plan)
-  public plan_parent: Plan;
+  public parent_plan: Plan;
 
   @CreateDateColumn()
   createdAt: Date;
