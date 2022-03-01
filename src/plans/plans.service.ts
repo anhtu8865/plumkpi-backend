@@ -211,7 +211,7 @@ export default class PlansService {
     // TODO: create child plan if it doest not exist for managers and assign kpi template
     const parent_plan = await this.getPlanById(body.parent_plan_id);
     const children_plan = await this.plansRepository.find({
-      plan_parent: parent_plan,
+      parent_plan: parent_plan,
     });
     for (const child of children_plan) {
       await this.planKpiTemplates.delete({
@@ -222,7 +222,7 @@ export default class PlansService {
 
     for (const child of body.children) {
       let child_plan = await this.plansRepository.findOne({
-        where: { plan_parent: parent_plan, user: { user_id: child.user_id } },
+        where: { parent_plan: parent_plan, user: { user_id: child.user_id } },
         relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
       });
       if (!child_plan) {
@@ -232,7 +232,7 @@ export default class PlansService {
           start_date: parent_plan.start_date,
           end_date: parent_plan.end_date,
           user: { user_id: child.user_id },
-          plan_parent: parent_plan,
+          parent_plan: parent_plan,
         };
         child_plan = await this.createPlan(createPlanDto);
       }
@@ -273,7 +273,7 @@ export default class PlansService {
       select: ['target'],
       relations: ['plan', 'plan.user'],
       where: {
-        plan: { plan_parent: { plan_id: parent_plan_id } },
+        plan: { parent_plan: { plan_id: parent_plan_id } },
         kpi_template: { kpi_template_id: kpi_template_id },
       },
     });
@@ -292,7 +292,7 @@ export default class PlansService {
     const [items, count] = await this.planKpiTemplates.findAndCount({
       where: {
         approve_registration: Not(ApproveRegistration.None),
-        plan: { plan_parent: { plan_id: parent_plan_id } },
+        plan: { parent_plan: { plan_id: parent_plan_id } },
       },
       relations: ['plan', 'plan.user'],
       skip: offset,

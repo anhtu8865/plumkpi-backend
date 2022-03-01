@@ -1,7 +1,7 @@
 enum Role {
-  Employee = 'Employee',
-  Manager = 'Manager',
-  Director = 'Director',
+  Employee = 'Nhân viên',
+  Manager = 'Quản lý',
+  Director = 'Giám đốc',
   Admin = 'Admin',
 }
 
