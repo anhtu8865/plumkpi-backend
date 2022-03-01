@@ -10,8 +10,10 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Query,
+  Req,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
+import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import Role from 'src/users/role.enum';
 import RoleGuard from 'src/users/role.guard';
 import FindOneParams from 'src/utils/findOneParams';
@@ -22,26 +24,35 @@ import UpdateDeptDto from './dto/updateDept.dto';
 
 @Controller('depts')
 @UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(RoleGuard(Role.Admin))
 @UseGuards(JwtAuthenticationGuard)
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getAllDepts(@Query() { offset, limit, name }: PaginationParams) {
     return this.deptsService.getAllDepts(offset, limit, name);
   }
 
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get('manager')
+  getDeptByManager(@Req() request: RequestWithUser) {
+    return this.deptsService.getDeptByManager(request.user);
+  }
+
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get(':id')
   getDeptById(@Param() { id }: FindOneParams) {
     return this.deptsService.getDeptById(Number(id));
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Post()
   async createDept(@Body() dept: CreateDeptDto) {
     return this.deptsService.createDept(dept);
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Put(':id')
   async replaceDept(
     @Param() { id }: FindOneParams,
@@ -50,6 +61,7 @@ export default class DeptsController {
     return this.deptsService.updateDept(Number(id), dept);
   }
 
+  @UseGuards(RoleGuard([Role.Admin]))
   @Delete(':id')
   async deleteDept(@Param() { id }: FindOneParams) {
     return this.deptsService.deleteDept(Number(id));

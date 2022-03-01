@@ -36,8 +36,6 @@ export class UsersService {
       take: userParams.limit,
     });
 
-    console.log(items);
-
     return {
       items,
       count,
@@ -56,7 +54,12 @@ export class UsersService {
   }
 
   async getById(user_id: number) {
-    const user = await this.usersRepository.findOne({ user_id });
+    const user = await this.usersRepository.findOne(
+      {
+        user_id,
+      },
+      { relations: ['manage'] },
+    );
     if (user) {
       return user;
     }
@@ -67,6 +70,37 @@ export class UsersService {
   }
 
   async createUser(userData: CreateUserDto) {
+    if (
+      [Role.Admin, Role.Director].includes(userData.role) &&
+      (userData?.dept || userData?.manage)
+    ) {
+      throw new HttpException(
+        'Admin or Director does not belong to any deparments',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (
+      [Role.Manager, Role.Employee].includes(userData.role) &&
+      !userData.dept
+    ) {
+      throw new HttpException(
+        'Manager or Employee must belong to a deparment',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (
+      userData.role === Role.Manager &&
+      userData.dept?.dept_id !== userData.manage?.dept_id
+    ) {
+      throw new HttpException(
+        'Dept and Manage are different',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (userData.role === Role.Employee && userData.manage) {
+      throw new HttpException(
+        'Employee do not manage any departments',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     try {
       const newUser = await this.usersRepository.create({
@@ -74,7 +108,8 @@ export class UsersService {
         password: hashedPassword,
       });
       await this.usersRepository.save(newUser);
-      return newUser;
+      const result = await this.getById(newUser.user_id);
+      return result;
     } catch (error) {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new HttpException(
@@ -94,8 +129,9 @@ export class UsersService {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       user.password = hashedPassword;
     }
-    await this.usersRepository.update(id, user);
-    const UpdatedUser = await this.usersRepository.findOne(id);
+
+    await this.usersRepository.save({ ...user, user_id: id });
+    const UpdatedUser = await this.getById(id);
     if (UpdatedUser) {
       return UpdatedUser;
     }
@@ -122,7 +158,7 @@ export class UsersService {
       imageBuffer,
       filename,
     );
-    await this.usersRepository.update(userId, {
+    await this.usersRepository.save({
       ...user,
       avatar,
     });

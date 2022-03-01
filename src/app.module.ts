@@ -1,3 +1,4 @@
+import { PlansModule } from './plans/plans.module';
 import { KpiTemplatesModule } from './kpiTemplates/kpiTemplates.module';
 import { KpiCategoriesModule } from './kpiCategories/kpiCategories.module';
 import { DatabaseModule } from './database/database.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     KpiCategoriesModule,
     KpiTemplatesModule,
+    PlansModule,
   ],
   controllers: [],
   providers: [],
