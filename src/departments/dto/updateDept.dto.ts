@@ -1,3 +1,4 @@
+import User from 'src/users/user.entity';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateDeptDto {
@@ -9,6 +10,14 @@ export class UpdateDeptDto {
   @IsNotEmpty()
   @IsOptional()
   dept_name: string;
+
+  @IsString()
+  @IsOptional()
+  description: string;
+
+  // @IsNotEmpty()
+  // @IsOptional()
+  // manager: User;
 }
 
 export default UpdateDeptDto;

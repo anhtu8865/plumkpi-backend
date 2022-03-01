@@ -22,6 +22,7 @@ export class UpdateUserDto {
   user_name: string;
 
   @IsEmail()
+  @IsNotEmpty()
   @IsOptional()
   email: string;
 
@@ -37,14 +38,15 @@ export class UpdateUserDto {
   role: Role;
 
   @IsBoolean()
+  @IsNotEmpty()
   @IsOptional()
   is_active: boolean;
 
+  @IsNotEmpty()
   @IsOptional()
   dept: Dept;
 
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   phone: string;
 
@@ -54,14 +56,16 @@ export class UpdateUserDto {
   gender: Gender;
 
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   address: string;
 
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   dob: string;
+
+  @IsNotEmpty()
+  @IsOptional()
+  manage: Dept;
 }
 
 export default UpdateUserDto;

@@ -1,14 +1,17 @@
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
+import PlanKpiTemplates from 'src/plans/planKpiTemplates.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import Direction from './direction.enum';
 import Frequency from './frequency.enum';
+import Aggregation from './aggregation.enum';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {
@@ -35,6 +38,13 @@ class KpiTemplate {
   })
   public direction: Direction;
 
+  @Column({
+    type: 'enum',
+    enum: Aggregation,
+    default: Aggregation.Sum,
+  })
+  public aggregation: Aggregation;
+
   @Column()
   public unit: string;
 
@@ -49,6 +59,12 @@ class KpiTemplate {
     },
   )
   public kpi_category: KpiCategory;
+
+  @OneToMany(
+    () => PlanKpiTemplates,
+    (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.kpi_template,
+  )
+  public plan_kpi_templates: PlanKpiTemplates[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,3 +1,4 @@
+import Dept from 'src/departments/dept.entity';
 import {
   IsBoolean,
   IsEmail,
@@ -14,6 +15,7 @@ export class CreateUserDto {
   user_name: string;
 
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @IsString()
@@ -28,6 +30,14 @@ export class CreateUserDto {
   @IsBoolean()
   @IsOptional()
   is_active: boolean;
+
+  @IsNotEmpty()
+  @IsOptional()
+  dept: Dept;
+
+  @IsNotEmpty()
+  @IsOptional()
+  manage: Dept;
 }
 
 export default CreateUserDto;

@@ -8,12 +8,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Exclude, Transform, Type } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
 import Role from './role.enum';
 import PublicFile from 'src/files/publicFile.entity';
 import Gender from './gender.enum';
+import Plan from 'src/plans/plan.entity';
 
 @Entity({ name: 'users' })
 class User {
@@ -40,9 +42,7 @@ class User {
   @Column({ default: true })
   public is_active: boolean;
 
-  @ManyToOne(() => Dept, (dept: Dept) => dept.users, {
-    eager: true,
-  })
+  @ManyToOne(() => Dept, (dept: Dept) => dept.users, { eager: true })
   public dept: Dept;
 
   @JoinColumn()
@@ -68,11 +68,17 @@ class User {
   @Column({ type: 'date', nullable: true })
   public dob: string;
 
+  @OneToOne(() => Dept, (manage: Dept) => manage.manager, { cascade: true })
+  public manage: Dept;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Plan, (plan: Plan) => plan.user)
+  public plans: Plan[];
 
   // @DeleteDateColumn()
   // public deletedDate: Date;
