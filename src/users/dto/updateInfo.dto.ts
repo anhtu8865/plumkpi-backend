@@ -3,13 +3,15 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
 import Dept from 'src/departments/dept.entity';
+import Gender from '../gender.enum';
 
-export class UpdateUserDto {
+export class UpdateInfoDto {
   @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
   @IsOptional()
   user_name?: string;
@@ -19,19 +21,19 @@ export class UpdateUserDto {
   @IsOptional()
   email?: string;
 
-  @IsNotEmpty({ message: 'Phòng ban không được để trống' })
   @IsOptional()
-  dept?: Dept;
+  @IsNumberString({}, { message: 'Số điện thoại phải là một dãy số' })
+  phone?: string;
 
-  @MinLength(6, { message: 'Password người dùng phải dài hơn 6 ký tự' })
-  @IsNotEmpty({ message: 'Password người dùng không được để trống' })
+  @IsNotEmpty({ message: 'Giới tính không được để trống' })
   @IsOptional()
-  password?: string;
+  gender?: Gender;
 
-  @IsBoolean({ message: 'Trường is active phải thuộc kiểu boolean' })
-  @IsNotEmpty({ message: 'Trường is active không được để trống' })
   @IsOptional()
-  is_active?: boolean;
+  address?: string;
+
+  @IsOptional()
+  dob?: string;
 }
 
-export default UpdateUserDto;
+export default UpdateInfoDto;

@@ -1,37 +1,56 @@
 import Role from 'src/users/role.enum';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UserParams {
-  @IsOptional()
   @Type(() => Number)
-  @IsNumber()
   @Min(0)
-  offset?: number;
-
-  @IsOptional()
-  @Type(() => Number)
   @IsNumber()
-  @Min(1)
-  limit?: number;
+  @IsNotEmpty()
+  offset: number;
 
-  @IsOptional()
+  @Type(() => Number)
+  @Min(1)
+  @Max(10)
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
   @Type(() => String)
   @IsString()
-  user_name?: string;
-
+  @IsNotEmpty()
   @IsOptional()
+  user_name: string;
+
   @Type(() => String)
   @IsString()
-  email?: string;
-
+  @IsNotEmpty()
   @IsOptional()
+  email: string;
+
   @IsString()
-  role?: Role;
-
+  @IsNotEmpty()
   @IsOptional()
+  role: Role;
+
   @Type(() => Number)
-  @IsNumber()
   @Min(1)
-  dept?: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  dept: number;
+
+  @Type(() => String)
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  phone: string;
 }
