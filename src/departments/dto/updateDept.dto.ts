@@ -2,22 +2,15 @@ import User from 'src/users/user.entity';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateDeptDto {
-  @IsNumber()
+  @IsNotEmpty({ message: 'Tên phòng ban không được để trống' })
   @IsOptional()
-  dept_id: number;
+  dept_name?: string;
 
-  @IsString()
+  description?: string;
+
   @IsNotEmpty()
   @IsOptional()
-  dept_name: string;
-
-  @IsString()
-  @IsOptional()
-  description: string;
-
-  // @IsNotEmpty()
-  // @IsOptional()
-  // manager: User;
+  manager?: User;
 }
 
 export default UpdateDeptDto;

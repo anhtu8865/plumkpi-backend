@@ -12,6 +12,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { get } from 'http';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import Role from 'src/users/role.enum';
@@ -28,10 +29,16 @@ import UpdateDeptDto from './dto/updateDept.dto';
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get()
-  getAllDepts(@Query() { offset, limit, name }: PaginationParams) {
-    return this.deptsService.getAllDepts(offset, limit, name);
+  getDepts(@Query() { offset, limit, name }: PaginationParams) {
+    return this.deptsService.getDepts(offset, limit, name);
+  }
+
+  @UseGuards(RoleGuard([Role.Admin]))
+  @Get('all')
+  getAllDepts() {
+    return this.deptsService.getAllDepts();
   }
 
   @UseGuards(RoleGuard([Role.Manager]))
@@ -40,7 +47,7 @@ export default class DeptsController {
     return this.deptsService.getDeptByManager(request.user);
   }
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get(':id')
   getDeptById(@Param() { id }: FindOneParams) {
     return this.deptsService.getDeptById(Number(id));
@@ -48,17 +55,21 @@ export default class DeptsController {
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Post()
-  async createDept(@Body() dept: CreateDeptDto) {
-    return this.deptsService.createDept(dept);
+  async createDept(@Body() { dept_name, description }: CreateDeptDto) {
+    return this.deptsService.createDept(dept_name, description);
   }
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Put(':id')
   async replaceDept(
     @Param() { id }: FindOneParams,
-    @Body() dept: UpdateDeptDto,
+    @Body() { dept_name, description, manager }: UpdateDeptDto,
   ) {
-    return this.deptsService.updateDept(Number(id), dept);
+    return this.deptsService.updateDept(Number(id), {
+      dept_name,
+      description,
+      manager,
+    });
   }
 
   @UseGuards(RoleGuard([Role.Admin]))

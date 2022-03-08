@@ -68,7 +68,7 @@ class User {
   @Column({ type: 'date', nullable: true })
   public dob: string;
 
-  @OneToOne(() => Dept, (manage: Dept) => manage.manager, { cascade: true })
+  @OneToOne(() => Dept, (manage: Dept) => manage.manager, { eager: true })
   public manage: Dept;
 
   @CreateDateColumn()

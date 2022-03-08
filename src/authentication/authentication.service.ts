@@ -7,6 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import TokenPayload from './tokenPayload.interface';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import User from 'src/users/user.entity';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
+import UpdateInfoDto from 'src/users/dto/updateInfo.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -23,10 +25,7 @@ export class AuthenticationService {
       user.password = undefined;
       return user;
     } catch (error) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw error;
     }
   }
 
@@ -39,9 +38,8 @@ export class AuthenticationService {
       hashedPassword,
     );
     if (!isPasswordMatching) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
+      throw new CustomBadRequestException(
+        `Email hoặc Password không chính xác`,
       );
     }
   }
@@ -70,25 +68,15 @@ export class AuthenticationService {
       };
       return this.usersService.updateUser(user.user_id, updateUserData);
     } catch (error) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new CustomBadRequestException(`Password không chính xác`);
     }
   }
 
-  public async updateInfo(user: User, updateUserData: UpdateUserDto) {
+  public async updateInfo(user: User, data: UpdateInfoDto) {
     try {
-      delete updateUserData.is_active;
-      delete updateUserData.password;
-      delete updateUserData.role;
-      delete updateUserData.dept;
-      return this.usersService.updateUser(user.user_id, updateUserData);
+      return this.usersService.updateInfo(user.user_id, data);
     } catch (error) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw error;
     }
   }
 }

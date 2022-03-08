@@ -28,8 +28,18 @@ export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getAllUsers(@Query() userParams: UserParams) {
-    return this.usersService.getAllUsers(userParams);
+  getAllUsers(
+    @Query() { offset, limit, user_name, email, role, phone, dept }: UserParams,
+  ) {
+    return this.usersService.getAllUsers({
+      offset,
+      limit,
+      user_name,
+      email,
+      role,
+      phone,
+      dept,
+    });
   }
 
   @Get(':id')
@@ -38,16 +48,22 @@ export default class UsersController {
   }
 
   @Post()
-  async createUser(@Body() user: CreateUserDto) {
-    return this.usersService.createUser(user);
+  async createUser(@Body() { user_name, email, dept }: CreateUserDto) {
+    return this.usersService.createUser(user_name, email, dept);
   }
 
   @Put(':id')
   async replaceUser(
     @Param() { id }: FindOneParams,
-    @Body() user: UpdateUserDto,
+    @Body() { user_name, email, dept, password, is_active }: UpdateUserDto,
   ) {
-    return this.usersService.updateUser(Number(id), user);
+    return this.usersService.updateUser(Number(id), {
+      user_name,
+      email,
+      dept,
+      password,
+      is_active,
+    });
   }
 
   @Delete(':id')

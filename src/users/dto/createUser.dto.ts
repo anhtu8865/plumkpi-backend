@@ -1,43 +1,17 @@
 import Dept from 'src/departments/dept.entity';
-import {
-  IsBoolean,
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
-import Role from '../role.enum';
+import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
   user_name: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Email người dùng không hợp lệ' })
+  @IsNotEmpty({ message: 'Email người dùng không được để trống' })
   email: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(6)
-  password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  role: Role;
-
-  @IsBoolean()
-  @IsOptional()
-  is_active: boolean;
-
-  @IsNotEmpty()
-  @IsOptional()
+  @IsNotEmpty({ message: 'Phòng ban không được để trống' })
   dept: Dept;
-
-  @IsNotEmpty()
-  @IsOptional()
-  manage: Dept;
 }
 
 export default CreateUserDto;

@@ -20,6 +20,7 @@ import { LocalAuthenticationGuard } from './localAuthentication.guard';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import UpdateInfoDto from 'src/users/dto/updateInfo.dto';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor) //do not return password
@@ -72,10 +73,17 @@ export class AuthenticationController {
   @UseGuards(JwtAuthenticationGuard)
   @Put('update')
   async updateInfo(
-    @Body() updateUserData: UpdateUserDto,
+    @Body() { user_name, email, phone, gender, address, dob }: UpdateInfoDto,
     @Req() request: RequestWithUser,
   ) {
-    return this.authenticationService.updateInfo(request.user, updateUserData);
+    return this.authenticationService.updateInfo(request.user, {
+      user_name,
+      email,
+      phone,
+      gender,
+      address,
+      dob,
+    });
   }
 
   @Post('avatar')
@@ -96,5 +104,10 @@ export class AuthenticationController {
   @UseGuards(JwtAuthenticationGuard)
   async deleteAvatar(@Req() request: RequestWithUser) {
     return this.usersService.deleteAvatar(request.user.user_id);
+  }
+
+  @Post('adminAndDirector')
+  async createAdminAndDirector() {
+    return this.usersService.createAdminAndDirector();
   }
 }
