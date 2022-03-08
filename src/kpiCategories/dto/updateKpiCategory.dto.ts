@@ -1,14 +1,11 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateKpiCategoryDto {
-  @IsNumber()
+  @IsNotEmpty({ message: 'Tên danh mục không được để trống' })
   @IsOptional()
-  kpi_category_id: number;
+  kpi_category_name?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  kpi_category_name: string;
+  description?: string;
 }
 
 export default UpdateKpiCategoryDto;

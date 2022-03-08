@@ -4,6 +4,9 @@ import KpiCategory from './kpiCategory.entity';
 import UpdateKpiCategoryDto from './dto/updateKpiCategory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
+import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
+import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 
 @Injectable()
 export default class KpiCategoriesService {
@@ -12,7 +15,7 @@ export default class KpiCategoriesService {
     private kpiCategoriesRepository: Repository<KpiCategory>,
   ) {}
 
-  async getAllKpiCategories(offset?: number, limit?: number, name?: string) {
+  async getKpiCategories(offset: number, limit: number, name?: string) {
     const [items, count] = await this.kpiCategoriesRepository.findAndCount({
       where: [{ kpi_category_name: Like(`%${name ? name : ''}%`) }],
       order: {
@@ -48,30 +51,55 @@ export default class KpiCategoriesService {
     if (kpiCategory) {
       return kpiCategory;
     }
-    throw new HttpException('Kpi category not found', HttpStatus.NOT_FOUND);
+    throw new CustomNotFoundException(`Danh mục KPI id ${id} không tồn tại`);
   }
 
   async createKpiCategory(kpiCategory: CreateKpiCategoryDto) {
-    const newKpiCategory = await this.kpiCategoriesRepository.create(
-      kpiCategory,
-    );
-    await this.kpiCategoriesRepository.save(newKpiCategory);
-    return newKpiCategory;
+    try {
+      const newKpiCategory = await this.kpiCategoriesRepository.create(
+        kpiCategory,
+      );
+      await this.kpiCategoriesRepository.save(newKpiCategory);
+      return newKpiCategory;
+    } catch (error) {
+      if (error?.code === PostgresErrorCodes.UniqueViolation) {
+        throw new CustomBadRequestException(
+          `Tên danh mục ${kpiCategory.kpi_category_name} đã tồn tại`,
+        );
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  async updateKpiCategory(id: number, kpiCategory: UpdateKpiCategoryDto) {
-    await this.kpiCategoriesRepository.update(id, kpiCategory);
-    const UpdatedKpiCategory = await this.kpiCategoriesRepository.findOne(id);
-    if (UpdatedKpiCategory) {
-      return UpdatedKpiCategory;
+  async updateKpiCategory(id: number, data: UpdateKpiCategoryDto) {
+    await this.getKpiCategoryById(id);
+    try {
+      await this.kpiCategoriesRepository.save({
+        ...data,
+        kpi_category_id: id,
+      });
+      const updateKpiCategory = await this.getKpiCategoryById(id);
+      return updateKpiCategory;
+    } catch (error) {
+      if (error?.code === PostgresErrorCodes.UniqueViolation) {
+        throw new CustomBadRequestException(
+          `Tên danh mục ${data.kpi_category_name} đã tồn tại`,
+        );
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    throw new HttpException('Kpi category not found', HttpStatus.NOT_FOUND);
   }
 
   async deleteKpiCategory(id: number) {
     const deleteResponse = await this.kpiCategoriesRepository.delete(id);
     if (!deleteResponse.affected) {
-      throw new HttpException('Kpi category not found', HttpStatus.NOT_FOUND);
+      throw new CustomNotFoundException(`Danh mục KPI id ${id} không tồn tại`);
     }
   }
 }

@@ -26,10 +26,10 @@ import { PaginationParams } from 'src/utils/types/paginationParams';
 export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get()
-  getAllKpiCategories(@Query() { offset, limit, name }: PaginationParams) {
-    return this.kpiCategoriesService.getAllKpiCategories(offset, limit, name);
+  getKpiCategories(@Query() { offset, limit, name }: PaginationParams) {
+    return this.kpiCategoriesService.getKpiCategories(offset, limit, name);
   }
 
   @Get('personal-kpis')
@@ -37,7 +37,7 @@ export default class KpiCategoriesController {
     return this.kpiCategoriesService.getPersonalKpis();
   }
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get(':id')
   getKpiCategoryById(@Param() { id }: FindOneParams) {
     return this.kpiCategoriesService.getKpiCategoryById(Number(id));
@@ -45,17 +45,25 @@ export default class KpiCategoriesController {
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Post()
-  async createKpiCategory(@Body() kpiCategory: CreateKpiCategoryDto) {
-    return this.kpiCategoriesService.createKpiCategory(kpiCategory);
+  async createKpiCategory(
+    @Body() { kpi_category_name, description }: CreateKpiCategoryDto,
+  ) {
+    return this.kpiCategoriesService.createKpiCategory({
+      kpi_category_name,
+      description,
+    });
   }
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Put(':id')
   async replaceKpiCategory(
     @Param() { id }: FindOneParams,
-    @Body() kpiCategory: UpdateKpiCategoryDto,
+    @Body() { kpi_category_name, description }: UpdateKpiCategoryDto,
   ) {
-    return this.kpiCategoriesService.updateKpiCategory(Number(id), kpiCategory);
+    return this.kpiCategoriesService.updateKpiCategory(Number(id), {
+      kpi_category_name,
+      description,
+    });
   }
 
   @UseGuards(RoleGuard([Role.Admin]))
