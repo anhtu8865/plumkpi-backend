@@ -1,7 +1,7 @@
 import { IsNumberString } from 'class-validator';
 
 class FindOneParams {
-  @IsNumberString()
+  @IsNumberString({}, { message: 'id phải là số' })
   id: string;
 }
 
