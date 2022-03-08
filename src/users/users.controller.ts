@@ -19,6 +19,7 @@ import CreateUserDto from './dto/createUser.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import RoleGuard from './role.guard';
 import Role from './role.enum';
+import { get } from 'http';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -40,6 +41,11 @@ export default class UsersController {
       phone,
       dept,
     });
+  }
+
+  @Get('employees')
+  async getAllEmployees() {
+    return this.usersService.getAllEmployees();
   }
 
   @Get(':id')
