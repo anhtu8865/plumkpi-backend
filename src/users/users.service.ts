@@ -36,6 +36,7 @@ export class UsersService {
       ...userParams,
       user_name: Like(`%${userParams.user_name ? userParams.user_name : ''}%`),
       email: Like(`%${userParams.email ? userParams.email : ''}%`),
+      phone: userParams.phone ? Like(`%${userParams.phone}%`) : undefined,
     };
 
     delete whereCondition.offset;
@@ -166,8 +167,16 @@ export class UsersService {
   }
 
   async updateInfo(id: number, data: UpdateInfoDto) {
-    await this.usersRepository.save({ ...data, user_id: id });
-    return this.getById(id);
+    try {
+      await this.usersRepository.save({ ...data, user_id: id });
+      return this.getById(id);
+    } catch (error) {
+      if (error?.constraint === 'UQ_a000cca60bcf04454e727699490') {
+        throw new CustomBadRequestException(
+          `Số điện thoại ${data.phone} đã tồn tại`,
+        );
+      }
+    }
   }
 
   async deleteUser(id: number) {
@@ -222,5 +231,12 @@ export class UsersService {
       });
       await this.filesService.deletePublicFile(fileId);
     }
+  }
+
+  async getAllEmployees() {
+    return this.usersRepository.find({
+      select: ['user_id', 'user_name'],
+      where: { role: Role.Employee },
+    });
   }
 }
