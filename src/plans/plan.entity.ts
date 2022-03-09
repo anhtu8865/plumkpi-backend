@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
 import User from 'src/users/user.entity';
 import {
@@ -41,9 +42,11 @@ class Plan {
   public plan_kpi_templates: PlanKpiTemplates[];
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 }
 

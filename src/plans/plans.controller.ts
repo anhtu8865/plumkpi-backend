@@ -21,7 +21,7 @@ import PlansService from './plans.service';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
-import { AddKpiCategoriesDto } from './dto/addKpiCategories.dto';
+import { AssignKpiCategoriesDto } from './dto/assignKpiCategories.dto';
 import AssignKpi from './dto/assignKpi.dto';
 import registerPersonalKpiDto from './dto/registerPersonalKpi.dto';
 import DeletePersonalKpiParams from './params/deletePersonalKpiParams';
@@ -37,6 +37,12 @@ export default class PlansController {
   @Post()
   async createPlan(@Body() { plan_name, description, year }: CreatePlanDto) {
     return this.plansService.createPlan({ plan_name, description, year });
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get('director/:id')
+  getPlanByIdDirector(@Param() { id }: FindOneParams) {
+    return this.plansService.getPlanByIdDirector(Number(id));
   }
 
   @Get(':id')
@@ -68,7 +74,20 @@ export default class PlansController {
     return this.plansService.getPlans(offset, limit, name);
   }
 
+  @UseGuards(RoleGuard([Role.Director]))
+  @Post('assign-kpi-categories')
+  async assignKpiCategories(
+    @Body() { plan_id, kpi_categories }: AssignKpiCategoriesDto,
+  ) {
+    return this.plansService.assignKpiCategories(plan_id, kpi_categories);
+  }
+
   /*
+  @UseGuards(RoleGuard([Role.Director, Role.Manager]))
+  @Post('assign-kpi-')
+  async assignKpi(@Body() body: AssignKpi) {
+    return this.plansService.assignKpi(body);
+  }
 
   @Get('user')
   getAllPlansOfUser(
@@ -98,17 +117,9 @@ export default class PlansController {
 
 
 
-  @UseGuards(RoleGuard([Role.Director]))
-  @Post('add-kpi-categories')
-  async addKpiCategories(@Body() body: AddKpiCategoriesDto) {
-    return this.plansService.addKpiCategories(body);
-  }
 
-  @UseGuards(RoleGuard([Role.Director, Role.Manager]))
-  @Post('assign-kpi')
-  async assignKpi(@Body() body: AssignKpi) {
-    return this.plansService.assignKpi(body);
-  }
+
+
 
   @UseGuards(RoleGuard([Role.Employee, Role.Manager]))
   @Post('register-personal-kpi')
