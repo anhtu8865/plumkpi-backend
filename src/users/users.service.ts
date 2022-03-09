@@ -123,7 +123,7 @@ export class UsersService {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new CustomBadRequestException(`Email ${email} đã tồn tại`);
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 
@@ -157,7 +157,7 @@ export class UsersService {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new CustomBadRequestException(`Email ${user?.email} đã tồn tại`);
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 

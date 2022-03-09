@@ -62,7 +62,7 @@ export default class KpiTemplatesService {
           `Tên KPI ${data.kpi_template_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 
@@ -78,7 +78,7 @@ export default class KpiTemplatesService {
           `Tên KPI ${data.kpi_template_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 
