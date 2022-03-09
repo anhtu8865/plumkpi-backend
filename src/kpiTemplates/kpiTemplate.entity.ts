@@ -51,6 +51,18 @@ class KpiTemplate {
   @Column({ nullable: true })
   public formula: string;
 
+  @Column({ nullable: true })
+  public red_threshold: number;
+
+  @Column({ nullable: true })
+  public red_yellow_threshold: number;
+
+  @Column({ nullable: true })
+  public yellow_green_threshold: number;
+
+  @Column({ nullable: true })
+  public green_threshold: number;
+
   @ManyToOne(
     () => KpiCategory,
     (kpi_category: KpiCategory) => kpi_category.kpi_templates,
