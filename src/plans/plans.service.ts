@@ -3,11 +3,10 @@ import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Not, Repository } from 'typeorm';
+import { Connection, Like, Not, Repository } from 'typeorm';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
-import AddKpiCategoriesDto from './dto/addKpiCategories.dto';
 import PlanKpiTemplates from './planKpiTemplates.entity';
 import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 import AssignKpi from './dto/assignKpi.dto';
@@ -17,6 +16,7 @@ import ApprovePersonalKpisDto from './dto/approvePersonalKpis.dto';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
+import { KpiCategoriesDto } from './dto/assignKpiCategories.dto';
 
 @Injectable()
 export default class PlansService {
@@ -33,6 +33,8 @@ export default class PlansService {
     private planKpiTemplates: Repository<PlanKpiTemplates>,
 
     private readonly kpiTemplatesService: KpiTemplatesService,
+
+    private connection: Connection,
   ) {}
 
   async createPlan(data: CreatePlanDto) {
@@ -54,10 +56,23 @@ export default class PlansService {
       throw new CustomInternalServerException();
     }
   }
-
   async getPlanById(id: number) {
     try {
       const plan = await this.plansRepository.findOne(id);
+      if (plan) {
+        return plan;
+      }
+      throw new CustomNotFoundException(`Kế hoạch id ${id} không tồn tại`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPlanByIdDirector(id: number) {
+    try {
+      const plan = await this.plansRepository.findOne(id, {
+        relations: ['plan_kpi_categories', 'plan_kpi_categories.kpi_category'],
+      });
       if (plan) {
         return plan;
       }
@@ -113,6 +128,49 @@ export default class PlansService {
       items,
       count,
     };
+  }
+
+  async assignKpiCategories(
+    plan_id: number,
+    kpiCategories: KpiCategoriesDto[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sum = kpiCategories.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpiCategories.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các danh mục KPI phải bằng 100%`,
+        );
+      }
+
+      await queryRunner.manager.delete(PlanKpiCategories, {
+        plan: { plan_id },
+      });
+      for (const kpiCategory of kpiCategories) {
+        const { kpi_category_id, weight } = kpiCategory;
+        await queryRunner.manager.save(PlanKpiCategories, {
+          kpi_category: { kpi_category_id },
+          plan: { plan_id },
+          weight,
+        });
+      }
+
+      const plan = await queryRunner.manager.find(PlanKpiCategories, {
+        where: { plan: { plan_id } },
+        relations: ['kpi_category'],
+      });
+      await queryRunner.commitTransaction();
+      return plan;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /* 

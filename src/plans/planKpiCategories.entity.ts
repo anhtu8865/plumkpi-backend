@@ -1,5 +1,12 @@
+import { Exclude } from 'class-transformer';
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import Plan from './plan.entity';
 @Entity({ name: 'plan_kpi_categories' })
 class PlanKpiCategories {
@@ -16,10 +23,18 @@ class PlanKpiCategories {
     (kpiCategory: KpiCategory) => kpiCategory.plan_kpi_categories,
     {
       primary: true,
-      eager: true,
+      // eager: true,
     },
   )
   public kpi_category: KpiCategory;
+
+  @CreateDateColumn()
+  @Exclude()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Exclude()
+  updatedAt: Date;
 }
 
 export default PlanKpiCategories;

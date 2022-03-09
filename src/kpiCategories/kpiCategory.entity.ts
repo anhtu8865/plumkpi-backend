@@ -11,6 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'kpi_categories' })
 class KpiCategory {
@@ -36,9 +37,11 @@ class KpiCategory {
   public plan_kpi_categories: PlanKpiCategories[];
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 }
 

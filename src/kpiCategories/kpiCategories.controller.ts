@@ -32,12 +32,12 @@ export default class KpiCategoriesController {
     return this.kpiCategoriesService.getKpiCategories(offset, limit, name);
   }
 
-  @Get('personal-kpis')
-  getPersonalKpis() {
-    return this.kpiCategoriesService.getPersonalKpis();
-  }
+  // @Get('personal-kpis')
+  // getPersonalKpis() {
+  //   return this.kpiCategoriesService.getPersonalKpis();
+  // }
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get('all')
   async getAllKpiCategories() {
     return this.kpiCategoriesService.getAllKpiCategories();
