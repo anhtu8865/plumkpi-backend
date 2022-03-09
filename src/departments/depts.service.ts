@@ -102,7 +102,7 @@ export default class DeptsService {
           `Phòng ban ${dept_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 
@@ -150,7 +150,7 @@ export default class DeptsService {
           `Người dùng ${manager.user_name} đang quản lý phòng ban ${manager.manage.dept_name}`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     } finally {
       await queryRunner.release();
     }

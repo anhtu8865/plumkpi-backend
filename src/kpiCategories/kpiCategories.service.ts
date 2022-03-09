@@ -72,7 +72,7 @@ export default class KpiCategoriesService {
           `Tên danh mục ${kpiCategory.kpi_category_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 
@@ -91,7 +91,7 @@ export default class KpiCategoriesService {
           `Tên danh mục ${data.kpi_category_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException(`Something went wrong`);
+      throw new CustomInternalServerException();
     }
   }
 

@@ -19,20 +19,14 @@ class Plan {
   @PrimaryGeneratedColumn()
   public plan_id: number;
 
-  @Column()
+  @Column({ unique: true })
   public plan_name: string;
 
   @Column({ nullable: true })
   public description?: string;
 
-  @Column({ type: 'date' })
-  public start_date: string;
-
-  @Column({ type: 'date' })
-  public end_date: string;
-
-  @ManyToOne(() => User, (user: User) => user.plans)
-  public user: User;
+  @Column({ unique: true })
+  public year: number;
 
   @OneToMany(
     () => PlanKpiCategories,
@@ -45,9 +39,6 @@ class Plan {
     (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.plan,
   )
   public plan_kpi_templates: PlanKpiTemplates[];
-
-  @ManyToOne(() => Plan)
-  public parent_plan: Plan;
 
   @CreateDateColumn()
   createdAt: Date;

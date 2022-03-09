@@ -77,9 +77,6 @@ class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Plan, (plan: Plan) => plan.user)
-  public plans: Plan[];
-
   // @DeleteDateColumn()
   // public deletedDate: Date;
 }

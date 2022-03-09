@@ -34,10 +34,41 @@ export default class PlansController {
   constructor(private readonly plansService: PlansService) {}
 
   @UseGuards(RoleGuard([Role.Director]))
-  @Get()
-  getAllPlans(@Query() { offset, limit, name }: PaginationParams) {
-    return this.plansService.getAllPlans(offset, limit, name);
+  @Post()
+  async createPlan(@Body() { plan_name, description, year }: CreatePlanDto) {
+    return this.plansService.createPlan({ plan_name, description, year });
   }
+
+  @Get(':id')
+  getPlanById(@Param() { id }: FindOneParams) {
+    return this.plansService.getPlanById(Number(id));
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Put(':id')
+  async replacePlan(
+    @Param() { id }: FindOneParams,
+    @Body() { plan_name, description, year }: UpdatePlanDto,
+  ) {
+    return this.plansService.updatePlan(Number(id), {
+      plan_name,
+      description,
+      year,
+    });
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Delete(':id')
+  async deletePlan(@Param() { id }: FindOneParams) {
+    return this.plansService.deletePlan(Number(id));
+  }
+
+  @Get()
+  getPlans(@Query() { offset, limit, name }: PaginationParams) {
+    return this.plansService.getPlans(offset, limit, name);
+  }
+
+  /*
 
   @Get('user')
   getAllPlansOfUser(
@@ -52,11 +83,7 @@ export default class PlansController {
     );
   }
 
-  @Get(':id')
-  @UseGuards(RoleGuard([Role.Director]))
-  getPlanById(@Param() { id }: FindOneParams) {
-    return this.plansService.getPlanById(Number(id));
-  }
+
 
   @Get('user/:id')
   getPlanOfUserById(
@@ -66,30 +93,10 @@ export default class PlansController {
     return this.plansService.getPlanOfUserById(Number(id), request.user);
   }
 
-  @UseGuards(RoleGuard([Role.Director]))
-  @Post()
-  async createPlan(
-    @Body() plan: CreatePlanDto,
-    @Req() request: RequestWithUser,
-  ) {
-    const newPlan = { ...plan, user: request.user.user_id };
-    return this.plansService.createPlan(newPlan);
-  }
 
-  @UseGuards(RoleGuard([Role.Director]))
-  @Put(':id')
-  async replacePlan(
-    @Param() { id }: FindOneParams,
-    @Body() plan: UpdatePlanDto,
-  ) {
-    return this.plansService.updatePlan(Number(id), plan);
-  }
 
-  @UseGuards(RoleGuard([Role.Director]))
-  @Delete(':id')
-  async deletePlan(@Param() { id }: FindOneParams) {
-    return this.plansService.deletePlan(Number(id));
-  }
+
+
 
   @UseGuards(RoleGuard([Role.Director]))
   @Post('add-kpi-categories')
@@ -147,5 +154,5 @@ export default class PlansController {
     @Body() body: ApprovePersonalKpisDto,
   ) {
     return this.plansService.approvePersonalKpis(Number(id), body);
-  }
+  } */
 }

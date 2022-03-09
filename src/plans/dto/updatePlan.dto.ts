@@ -1,24 +1,16 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePlanDto {
-  @IsNumber()
-  @IsOptional()
-  plan_id: number;
-
-  @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Tên kế hoạch không được để trống' })
   @IsOptional()
   plan_name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  start_date: string;
+  description?: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsNumber()
+  @IsNotEmpty({ message: 'Năm kế hoạch không được để trống' })
   @IsOptional()
-  end_date: string;
+  year: number;
 }
 
 export default UpdatePlanDto;

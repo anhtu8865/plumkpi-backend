@@ -14,6 +14,9 @@ import AssignKpi from './dto/assignKpi.dto';
 import RegisterPersonalKpiDto from './dto/registerPersonalKpi.dto';
 import ApproveRegistration from './approveRegistration.enum';
 import ApprovePersonalKpisDto from './dto/approvePersonalKpis.dto';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
+import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
+import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 
 @Injectable()
 export default class PlansService {
@@ -32,11 +35,75 @@ export default class PlansService {
     private readonly kpiTemplatesService: KpiTemplatesService,
   ) {}
 
-  async getAllPlans(offset?: number, limit?: number, name?: string) {
+  async createPlan(data: CreatePlanDto) {
+    try {
+      const newPlan = await this.plansRepository.create(data);
+      await this.plansRepository.save(newPlan);
+      return newPlan;
+    } catch (error) {
+      if (error?.constraint === 'UQ_0b3866daf36d0d6520c9d1f5ef3') {
+        throw new CustomBadRequestException(
+          `Tên kế hoạch ${data.plan_name} đã tồn tại`,
+        );
+      }
+      if (error?.constraint === 'UQ_8d17b2be5eac04d0afa1ebb449a') {
+        throw new CustomBadRequestException(
+          `Năm kế hoạch ${data.year} đã tồn tại`,
+        );
+      }
+      throw new CustomInternalServerException();
+    }
+  }
+
+  async getPlanById(id: number) {
+    try {
+      const plan = await this.plansRepository.findOne(id);
+      if (plan) {
+        return plan;
+      }
+      throw new CustomNotFoundException(`Kế hoạch id ${id} không tồn tại`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updatePlan(id: number, data: UpdatePlanDto) {
+    await this.getPlanById(id);
+    try {
+      await this.plansRepository.save({ ...data, plan_id: id });
+      const UpdatedPlan = await this.plansRepository.findOne(id);
+      return UpdatedPlan;
+    } catch (error) {
+      if (error?.constraint === 'UQ_0b3866daf36d0d6520c9d1f5ef3') {
+        throw new CustomBadRequestException(
+          `Tên kế hoạch ${data.plan_name} đã tồn tại`,
+        );
+      }
+      if (error?.constraint === 'UQ_8d17b2be5eac04d0afa1ebb449a') {
+        throw new CustomBadRequestException(
+          `Năm kế hoạch ${data.year} đã tồn tại`,
+        );
+      }
+      throw new CustomInternalServerException();
+    }
+  }
+
+  async deletePlan(id: number) {
+    try {
+      const deleteResponse = await this.plansRepository.delete(id);
+      if (!deleteResponse.affected) {
+        throw new CustomNotFoundException(`Kế hoạch id ${id} không tồn tại`);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPlans(offset: number, limit: number, name?: string) {
     const [items, count] = await this.plansRepository.findAndCount({
       where: [{ plan_name: Like(`%${name ? name : ''}%`) }],
       order: {
-        plan_id: 'ASC',
+        year: 'DESC',
       },
       skip: offset,
       take: limit,
@@ -47,6 +114,8 @@ export default class PlansService {
       count,
     };
   }
+
+  /* 
 
   async getAllPlansOfUser(
     user: User,
@@ -69,15 +138,7 @@ export default class PlansService {
     };
   }
 
-  async getPlanById(id: number) {
-    const plan = await this.plansRepository.findOne(id, {
-      relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
-    });
-    if (plan) {
-      return plan;
-    }
-    throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
-  }
+  
 
   async getPlanOfUserById(id: number, user: User) {
     const plan = await this.plansRepository.findOne({
@@ -90,28 +151,11 @@ export default class PlansService {
     throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
   }
 
-  async createPlan(plan: CreatePlanDto) {
-    const newPlan = await this.plansRepository.create(plan);
-    await this.plansRepository.save(newPlan);
-    return newPlan;
-  }
+  
 
-  async updatePlan(id: number, plan: UpdatePlanDto) {
-    await this.plansRepository.update(id, plan);
-    const UpdatedPlan = await this.plansRepository.findOne(id);
-    if (UpdatedPlan) {
-      return UpdatedPlan;
-    }
-    throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
-  }
 
-  async deletePlan(id: number) {
-    const deleteResponse = await this.plansRepository.delete(id);
-    if (!deleteResponse.affected) {
-      throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
-    }
-  }
 
+  
   async deleteKpiCategory(plan_id: number, kpi_category_id: number) {
     const temp = await this.plansKpiCategories.findOne({
       where: { plan: plan_id, kpi_category: kpi_category_id },
@@ -316,5 +360,5 @@ export default class PlansService {
 
       await this.planKpiTemplates.save(row);
     }
-  }
+  } */
 }

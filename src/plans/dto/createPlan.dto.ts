@@ -1,17 +1,14 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreatePlanDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Tên kế hoạch không được để trống' })
   plan_name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  start_date: string;
+  description?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  end_date: string;
+  @IsNumber()
+  @IsNotEmpty({ message: 'Năm kế hoạch không được để trống' })
+  year: number;
 }
 
 export default CreatePlanDto;
