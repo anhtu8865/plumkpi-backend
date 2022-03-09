@@ -7,6 +7,7 @@ import { Like, Repository } from 'typeorm';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
+import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 
 @Injectable()
 export default class KpiCategoriesService {
@@ -31,6 +32,12 @@ export default class KpiCategoriesService {
     };
   }
 
+  async getAllKpiCategories() {
+    return this.kpiCategoriesRepository.find({
+      select: ['kpi_category_id', 'kpi_category_name'],
+    });
+  }
+
   async getPersonalKpis() {
     const kpiCategory = await this.kpiCategoriesRepository.findOne(
       { kpi_category_name: 'Cá nhân' },
@@ -45,9 +52,7 @@ export default class KpiCategoriesService {
   }
 
   async getKpiCategoryById(id: number) {
-    const kpiCategory = await this.kpiCategoriesRepository.findOne(id, {
-      relations: ['kpi_templates'],
-    });
+    const kpiCategory = await this.kpiCategoriesRepository.findOne(id);
     if (kpiCategory) {
       return kpiCategory;
     }
@@ -67,10 +72,7 @@ export default class KpiCategoriesService {
           `Tên danh mục ${kpiCategory.kpi_category_name} đã tồn tại`,
         );
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     }
   }
 
@@ -89,17 +91,25 @@ export default class KpiCategoriesService {
           `Tên danh mục ${data.kpi_category_name} đã tồn tại`,
         );
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     }
   }
 
   async deleteKpiCategory(id: number) {
-    const deleteResponse = await this.kpiCategoriesRepository.delete(id);
-    if (!deleteResponse.affected) {
-      throw new CustomNotFoundException(`Danh mục KPI id ${id} không tồn tại`);
+    try {
+      const deleteResponse = await this.kpiCategoriesRepository.delete(id);
+      if (!deleteResponse.affected) {
+        throw new CustomNotFoundException(
+          `Danh mục KPI id ${id} không tồn tại`,
+        );
+      }
+    } catch (error) {
+      if (error?.constraint === 'FK_dc334a26590d292708f5ea7b9b7') {
+        throw new CustomBadRequestException(
+          `Danh mục KPI này đang có KPI template`,
+        );
+      }
+      throw error;
     }
   }
 }

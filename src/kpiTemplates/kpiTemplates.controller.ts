@@ -27,31 +27,87 @@ import { KpiTemplateParams } from 'src/utils/types/kpiTemplateParams';
 export default class KpiTemplatesController {
   constructor(private readonly kpiTemplatesService: KpiTemplatesService) {}
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get()
-  getAllKpiTemplates(@Query() kpiTemplateParams: KpiTemplateParams) {
-    return this.kpiTemplatesService.getAllKpiTemplates(kpiTemplateParams);
+  getKpiTemplates(@Query() params: KpiTemplateParams) {
+    return this.kpiTemplatesService.getKpiTemplates(params);
   }
 
-  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
-  @Get(':id')
-  getKpiTemplateById(@Param() { id }: FindOneParams) {
-    return this.kpiTemplatesService.getKpiTemplateById(Number(id));
-  }
+  // @UseGuards(RoleGuard([Role.Admin, Role.Director]))
+  // @Get(':id')
+  // getKpiTemplateById(@Param() { id }: FindOneParams) {
+  //   return this.kpiTemplatesService.getKpiTemplateById(Number(id));
+  // }
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Post()
-  async createKpiTemplate(@Body() kpiTemplate: CreateKpiTemplateDto) {
-    return this.kpiTemplatesService.createKpiTemplate(kpiTemplate);
+  async createKpiTemplate(
+    @Body()
+    {
+      kpi_template_name,
+      description,
+      frequency,
+      direction,
+      aggregation,
+      unit,
+      formula,
+      red_threshold,
+      red_yellow_threshold,
+      yellow_green_threshold,
+      green_threshold,
+      kpi_category,
+    }: CreateKpiTemplateDto,
+  ) {
+    return this.kpiTemplatesService.createKpiTemplate({
+      kpi_template_name,
+      description,
+      frequency,
+      direction,
+      aggregation,
+      unit,
+      formula,
+      red_threshold,
+      red_yellow_threshold,
+      yellow_green_threshold,
+      green_threshold,
+      kpi_category,
+    });
   }
 
   @UseGuards(RoleGuard([Role.Admin]))
   @Put(':id')
   async replaceKpiTemplate(
     @Param() { id }: FindOneParams,
-    @Body() kpiTemplate: UpdateKpiTemplateDto,
+    @Body()
+    {
+      kpi_template_name,
+      description,
+      frequency,
+      direction,
+      aggregation,
+      unit,
+      formula,
+      red_threshold,
+      red_yellow_threshold,
+      yellow_green_threshold,
+      green_threshold,
+      kpi_category,
+    }: UpdateKpiTemplateDto,
   ) {
-    return this.kpiTemplatesService.updateKpiTemplate(Number(id), kpiTemplate);
+    return this.kpiTemplatesService.updateKpiTemplate(Number(id), {
+      kpi_template_name,
+      description,
+      frequency,
+      direction,
+      aggregation,
+      unit,
+      formula,
+      red_threshold,
+      red_yellow_threshold,
+      yellow_green_threshold,
+      green_threshold,
+      kpi_category,
+    });
   }
 
   @UseGuards(RoleGuard([Role.Admin]))

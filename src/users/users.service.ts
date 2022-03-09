@@ -20,6 +20,7 @@ import { CustomBadRequestException } from 'src/utils/exception/BadRequest.except
 import DeptsService from 'src/departments/depts.service';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import UpdateInfoDto from './dto/updateInfo.dto';
+import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 
 @Injectable()
 export class UsersService {
@@ -122,10 +123,7 @@ export class UsersService {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new CustomBadRequestException(`Email ${email} đã tồn tại`);
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     }
   }
 
@@ -159,10 +157,7 @@ export class UsersService {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new CustomBadRequestException(`Email ${user?.email} đã tồn tại`);
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     }
   }
 

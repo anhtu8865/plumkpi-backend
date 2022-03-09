@@ -38,6 +38,12 @@ export default class KpiCategoriesController {
   }
 
   @UseGuards(RoleGuard([Role.Admin]))
+  @Get('all')
+  async getAllKpiCategories() {
+    return this.kpiCategoriesService.getAllKpiCategories();
+  }
+
+  @UseGuards(RoleGuard([Role.Admin]))
   @Get(':id')
   getKpiCategoryById(@Param() { id }: FindOneParams) {
     return this.kpiCategoriesService.getKpiCategoryById(Number(id));

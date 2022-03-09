@@ -16,6 +16,7 @@ import { CustomBadRequestException } from 'src/utils/exception/BadRequest.except
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
 import { UsersService } from 'src/users/users.service';
 import Role from 'src/users/role.enum';
+import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 
 @Injectable()
 export default class DeptsService {
@@ -101,10 +102,7 @@ export default class DeptsService {
           `Phòng ban ${dept_name} đã tồn tại`,
         );
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     }
   }
 
@@ -152,10 +150,7 @@ export default class DeptsService {
           `Người dùng ${manager.user_name} đang quản lý phòng ban ${manager.manage.dept_name}`,
         );
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new CustomInternalServerException(`Something went wrong`);
     } finally {
       await queryRunner.release();
     }

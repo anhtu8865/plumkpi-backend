@@ -5,6 +5,10 @@ import KpiTemplate from './kpiTemplate.entity';
 import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
+import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
+import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
+import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 
 @Injectable()
 export default class KpiTemplatesService {
@@ -13,26 +17,24 @@ export default class KpiTemplatesService {
     private kpiTemplatesRepository: Repository<KpiTemplate>,
   ) {}
 
-  async getAllKpiTemplates(kpiTemplateParams?: KpiTemplateParams) {
+  async getKpiTemplates(params: KpiTemplateParams) {
+    const { offset, limit, name, kpi_category_id } = params;
+
     const whereCondition = {
-      ...kpiTemplateParams,
-      kpi_template_name: Like(
-        `%${
-          kpiTemplateParams.kpi_template_name
-            ? kpiTemplateParams.kpi_template_name
-            : ''
-        }%`,
-      ),
+      kpi_template_name: name ? Like(`%${name}%`) : undefined,
+      kpi_category: { kpi_category_id },
     };
-    delete whereCondition.offset;
-    delete whereCondition.limit;
+    Object.keys(whereCondition).forEach(
+      (key) => whereCondition[key] === undefined && delete whereCondition[key],
+    );
+
     const [items, count] = await this.kpiTemplatesRepository.findAndCount({
       where: [whereCondition],
       order: {
         kpi_template_id: 'ASC',
       },
-      skip: kpiTemplateParams.offset,
-      take: kpiTemplateParams.limit,
+      skip: offset,
+      take: limit,
     });
 
     return {
@@ -46,30 +48,44 @@ export default class KpiTemplatesService {
     if (kpiTemplate) {
       return kpiTemplate;
     }
-    throw new HttpException('Kpi template not found', HttpStatus.NOT_FOUND);
+    throw new CustomNotFoundException(`KPI template id ${id} không tồn tại`);
   }
 
-  async createKpiTemplate(kpiTemplate: CreateKpiTemplateDto) {
-    const newKpiTemplate = await this.kpiTemplatesRepository.create(
-      kpiTemplate,
-    );
-    await this.kpiTemplatesRepository.save(newKpiTemplate);
-    return newKpiTemplate;
-  }
-
-  async updateKpiTemplate(id: number, kpiTemplate: UpdateKpiTemplateDto) {
-    await this.kpiTemplatesRepository.update(id, kpiTemplate);
-    const UpdatedKpiTemplate = await this.kpiTemplatesRepository.findOne(id);
-    if (UpdatedKpiTemplate) {
-      return UpdatedKpiTemplate;
+  async createKpiTemplate(data: CreateKpiTemplateDto) {
+    try {
+      const newKpiTemplate = await this.kpiTemplatesRepository.create(data);
+      await this.kpiTemplatesRepository.save(newKpiTemplate);
+      return newKpiTemplate;
+    } catch (error) {
+      if (error?.code === PostgresErrorCodes.UniqueViolation) {
+        throw new CustomBadRequestException(
+          `Tên KPI ${data.kpi_template_name} đã tồn tại`,
+        );
+      }
+      throw new CustomInternalServerException(`Something went wrong`);
     }
-    throw new HttpException('Kpi template not found', HttpStatus.NOT_FOUND);
+  }
+
+  async updateKpiTemplate(id: number, data: UpdateKpiTemplateDto) {
+    await this.getKpiTemplateById(id);
+    try {
+      await this.kpiTemplatesRepository.save({ ...data, kpi_template_id: id });
+      const UpdatedKpiTemplate = await this.kpiTemplatesRepository.findOne(id);
+      return UpdatedKpiTemplate;
+    } catch (error) {
+      if (error?.code === PostgresErrorCodes.UniqueViolation) {
+        throw new CustomBadRequestException(
+          `Tên KPI ${data.kpi_template_name} đã tồn tại`,
+        );
+      }
+      throw new CustomInternalServerException(`Something went wrong`);
+    }
   }
 
   async deleteKpiTemplate(id: number) {
     const deleteResponse = await this.kpiTemplatesRepository.delete(id);
     if (!deleteResponse.affected) {
-      throw new HttpException('Kpi template not found', HttpStatus.NOT_FOUND);
+      throw new CustomNotFoundException(`KPI template id ${id} không tồn tại`);
     }
   }
 }
