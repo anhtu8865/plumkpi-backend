@@ -160,6 +160,7 @@ export default class PlansService {
       );
       const kpisInDB = await queryRunner.manager.find(PlanKpiTemplates, {
         where: {
+          plan: { plan_id },
           kpi_template: {
             kpi_category: { kpi_category_id: In(deleteKpiCategoriesId) },
           },
