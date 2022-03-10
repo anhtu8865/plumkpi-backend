@@ -23,6 +23,7 @@ import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import { RegisterKpiCategoriesDto } from './dto/registerKpiCategories.dto';
+import { KpisOfOneCategoryParams } from './params/kpisOfOneCategoryParams';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -81,14 +82,25 @@ export default class PlansController {
 
   @UseGuards(RoleGuard([Role.Director]))
   @Post('register-kpis')
-  async assignKpis(@Body() { plan_id, kpis }: RegisterKpisDto) {
-    return this.plansService.registerKpis(plan_id, kpis);
+  async assignKpis(
+    @Body() { plan_id, kpi_category_id, kpis }: RegisterKpisDto,
+  ) {
+    return this.plansService.registerKpis(plan_id, kpi_category_id, kpis);
   }
 
   @UseGuards(RoleGuard([Role.Director]))
   @Get(':id/kpis/director')
-  async getPlanKpis(@Param() { id }: FindOneParams) {
-    return this.plansService.getPlanKpis(Number(id));
+  async getKpisOfOneCategory(
+    @Param() { id }: FindOneParams,
+    @Query() { offset, limit, name, kpi_category_id }: KpisOfOneCategoryParams,
+  ) {
+    return this.plansService.getKpisOfOneCategory(
+      Number(id),
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+    );
   }
   /*
   @UseGuards(RoleGuard([Role.Director, Role.Manager]))

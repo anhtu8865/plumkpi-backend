@@ -1,7 +1,7 @@
 import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Connection, Like, Not, Repository } from 'typeorm';
+import { Connection, In, Like, Not, Repository } from 'typeorm';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
@@ -144,9 +144,39 @@ export default class PlansService {
         );
       }
 
+      const kpiCategoriesInDB = await queryRunner.manager.find(
+        PlanKpiCategories,
+        {
+          where: { plan: { plan_id } },
+          relations: ['kpi_category'],
+        },
+      );
+      const kpiCategoriesIdInDB = kpiCategoriesInDB.map(
+        (item) => item.kpi_category.kpi_category_id,
+      );
+      const kpiCategoriesId = kpiCategories.map((item) => item.kpi_category_id);
+      const deleteKpiCategoriesId = kpiCategoriesIdInDB.filter(
+        (item) => !kpiCategoriesId.includes(item),
+      );
+      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplates, {
+        where: {
+          kpi_template: {
+            kpi_category: { kpi_category_id: In(deleteKpiCategoriesId) },
+          },
+        },
+        relations: ['kpi_template'],
+      });
+      if (kpisInDB.length > 0) {
+        throw new CustomBadRequestException(
+          `Không thể xoá danh mục KPI do vẫn còn KPI mẫu thuộc danh mục này trong kế hoạch`,
+        );
+      }
+
       await queryRunner.manager.delete(PlanKpiCategories, {
         plan: { plan_id },
+        kpi_category: { kpi_category_id: In(deleteKpiCategoriesId) },
       });
+
       for (const kpiCategory of kpiCategories) {
         const { kpi_category_id, weight } = kpiCategory;
         await queryRunner.manager.save(PlanKpiCategories, {
@@ -170,7 +200,11 @@ export default class PlansService {
     }
   }
 
-  async registerKpis(plan_id: number, kpis: KpisDto[]) {
+  async registerKpis(
+    plan_id: number,
+    kpi_category_id: number,
+    kpis: KpisDto[],
+  ) {
     const sum = kpis.reduce((result, item) => {
       return result + item.weight;
     }, 0);
@@ -184,6 +218,23 @@ export default class PlansService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplates, {
+        where: { kpi_template: { kpi_category: { kpi_category_id } } },
+        relations: ['kpi_template'],
+      });
+      const kpisIdInDB = [];
+      for (const kpi of kpisInDB) {
+        kpisIdInDB.push(kpi.kpi_template.kpi_template_id);
+      }
+      const kpisId = [];
+      for (const kpi of kpis) {
+        kpisId.push(kpi.kpi_template_id);
+      }
+      const deleteKpisId = kpisIdInDB.filter((item) => !kpisId.includes(item));
+      await queryRunner.manager.delete(PlanKpiTemplates, {
+        kpi_template: { kpi_template_id: In(deleteKpisId) },
+      });
+
       const result = [];
       for (const kpi of kpis) {
         const { kpi_template_id, weight } = kpi;
@@ -204,11 +255,35 @@ export default class PlansService {
     }
   }
 
-  async getPlanKpis(plan_id: number) {
-    return this.planKpiTemplates.find({
-      where: { plan: { plan_id } },
+  async getKpisOfOneCategory(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    kpi_category_id: number,
+  ) {
+    const [items, count] = await this.planKpiTemplates.findAndCount({
+      where: {
+        plan: { plan_id },
+        kpi_template: {
+          kpi_category: { kpi_category_id },
+          kpi_template_name: Like(`%${name ? name : ''}%`),
+        },
+      },
       relations: ['kpi_template'],
+      order: {
+        kpi_template: 'ASC',
+      },
+      skip: offset,
+      take: limit,
     });
+    for (const item of items) {
+      delete item.kpi_template.kpi_category;
+    }
+    return {
+      items,
+      count,
+    };
   }
   /* 
 

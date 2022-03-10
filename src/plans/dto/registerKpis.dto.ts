@@ -16,6 +16,10 @@ export class RegisterKpisDto {
   @IsNotEmpty()
   plan_id: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  kpi_category_id: number;
+
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
