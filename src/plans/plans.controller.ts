@@ -1,3 +1,4 @@
+import { RegisterKpisDto } from './dto/registerKpis.dto';
 import {
   Body,
   Controller,
@@ -21,11 +22,7 @@ import PlansService from './plans.service';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
-import { AssignKpiCategoriesDto } from './dto/assignKpiCategories.dto';
-import AssignKpi from './dto/assignKpi.dto';
-import registerPersonalKpiDto from './dto/registerPersonalKpi.dto';
-import DeletePersonalKpiParams from './params/deletePersonalKpiParams';
-import { ApprovePersonalKpisDto } from './dto/approvePersonalKpis.dto';
+import { RegisterKpiCategoriesDto } from './dto/registerKpiCategories.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -40,9 +37,9 @@ export default class PlansController {
   }
 
   @UseGuards(RoleGuard([Role.Director]))
-  @Get('director/:id')
-  getPlanByIdDirector(@Param() { id }: FindOneParams) {
-    return this.plansService.getPlanByIdDirector(Number(id));
+  @Get(':id/kpi-categories/director')
+  getPlanKpiCategories(@Param() { id }: FindOneParams) {
+    return this.plansService.getPlanKpiCategories(Number(id));
   }
 
   @Get(':id')
@@ -75,18 +72,29 @@ export default class PlansController {
   }
 
   @UseGuards(RoleGuard([Role.Director]))
-  @Post('assign-kpi-categories')
-  async assignKpiCategories(
-    @Body() { plan_id, kpi_categories }: AssignKpiCategoriesDto,
+  @Post('register-kpi-categories')
+  async registerKpiCategories(
+    @Body() { plan_id, kpi_categories }: RegisterKpiCategoriesDto,
   ) {
-    return this.plansService.assignKpiCategories(plan_id, kpi_categories);
+    return this.plansService.registerKpiCategories(plan_id, kpi_categories);
   }
 
+  @UseGuards(RoleGuard([Role.Director]))
+  @Post('register-kpis')
+  async assignKpis(@Body() { plan_id, kpis }: RegisterKpisDto) {
+    return this.plansService.registerKpis(plan_id, kpis);
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/kpis/director')
+  async getPlanKpis(@Param() { id }: FindOneParams) {
+    return this.plansService.getPlanKpis(Number(id));
+  }
   /*
   @UseGuards(RoleGuard([Role.Director, Role.Manager]))
   @Post('assign-kpi-')
-  async assignKpi(@Body() body: AssignKpi) {
-    return this.plansService.assignKpi(body);
+  async registerKpi(@Body() body: RegisterKpi) {
+    return this.plansService.registerKpi(body);
   }
 
   @Get('user')
@@ -140,10 +148,10 @@ export default class PlansController {
 
   @UseGuards(RoleGuard([Role.Director, Role.Manager]))
   @Get('plan/:plan_id/assign-kpi/:kpi_template_id')
-  async getInfoAssignKpi(
+  async getInfoRegisterKpi(
     @Param() { plan_id, kpi_template_id }: DeletePersonalKpiParams,
   ) {
-    return this.plansService.getInfoAssignKpi(
+    return this.plansService.getInfoRegisterKpi(
       Number(plan_id),
       Number(kpi_template_id),
     );

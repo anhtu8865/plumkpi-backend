@@ -27,7 +27,7 @@ import { KpiTemplateParams } from 'src/utils/types/kpiTemplateParams';
 export default class KpiTemplatesController {
   constructor(private readonly kpiTemplatesService: KpiTemplatesService) {}
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getKpiTemplates(@Query() params: KpiTemplateParams) {
     return this.kpiTemplatesService.getKpiTemplates(params);

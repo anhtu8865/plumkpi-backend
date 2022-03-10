@@ -1,6 +1,4 @@
-import User from 'src/users/user.entity';
 import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, Like, Not, Repository } from 'typeorm';
@@ -9,14 +7,12 @@ import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
 import PlanKpiTemplates from './planKpiTemplates.entity';
 import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
-import AssignKpi from './dto/assignKpi.dto';
-import RegisterPersonalKpiDto from './dto/registerPersonalKpi.dto';
-import ApproveRegistration from './approveRegistration.enum';
-import ApprovePersonalKpisDto from './dto/approvePersonalKpis.dto';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
-import { KpiCategoriesDto } from './dto/assignKpiCategories.dto';
+import { KpiCategoriesDto } from './dto/registerKpiCategories.dto';
+import { Injectable } from '@nestjs/common';
+import { KpisDto } from './dto/registerKpis.dto';
 
 @Injectable()
 export default class PlansService {
@@ -68,15 +64,16 @@ export default class PlansService {
     }
   }
 
-  async getPlanByIdDirector(id: number) {
+  async getPlanKpiCategories(plan_id: number) {
     try {
-      const plan = await this.plansRepository.findOne(id, {
-        relations: ['plan_kpi_categories', 'plan_kpi_categories.kpi_category'],
+      const result = await this.plansKpiCategories.find({
+        where: { plan: { plan_id } },
+        relations: ['kpi_category'],
       });
-      if (plan) {
-        return plan;
+      if (result) {
+        return result;
       }
-      throw new CustomNotFoundException(`Kế hoạch id ${id} không tồn tại`);
+      throw new CustomNotFoundException(`Kế hoạch id ${plan_id} không tồn tại`);
     } catch (error) {
       throw error;
     }
@@ -130,7 +127,7 @@ export default class PlansService {
     };
   }
 
-  async assignKpiCategories(
+  async registerKpiCategories(
     plan_id: number,
     kpiCategories: KpiCategoriesDto[],
   ) {
@@ -173,6 +170,46 @@ export default class PlansService {
     }
   }
 
+  async registerKpis(plan_id: number, kpis: KpisDto[]) {
+    const sum = kpis.reduce((result, item) => {
+      return result + item.weight;
+    }, 0);
+    if (sum !== 100 && kpis.length !== 0) {
+      throw new CustomBadRequestException(
+        `Tổng trọng số các KPIs phải bằng 100%`,
+      );
+    }
+
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const result = [];
+      for (const kpi of kpis) {
+        const { kpi_template_id, weight } = kpi;
+        const temp = await queryRunner.manager.save(PlanKpiTemplates, {
+          plan: { plan_id },
+          kpi_template: { kpi_template_id },
+          weight,
+        });
+        result.push(temp);
+      }
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async getPlanKpis(plan_id: number) {
+    return this.planKpiTemplates.find({
+      where: { plan: { plan_id } },
+      relations: ['kpi_template'],
+    });
+  }
   /* 
 
   async getAllPlansOfUser(
@@ -282,7 +319,7 @@ export default class PlansService {
     }
   }
 
-  async assignKpi(body: AssignKpi) {
+  async registerKpi(body: RegisterKpi) {
     if (body.parent_target) {
       const sumTarget = body.children.reduce(function (result, item) {
         return result + item.target;
@@ -369,7 +406,7 @@ export default class PlansService {
     await this.planKpiTemplates.remove(temp);
   }
 
-  async getInfoAssignKpi(plan_id: number, kpi_template_id: number) {
+  async getInfoRegisterKpi(plan_id: number, kpi_template_id: number) {
     const parent_plan_id = plan_id;
     const result = await this.planKpiTemplates.find({
       select: ['target'],

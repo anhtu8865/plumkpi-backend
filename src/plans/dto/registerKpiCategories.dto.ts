@@ -11,7 +11,7 @@ export class KpiCategoriesDto {
   weight: number;
 }
 
-export class AssignKpiCategoriesDto {
+export class RegisterKpiCategoriesDto {
   @IsNumber()
   @IsNotEmpty()
   plan_id: number;
@@ -23,4 +23,4 @@ export class AssignKpiCategoriesDto {
   kpi_categories: KpiCategoriesDto[];
 }
 
-export default AssignKpiCategoriesDto;
+export default RegisterKpiCategoriesDto;

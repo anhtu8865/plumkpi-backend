@@ -5,11 +5,11 @@ import Plan from './plan.entity';
 
 @Entity({ name: 'plan_kpi_templates' })
 class PlanKpiTemplates {
-  @Column({ nullable: true })
+  @Column()
   weight: number;
 
-  @Column({ nullable: true })
-  target: number;
+  // @Column({ nullable: true })
+  // target: number;
 
   // @Column({ nullable: true })
   // red_threshold: number;
@@ -20,12 +20,12 @@ class PlanKpiTemplates {
   // @Column({ nullable: true })
   // green_threshold: number;
 
-  @Column({
-    type: 'enum',
-    enum: ApproveRegistration,
-    default: ApproveRegistration.None,
-  })
-  approve_registration: ApproveRegistration;
+  // @Column({
+  //   type: 'enum',
+  //   enum: ApproveRegistration,
+  //   default: ApproveRegistration.None,
+  // })
+  // approve_registration: ApproveRegistration;
 
   @ManyToOne(() => Plan, (plan: Plan) => plan.plan_kpi_templates, {
     primary: true,
@@ -37,7 +37,7 @@ class PlanKpiTemplates {
     (kpi_template: KpiTemplate) => kpi_template.plan_kpi_templates,
     {
       primary: true,
-      eager: true,
+      // eager: true,
     },
   )
   public kpi_template: KpiTemplate;

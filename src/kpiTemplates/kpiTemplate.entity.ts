@@ -12,6 +12,7 @@ import {
 import Direction from './direction.enum';
 import Frequency from './frequency.enum';
 import Aggregation from './aggregation.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {
@@ -79,9 +80,11 @@ class KpiTemplate {
   public plan_kpi_templates: PlanKpiTemplates[];
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 }
 
