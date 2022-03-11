@@ -35,7 +35,7 @@ export default class DeptsController {
     return this.deptsService.getDepts(offset, limit, name);
   }
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get('all')
   getAllDepts() {
     return this.deptsService.getAllDepts();

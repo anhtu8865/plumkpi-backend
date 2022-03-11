@@ -1,5 +1,6 @@
+import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import ApproveRegistration from './approveRegistration.enum';
 import Plan from './plan.entity';
 
@@ -8,17 +9,8 @@ class PlanKpiTemplates {
   @Column()
   weight: number;
 
-  // @Column({ nullable: true })
-  // target: number;
-
-  // @Column({ nullable: true })
-  // red_threshold: number;
-
-  // @Column({ nullable: true })
-  // yellow_threshold: number;
-
-  // @Column({ nullable: true })
-  // green_threshold: number;
+  @Column({ nullable: true })
+  target: number;
 
   // @Column({
   //   type: 'enum',

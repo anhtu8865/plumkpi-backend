@@ -13,6 +13,8 @@ import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception'
 import { KpiCategoriesDto } from './dto/registerKpiCategories.dto';
 import { Injectable } from '@nestjs/common';
 import { KpisDto } from './dto/registerKpis.dto';
+import { DeptsDto } from './dto/assignKpiDepts.dto';
+import { PlanKpiTemplateDepts } from './planKpiTemplateDepts.entity';
 
 @Injectable()
 export default class PlansService {
@@ -25,9 +27,11 @@ export default class PlansService {
 
     private readonly kpiCategoriesService: KpiCategoriesService,
 
+    @InjectRepository(PlanKpiTemplateDepts)
+    private planKpiTemplateDepts: Repository<PlanKpiTemplateDepts>,
+
     @InjectRepository(PlanKpiTemplates)
     private planKpiTemplates: Repository<PlanKpiTemplates>,
-
     private readonly kpiTemplatesService: KpiTemplatesService,
 
     private connection: Connection,
@@ -250,6 +254,11 @@ export default class PlansService {
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      if (error?.constraint === 'FK_4809b5d1376f69057f1ac860cc2') {
+        throw new CustomBadRequestException(
+          `Không thể xoá KPI vì đã gán cho phòng ban`,
+        );
+      }
       throw error;
     } finally {
       await queryRunner.release();
@@ -286,250 +295,75 @@ export default class PlansService {
       count,
     };
   }
-  /* 
 
-  async getAllPlansOfUser(
-    user: User,
-    offset?: number,
-    limit?: number,
-    name?: string,
+  async registerTarget(
+    plan_id: number,
+    kpi_template_id: number,
+    target: number,
   ) {
-    const [items, count] = await this.plansRepository.findAndCount({
-      where: [{ plan_name: Like(`%${name ? name : ''}%`), user }],
-      order: {
-        plan_id: 'ASC',
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    return {
-      items,
-      count,
-    };
-  }
-
-  
-
-  async getPlanOfUserById(id: number, user: User) {
-    const plan = await this.plansRepository.findOne({
-      where: { plan_id: id, user: user },
-      relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
-    });
-    if (plan) {
-      return plan;
-    }
-    throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
-  }
-
-  
-
-
-
-  
-  async deleteKpiCategory(plan_id: number, kpi_category_id: number) {
-    const temp = await this.plansKpiCategories.findOne({
-      where: { plan: plan_id, kpi_category: kpi_category_id },
-      relations: ['plan'],
-    });
-    if (!temp) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-    }
-    await this.plansKpiCategories.remove(temp);
-  }
-
-  async addKpiCategories(body: AddKpiCategoriesDto) {
-    const sumCategories = body.kpi_categories.reduce(function (result, item) {
-      return result + item.weight;
-    }, 0);
-    if (sumCategories !== 100 && body.kpi_categories.length !== 0) {
-      throw new HttpException(
-        'Sum Of categories must be 100',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    for (const temp of body.kpi_categories) {
-      const sumTemplates = temp?.kpi_templates.reduce(function (result, item) {
-        return result + item.weight;
-      }, 0);
-      if (sumTemplates !== 100) {
-        throw new HttpException(
-          'Sum Of templates must be 100',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    }
-
-    await this.planKpiTemplates.delete({
-      plan: { plan_id: body.plan_id },
-    });
-    await this.plansKpiCategories.delete({
-      plan: { plan_id: body.plan_id },
-    });
-
-    for (const temp of body.kpi_categories) {
-      const plan = await this.getPlanById(body.plan_id);
-      const kpi_category = await this.kpiCategoriesService.getKpiCategoryById(
-        temp.kpi_category_id,
-      );
-
-      const newRecord = await this.plansKpiCategories.create({
-        weight: temp.weight,
-        plan: plan,
-        kpi_category: kpi_category,
-      });
-      await this.plansKpiCategories.save(newRecord);
-
-      for (const temp2 of temp.kpi_templates) {
-        const kpi_template = await this.kpiTemplatesService.getKpiTemplateById(
-          temp2.kpi_template_id,
-        );
-
-        const newRecord = await this.planKpiTemplates.create({
-          weight: temp2.weight,
-          plan: plan,
-          kpi_template: kpi_template,
-        });
-        await this.planKpiTemplates.save(newRecord);
-      }
-    }
-  }
-
-  async registerKpi(body: RegisterKpi) {
-    if (body.parent_target) {
-      const sumTarget = body.children.reduce(function (result, item) {
-        return result + item.target;
-      }, 0);
-      if (sumTarget !== body.parent_target) {
-        throw new HttpException(
-          'Sum Of categories must be the same as parent target',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    } else {
-      body.parent_target = null;
-    }
-
-    // TODO: update target of parent plan
-    const planKpiTemplate = await this.planKpiTemplates.findOne({
-      where: {
-        plan: { plan_id: body.parent_plan_id },
-        kpi_template: { kpi_template_id: body.kpi_template_id },
-      },
+    const record = await this.planKpiTemplates.findOne({
+      where: { plan: { plan_id }, kpi_template: { kpi_template_id } },
       relations: ['plan', 'kpi_template'],
     });
-    await this.planKpiTemplates.save({
-      ...planKpiTemplate,
-      target: body.parent_target,
-    });
-
-    // TODO: create child plan if it doest not exist for managers and assign kpi template
-    const parent_plan = await this.getPlanById(body.parent_plan_id);
-    const children_plan = await this.plansRepository.find({
-      parent_plan: parent_plan,
-    });
-    for (const child of children_plan) {
-      await this.planKpiTemplates.delete({
-        plan: child,
-        kpi_template: { kpi_template_id: body.kpi_template_id },
+    if (record) {
+      const result = await this.planKpiTemplates.save({
+        ...record,
+        target,
       });
+      return result;
     }
-
-    for (const child of body.children) {
-      let child_plan = await this.plansRepository.findOne({
-        where: { parent_plan: parent_plan, user: { user_id: child.user_id } },
-        relations: ['user', 'plan_kpi_categories', 'plan_kpi_templates'],
-      });
-      if (!child_plan) {
-        const createPlanDto = {
-          plan_name: parent_plan.plan_name,
-          description: parent_plan.description,
-          start_date: parent_plan.start_date,
-          end_date: parent_plan.end_date,
-          user: { user_id: child.user_id },
-          parent_plan: parent_plan,
-        };
-        child_plan = await this.createPlan(createPlanDto);
-      }
-
-      const newRecord = await this.planKpiTemplates.create({
-        target: child.target,
-        plan: child_plan,
-        kpi_template: { kpi_template_id: body.kpi_template_id },
-      });
-
-      await this.planKpiTemplates.save(newRecord);
-    }
+    throw new CustomNotFoundException(
+      `KPI id ${kpi_template_id} không tồn tại trong kế hoạch id ${plan_id}`,
+    );
   }
 
-  async registerPersonalKpi(body: RegisterPersonalKpiDto) {
-    const newRecord = await this.planKpiTemplates.create({
-      ...body,
-      approve_registration: ApproveRegistration.Pending,
-    });
-    await this.planKpiTemplates.save(newRecord);
-    return newRecord;
-  }
-
-  async deletePersonalKpi(plan_id: number, kpi_template_id: number) {
-    const temp = await this.planKpiTemplates.findOne({
-      where: { plan: plan_id, kpi_template: kpi_template_id },
-      relations: ['plan'],
-    });
-    if (!temp) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-    }
-    await this.planKpiTemplates.remove(temp);
-  }
-
-  async getInfoRegisterKpi(plan_id: number, kpi_template_id: number) {
-    const parent_plan_id = plan_id;
-    const result = await this.planKpiTemplates.find({
-      select: ['target'],
-      relations: ['plan', 'plan.user'],
-      where: {
-        plan: { parent_plan: { plan_id: parent_plan_id } },
-        kpi_template: { kpi_template_id: kpi_template_id },
-      },
-    });
-    for (const record of result) {
-      delete record.kpi_template;
-    }
-    return result;
-  }
-
-  async getPersonalKpis(
-    parent_plan_id: number,
-    offset?: number,
-    limit?: number,
-    name?: string,
+  async assignKpiDepts(
+    plan_id: number,
+    kpi_template_id: number,
+    depts: DeptsDto[],
   ) {
-    const [items, count] = await this.planKpiTemplates.findAndCount({
-      where: {
-        approve_registration: Not(ApproveRegistration.None),
-        plan: { parent_plan: { plan_id: parent_plan_id } },
-      },
-      relations: ['plan', 'plan.user'],
-      skip: offset,
-      take: limit,
-    });
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const rows = depts.map((item) => {
+        return {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          dept: { dept_id: item.dept_id },
+          target: item.target,
+        };
+      });
 
-    return {
-      items,
-      count,
-    };
+      await queryRunner.manager.delete(PlanKpiTemplateDepts, {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: { kpi_template_id },
+        },
+      });
+
+      const result = await queryRunner.manager.save(PlanKpiTemplateDepts, rows);
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  async approvePersonalKpis(id: number, body: ApprovePersonalKpisDto) {
-    for (const row of body.rows) {
-      // const updateRow = await this.planKpiTemplates.findOne(row);
-      // console.log(
-      //   '🚀 ~ file: plans.service.ts ~ line 311 ~ PlansService ~ approvePersonalKpis ~ updateRow',
-      //   updateRow,
-      // );
-      // photoToUpdate.name = 'Me, my friends and polar bears';
-
-      await this.planKpiTemplates.save(row);
-    }
-  } */
+  async getTargetKpiOfdepts(plan_id: number, kpi_template_id: number) {
+    return this.planKpiTemplateDepts.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: { kpi_template_id },
+        },
+      },
+      relations: ['dept'],
+    });
+  }
 }

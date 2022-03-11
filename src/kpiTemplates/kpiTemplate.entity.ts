@@ -13,6 +13,7 @@ import Direction from './direction.enum';
 import Frequency from './frequency.enum';
 import Aggregation from './aggregation.enum';
 import { Exclude } from 'class-transformer';
+import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {

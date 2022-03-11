@@ -7,12 +7,18 @@ import PlansController from './plans.controller';
 import PlansService from './plans.service';
 import Plan from './plan.entity';
 import PlanKpiTemplates from './planKpiTemplates.entity';
+import { PlanKpiTemplateDepts } from './planKpiTemplateDepts.entity';
 
 @Module({
   imports: [
     KpiCategoriesModule,
     KpiTemplatesModule,
-    TypeOrmModule.forFeature([Plan, PlanKpiCategories, PlanKpiTemplates]),
+    TypeOrmModule.forFeature([
+      Plan,
+      PlanKpiCategories,
+      PlanKpiTemplates,
+      PlanKpiTemplateDepts,
+    ]),
   ],
   controllers: [PlansController],
   providers: [PlansService],

@@ -13,6 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import PlanKpiCategories from './planKpiCategories.entity';
+import { PlanKpiTemplateDepts } from './planKpiTemplateDepts.entity';
 import PlanKpiTemplates from './planKpiTemplates.entity';
 
 @Entity({ name: 'plans' })

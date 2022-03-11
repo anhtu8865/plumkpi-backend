@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
 import User from 'src/users/user.entity';
 import {
   Column,
@@ -28,10 +30,19 @@ class Dept {
   @JoinColumn()
   public manager: User;
 
+  @OneToMany(
+    () => PlanKpiTemplateDepts,
+    (plan_kpi_template_depts: PlanKpiTemplateDepts) =>
+      plan_kpi_template_depts.dept,
+  )
+  plan_kpi_template_depts: PlanKpiTemplateDepts[];
+
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 }
 
