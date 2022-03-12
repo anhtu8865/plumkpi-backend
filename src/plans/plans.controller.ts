@@ -129,4 +129,32 @@ export default class PlansController {
   ) {
     return this.plansService.getTargetKpiOfdepts(plan_id, kpi_template_id);
   }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/kpi-categories/manager')
+  getPlanKpiCategoriesByManager(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getPlanKpiCategoriesByManager(Number(id), dept_id);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/kpis/manager')
+  async getKpisOfOneCategoryByManager(
+    @Param() { id }: FindOneParams,
+    @Query() { offset, limit, name, kpi_category_id }: KpisOfOneCategoryParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getKpisOfOneCategoryByManager(
+      Number(id),
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      dept_id,
+    );
+  }
 }

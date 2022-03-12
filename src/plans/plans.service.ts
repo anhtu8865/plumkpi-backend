@@ -366,4 +366,73 @@ export default class PlansService {
       relations: ['dept'],
     });
   }
+
+  async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
+    const rows = await this.planKpiTemplateDepts.find({
+      where: { dept: { dept_id }, plan_kpi_template: { plan: { plan_id } } },
+      relations: ['plan_kpi_template', 'plan_kpi_template.kpi_template'],
+    });
+
+    const kpi_categories = rows.map((row) => {
+      return {
+        ...row.plan_kpi_template.kpi_template.kpi_category,
+      };
+    });
+
+    const resArr = [];
+    kpi_categories.filter(function (item) {
+      const i = resArr.findIndex(
+        (x) => x.kpi_category_id == item.kpi_category_id,
+      );
+      if (i <= -1) {
+        resArr.push(item);
+      }
+      return null;
+    });
+
+    return resArr;
+  }
+
+  async getKpisOfOneCategoryByManager(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    kpi_category_id: number,
+    dept_id: number,
+  ) {
+    const [items, count] = await this.planKpiTemplateDepts.findAndCount({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: {
+            kpi_category: { kpi_category_id },
+            kpi_template_name: Like(`%${name ? name : ''}%`),
+          },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.kpi_template.kpi_category',
+      ],
+      order: {
+        target: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+    for (const item of items) {
+      delete item.plan_kpi_template.target;
+      delete item.plan_kpi_template.weight;
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      delete item.dept;
+    }
+    return {
+      items,
+      count,
+    };
+  }
 }

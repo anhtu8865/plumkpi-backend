@@ -71,9 +71,11 @@ class User {
   @OneToOne(() => Dept, (manage: Dept) => manage.manager, { eager: true })
   public manage: Dept;
 
+  @Exclude()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Exclude()
   @UpdateDateColumn()
   updatedAt: Date;
 
