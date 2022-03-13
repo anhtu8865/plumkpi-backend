@@ -41,12 +41,6 @@ export default class DeptsController {
     return this.deptsService.getAllDepts();
   }
 
-  @UseGuards(RoleGuard([Role.Manager]))
-  @Get('manager')
-  getDeptByManager(@Req() request: RequestWithUser) {
-    return this.deptsService.getDeptByManager(request.user);
-  }
-
   @UseGuards(RoleGuard([Role.Admin]))
   @Get(':id')
   getDeptById(@Param() { id }: FindOneParams) {

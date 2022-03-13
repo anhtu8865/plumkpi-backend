@@ -75,19 +75,6 @@ export default class DeptsService {
     throw new CustomNotFoundException(`Phòng ban id ${id} không tồn tại`);
   }
 
-  async getDeptByManager(user: User) {
-    const dept = await this.deptsRepository.findOne(
-      {
-        manager: user,
-      },
-      { relations: ['users'] },
-    );
-    if (dept) {
-      return dept;
-    }
-    throw new HttpException('Dept not found', HttpStatus.NOT_FOUND);
-  }
-
   async createDept(dept_name: string, description: string) {
     try {
       const newDept = await this.deptsRepository.create({

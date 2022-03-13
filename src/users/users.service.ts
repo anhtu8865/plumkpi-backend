@@ -230,8 +230,15 @@ export class UsersService {
 
   async getAllEmployees() {
     return this.usersRepository.find({
-      select: ['user_id', 'user_name'],
+      select: ['user_id', 'user_name', 'email', 'avatar'],
       where: { role: Role.Employee },
+    });
+  }
+
+  async getEmployeesInDept(dept_id: number) {
+    return this.usersRepository.find({
+      where: { dept: { dept_id }, role: Role.Employee },
+      select: ['user_id', 'user_name', 'email', 'avatar'],
     });
   }
 }

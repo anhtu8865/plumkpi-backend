@@ -8,6 +8,7 @@ import PlansService from './plans.service';
 import Plan from './plan.entity';
 import PlanKpiTemplate from './planKpiTemplate.entity';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
+import { PlanKpiTemplateUser } from './planKpiTemplateUser.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
       PlanKpiCategory,
       PlanKpiTemplate,
       PlanKpiTemplateDept,
+      PlanKpiTemplateUser,
     ]),
   ],
   controllers: [PlansController],

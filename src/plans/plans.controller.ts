@@ -29,6 +29,7 @@ import { AssignKpiDeptsDto } from './dto/assignKpiDepts.dto';
 import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
 import { RegisterQuarterlyTargetDto } from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
+import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -211,6 +212,35 @@ export default class PlansController {
       kpi_template_id,
       target,
       quarter,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Post('assign-kpi-employees')
+  async assignKpiEmployees(
+    @Req() request: RequestWithUser,
+    @Body() { plan_id, kpi_template_id, users }: AssignKpiEmployeesDto,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.assignKpiEmployees(
+      plan_id,
+      kpi_template_id,
+      dept_id,
+      users,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get('plan/target-kpi-of-employees')
+  async getTargetKpiOfEmployees(
+    @Query() { plan_id, kpi_template_id }: TargetKpiOfDeptsParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getTargetKpiOfEmployees(
+      plan_id,
+      kpi_template_id,
       dept_id,
     );
   }

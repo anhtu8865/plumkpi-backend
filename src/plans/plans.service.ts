@@ -1,3 +1,4 @@
+import { PlanKpiTemplateUser } from './planKpiTemplateUser.entity';
 import PlanKpiCategory from 'src/plans/planKpiCategory.entity';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +17,7 @@ import { KpisDto } from './dto/registerKpis.dto';
 import { DeptsDto } from './dto/assignKpiDepts.dto';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import ApproveRegistration from './approveRegistration.enum';
+import { UsersDto } from './dto/assignKpiEmployees.dto';
 
 @Injectable()
 export default class PlansService {
@@ -30,6 +32,9 @@ export default class PlansService {
 
     @InjectRepository(PlanKpiTemplateDept)
     private planKpiTemplateDeptsRepository: Repository<PlanKpiTemplateDept>,
+
+    @InjectRepository(PlanKpiTemplateUser)
+    private planKpiTemplateUsersRepository: Repository<PlanKpiTemplateUser>,
 
     @InjectRepository(PlanKpiTemplate)
     private planKpiTemplatesRepository: Repository<PlanKpiTemplate>,
@@ -456,14 +461,83 @@ export default class PlansService {
         };
       });
 
-      await queryRunner.manager.delete(PlanKpiTemplateDept, {
-        plan_kpi_template: {
-          plan: { plan_id },
-          kpi_template: { kpi_template_id },
+      const deptIds = rows.map((row) => row.dept.dept_id);
+
+      const toDeleteRows = await queryRunner.manager.find(PlanKpiTemplateDept, {
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          dept: { dept_id: Not(In(deptIds)) },
         },
+        relations: [
+          'plan_kpi_template',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.plan',
+          'dept',
+        ],
       });
 
+      await queryRunner.manager.remove(PlanKpiTemplateDept, toDeleteRows);
+
       const result = await queryRunner.manager.save(PlanKpiTemplateDept, rows);
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async assignKpiEmployees(
+    plan_id: number,
+    kpi_template_id: number,
+    dept_id: number,
+    users: UsersDto[],
+  ) {
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const rows = users.map((item) => {
+        return {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          user: { user_id: item.user_id },
+        };
+      });
+
+      const userIds = rows.map((row) => row.user.user_id);
+
+      let toDeleteRows = await queryRunner.manager.find(PlanKpiTemplateUser, {
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          user: { user_id: Not(In(userIds)) },
+        },
+        relations: [
+          'plan_kpi_template',
+          'plan_kpi_template.plan',
+          'plan_kpi_template.kpi_template',
+          'user',
+          'user.dept',
+        ],
+      });
+
+      toDeleteRows = toDeleteRows.filter(
+        (row) => row.user.dept.dept_id === dept_id,
+      );
+
+      await queryRunner.manager.remove(PlanKpiTemplateUser, toDeleteRows);
+
+      const result = await queryRunner.manager.save(PlanKpiTemplateUser, rows);
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
@@ -484,6 +558,37 @@ export default class PlansService {
       },
       relations: ['dept'],
     });
+  }
+
+  async getTargetKpiOfEmployees(
+    plan_id: number,
+    kpi_template_id: number,
+    dept_id: number,
+  ) {
+    const rows = await this.planKpiTemplateUsersRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: { kpi_template_id },
+        },
+        user: { dept: { dept_id } },
+      },
+      relations: ['user'],
+    });
+
+    const result = rows.map((row) => {
+      return {
+        ...row,
+        user: {
+          user_id: row.user.user_id,
+          user_name: row.user.user_name,
+          email: row.user.email,
+          avatar: row.user.avatar,
+        },
+      };
+    });
+
+    return result;
   }
 
   async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
