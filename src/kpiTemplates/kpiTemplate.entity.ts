@@ -1,5 +1,5 @@
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
-import PlanKpiTemplates from 'src/plans/planKpiTemplates.entity';
+import PlanKpiTemplate from 'src/plans/planKpiTemplate.entity';
 import {
   Column,
   CreateDateColumn,
@@ -13,7 +13,7 @@ import Direction from './direction.enum';
 import Frequency from './frequency.enum';
 import Aggregation from './aggregation.enum';
 import { Exclude } from 'class-transformer';
-import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
+import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {
@@ -75,10 +75,10 @@ class KpiTemplate {
   public kpi_category: KpiCategory;
 
   @OneToMany(
-    () => PlanKpiTemplates,
-    (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.kpi_template,
+    () => PlanKpiTemplate,
+    (plan_kpi_templates: PlanKpiTemplate) => plan_kpi_templates.kpi_template,
   )
-  public plan_kpi_templates: PlanKpiTemplates[];
+  public plan_kpi_templates: PlanKpiTemplate[];
 
   @CreateDateColumn()
   @Exclude()

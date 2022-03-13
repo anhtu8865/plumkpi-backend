@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
+import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
 import User from 'src/users/user.entity';
 import {
   Column,
@@ -31,11 +31,11 @@ class Dept {
   public manager: User;
 
   @OneToMany(
-    () => PlanKpiTemplateDepts,
-    (plan_kpi_template_depts: PlanKpiTemplateDepts) =>
+    () => PlanKpiTemplateDept,
+    (plan_kpi_template_depts: PlanKpiTemplateDept) =>
       plan_kpi_template_depts.dept,
   )
-  plan_kpi_template_depts: PlanKpiTemplateDepts[];
+  plan_kpi_template_depts: PlanKpiTemplateDept[];
 
   @CreateDateColumn()
   @Exclude()

@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import Plan from './plan.entity';
 @Entity({ name: 'plan_kpi_categories' })
-class PlanKpiCategories {
+class PlanKpiCategory {
   @Column()
   weight: number;
 
@@ -37,4 +37,4 @@ class PlanKpiCategories {
   updatedAt: Date;
 }
 
-export default PlanKpiCategories;
+export default PlanKpiCategory;

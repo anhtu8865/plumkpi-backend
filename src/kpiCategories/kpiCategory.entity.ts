@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
+import PlanKpiCategory from 'src/plans/planKpiCategory.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'kpi_categories' })
@@ -31,10 +31,10 @@ class KpiCategory {
   public kpi_templates: KpiTemplate[];
 
   @OneToMany(
-    () => PlanKpiCategories,
-    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.kpi_category,
+    () => PlanKpiCategory,
+    (plan_kpi_category: PlanKpiCategory) => plan_kpi_category.kpi_category,
   )
-  public plan_kpi_categories: PlanKpiCategories[];
+  public plan_kpi_categories: PlanKpiCategory[];
 
   @CreateDateColumn()
   @Exclude()

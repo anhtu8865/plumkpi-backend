@@ -27,6 +27,8 @@ import { KpisOfOneCategoryParams } from './params/kpisOfOneCategoryParams';
 import { RegisterTargetDto } from './dto/registerTarget.dto';
 import { AssignKpiDeptsDto } from './dto/assignKpiDepts.dto';
 import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
+import { RegisterQuarterlyTargetDto } from './dto/registerQuarterlyTarget.dto';
+import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -155,6 +157,44 @@ export default class PlansController {
       name,
       kpi_category_id,
       dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put('register-quarterly-target/manager')
+  async registerQuarterlyTarget(
+    @Body()
+    { plan_id, kpi_template_id, target, quarter }: RegisterQuarterlyTargetDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.registerQuarterlyTarget(
+      plan_id,
+      kpi_template_id,
+      target,
+      quarter,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Put('approve-quarterly-target/director')
+  async approveQuarterlyTarget(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      dept_id,
+      quarter,
+      approve,
+    }: ApproveQuarterlyTargetDto,
+  ) {
+    return this.plansService.approveQuarterlyTarget(
+      plan_id,
+      kpi_template_id,
+      dept_id,
+      quarter,
+      approve,
     );
   }
 }

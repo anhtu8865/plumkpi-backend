@@ -1,11 +1,11 @@
-import PlanKpiCategories from 'src/plans/planKpiCategories.entity';
+import PlanKpiCategory from 'src/plans/planKpiCategory.entity';
 import Plan from './plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, In, Like, Not, Repository } from 'typeorm';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import KpiCategoriesService from 'src/kpiCategories/kpiCategories.service';
-import PlanKpiTemplates from './planKpiTemplates.entity';
+import PlanKpiTemplate from './planKpiTemplate.entity';
 import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
@@ -14,7 +14,8 @@ import { KpiCategoriesDto } from './dto/registerKpiCategories.dto';
 import { Injectable } from '@nestjs/common';
 import { KpisDto } from './dto/registerKpis.dto';
 import { DeptsDto } from './dto/assignKpiDepts.dto';
-import { PlanKpiTemplateDepts } from './planKpiTemplateDepts.entity';
+import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
+import ApproveRegistration from './approveRegistration.enum';
 
 @Injectable()
 export default class PlansService {
@@ -22,16 +23,16 @@ export default class PlansService {
     @InjectRepository(Plan)
     private plansRepository: Repository<Plan>,
 
-    @InjectRepository(PlanKpiCategories)
-    private plansKpiCategories: Repository<PlanKpiCategories>,
+    @InjectRepository(PlanKpiCategory)
+    private plansKpiCategoriesRepository: Repository<PlanKpiCategory>,
 
     private readonly kpiCategoriesService: KpiCategoriesService,
 
-    @InjectRepository(PlanKpiTemplateDepts)
-    private planKpiTemplateDepts: Repository<PlanKpiTemplateDepts>,
+    @InjectRepository(PlanKpiTemplateDept)
+    private planKpiTemplateDeptsRepository: Repository<PlanKpiTemplateDept>,
 
-    @InjectRepository(PlanKpiTemplates)
-    private planKpiTemplates: Repository<PlanKpiTemplates>,
+    @InjectRepository(PlanKpiTemplate)
+    private planKpiTemplatesRepository: Repository<PlanKpiTemplate>,
     private readonly kpiTemplatesService: KpiTemplatesService,
 
     private connection: Connection,
@@ -70,7 +71,7 @@ export default class PlansService {
 
   async getPlanKpiCategories(plan_id: number) {
     try {
-      const result = await this.plansKpiCategories.find({
+      const result = await this.plansKpiCategoriesRepository.find({
         where: { plan: { plan_id } },
         relations: ['kpi_category'],
       });
@@ -149,7 +150,7 @@ export default class PlansService {
       }
 
       const kpiCategoriesInDB = await queryRunner.manager.find(
-        PlanKpiCategories,
+        PlanKpiCategory,
         {
           where: { plan: { plan_id } },
           relations: ['kpi_category'],
@@ -162,7 +163,7 @@ export default class PlansService {
       const deleteKpiCategoriesId = kpiCategoriesIdInDB.filter(
         (item) => !kpiCategoriesId.includes(item),
       );
-      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplates, {
+      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplate, {
         where: {
           plan: { plan_id },
           kpi_template: {
@@ -177,21 +178,21 @@ export default class PlansService {
         );
       }
 
-      await queryRunner.manager.delete(PlanKpiCategories, {
+      await queryRunner.manager.delete(PlanKpiCategory, {
         plan: { plan_id },
         kpi_category: { kpi_category_id: In(deleteKpiCategoriesId) },
       });
 
       for (const kpiCategory of kpiCategories) {
         const { kpi_category_id, weight } = kpiCategory;
-        await queryRunner.manager.save(PlanKpiCategories, {
+        await queryRunner.manager.save(PlanKpiCategory, {
           kpi_category: { kpi_category_id },
           plan: { plan_id },
           weight,
         });
       }
 
-      const plan = await queryRunner.manager.find(PlanKpiCategories, {
+      const plan = await queryRunner.manager.find(PlanKpiCategory, {
         where: { plan: { plan_id } },
         relations: ['kpi_category'],
       });
@@ -223,7 +224,7 @@ export default class PlansService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplates, {
+      const kpisInDB = await queryRunner.manager.find(PlanKpiTemplate, {
         where: { kpi_template: { kpi_category: { kpi_category_id } } },
         relations: ['kpi_template'],
       });
@@ -236,14 +237,14 @@ export default class PlansService {
         kpisId.push(kpi.kpi_template_id);
       }
       const deleteKpisId = kpisIdInDB.filter((item) => !kpisId.includes(item));
-      await queryRunner.manager.delete(PlanKpiTemplates, {
+      await queryRunner.manager.delete(PlanKpiTemplate, {
         kpi_template: { kpi_template_id: In(deleteKpisId) },
       });
 
       const result = [];
       for (const kpi of kpis) {
         const { kpi_template_id, weight } = kpi;
-        const temp = await queryRunner.manager.save(PlanKpiTemplates, {
+        const temp = await queryRunner.manager.save(PlanKpiTemplate, {
           plan: { plan_id },
           kpi_template: { kpi_template_id },
           weight,
@@ -272,7 +273,7 @@ export default class PlansService {
     name: string,
     kpi_category_id: number,
   ) {
-    const [items, count] = await this.planKpiTemplates.findAndCount({
+    const [items, count] = await this.planKpiTemplatesRepository.findAndCount({
       where: {
         plan: { plan_id },
         kpi_template: {
@@ -301,20 +302,138 @@ export default class PlansService {
     kpi_template_id: number,
     target: number,
   ) {
-    const record = await this.planKpiTemplates.findOne({
+    const record = await this.planKpiTemplatesRepository.findOne({
       where: { plan: { plan_id }, kpi_template: { kpi_template_id } },
       relations: ['plan', 'kpi_template'],
     });
     if (record) {
-      const result = await this.planKpiTemplates.save({
+      console.log(
+        '🚀 ~ file: plans.service.ts ~ line 310 ~ PlansService ~ record',
+        record,
+      );
+      const result = await this.planKpiTemplatesRepository.save({
         ...record,
         target,
       });
+      console.log(
+        '🚀 ~ file: plans.service.ts ~ line 315 ~ PlansService ~ record',
+        record,
+      );
       return result;
     }
     throw new CustomNotFoundException(
       `KPI id ${kpi_template_id} không tồn tại trong kế hoạch id ${plan_id}`,
     );
+  }
+
+  async registerQuarterlyTarget(
+    plan_id: number,
+    kpi_template_id: number,
+    target: number,
+    quarter: number,
+    dept_id: number,
+  ) {
+    const record = await this.planKpiTemplateDeptsRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      let quarterly_target;
+      switch (quarter) {
+        case 1:
+          if (
+            record.first_quarterly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được duyệt`,
+            );
+          }
+          quarterly_target = {
+            first_quarterly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 2:
+          if (
+            record.second_quarterly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được duyệt`,
+            );
+          }
+          quarterly_target = {
+            second_quarterly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 3:
+          if (
+            record.third_quarterly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được duyệt`,
+            );
+          }
+          quarterly_target = {
+            third_quarterly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 4:
+          if (
+            record.fourth_quarterly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được duyệt`,
+            );
+          }
+          quarterly_target = {
+            fourth_quarterly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        default:
+          break;
+      }
+
+      await this.planKpiTemplateDeptsRepository.save({
+        ...record,
+        ...quarterly_target,
+      });
+      return quarterly_target;
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
   }
 
   async assignKpiDepts(
@@ -337,14 +456,14 @@ export default class PlansService {
         };
       });
 
-      await queryRunner.manager.delete(PlanKpiTemplateDepts, {
+      await queryRunner.manager.delete(PlanKpiTemplateDept, {
         plan_kpi_template: {
           plan: { plan_id },
           kpi_template: { kpi_template_id },
         },
       });
 
-      const result = await queryRunner.manager.save(PlanKpiTemplateDepts, rows);
+      const result = await queryRunner.manager.save(PlanKpiTemplateDept, rows);
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
@@ -356,7 +475,7 @@ export default class PlansService {
   }
 
   async getTargetKpiOfdepts(plan_id: number, kpi_template_id: number) {
-    return this.planKpiTemplateDepts.find({
+    return this.planKpiTemplateDeptsRepository.find({
       where: {
         plan_kpi_template: {
           plan: { plan_id },
@@ -368,7 +487,7 @@ export default class PlansService {
   }
 
   async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
-    const rows = await this.planKpiTemplateDepts.find({
+    const rows = await this.planKpiTemplateDeptsRepository.find({
       where: { dept: { dept_id }, plan_kpi_template: { plan: { plan_id } } },
       relations: ['plan_kpi_template', 'plan_kpi_template.kpi_template'],
     });
@@ -401,29 +520,30 @@ export default class PlansService {
     kpi_category_id: number,
     dept_id: number,
   ) {
-    const [items, count] = await this.planKpiTemplateDepts.findAndCount({
-      where: {
-        plan_kpi_template: {
-          plan: { plan_id },
-          kpi_template: {
-            kpi_category: { kpi_category_id },
-            kpi_template_name: Like(`%${name ? name : ''}%`),
+    const [items, count] =
+      await this.planKpiTemplateDeptsRepository.findAndCount({
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: {
+              kpi_category: { kpi_category_id },
+              kpi_template_name: Like(`%${name ? name : ''}%`),
+            },
           },
+          dept: { dept_id },
         },
-        dept: { dept_id },
-      },
-      relations: [
-        'plan_kpi_template',
-        'dept',
-        'plan_kpi_template.kpi_template',
-        'plan_kpi_template.kpi_template.kpi_category',
-      ],
-      order: {
-        target: 'ASC',
-      },
-      skip: offset,
-      take: limit,
-    });
+        relations: [
+          'plan_kpi_template',
+          'dept',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.kpi_template.kpi_category',
+        ],
+        order: {
+          target: 'ASC',
+        },
+        skip: offset,
+        take: limit,
+      });
     for (const item of items) {
       delete item.plan_kpi_template.target;
       delete item.plan_kpi_template.weight;
@@ -434,5 +554,71 @@ export default class PlansService {
       items,
       count,
     };
+  }
+
+  async approveQuarterlyTarget(
+    plan_id: number,
+    kpi_template_id: number,
+    dept_id: number,
+    quarter: number,
+    approve: ApproveRegistration,
+  ) {
+    const record = await this.planKpiTemplateDeptsRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      switch (quarter) {
+        case 1:
+          if (!record.first_quarterly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu quý một`,
+            );
+          }
+          record.first_quarterly_target.approve = approve;
+          break;
+        case 2:
+          if (!record.second_quarterly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu quý hai`,
+            );
+          }
+          record.second_quarterly_target.approve = approve;
+          break;
+        case 3:
+          if (!record.third_quarterly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu quý ba`,
+            );
+          }
+          record.third_quarterly_target.approve = approve;
+          break;
+        case 4:
+          if (!record.fourth_quarterly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu quý bốn`,
+            );
+          }
+          record.fourth_quarterly_target.approve = approve;
+          break;
+        default:
+          break;
+      }
+
+      await this.planKpiTemplateDeptsRepository.save(record);
+      return { approve };
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
   }
 }

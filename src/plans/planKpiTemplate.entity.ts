@@ -1,11 +1,11 @@
-import { PlanKpiTemplateDepts } from 'src/plans/planKpiTemplateDepts.entity';
+import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import ApproveRegistration from './approveRegistration.enum';
 import Plan from './plan.entity';
 
 @Entity({ name: 'plan_kpi_templates' })
-class PlanKpiTemplates {
+class PlanKpiTemplate {
   @Column()
   weight: number;
 
@@ -35,4 +35,4 @@ class PlanKpiTemplates {
   public kpi_template: KpiTemplate;
 }
 
-export default PlanKpiTemplates;
+export default PlanKpiTemplate;

@@ -12,9 +12,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import PlanKpiCategories from './planKpiCategories.entity';
-import { PlanKpiTemplateDepts } from './planKpiTemplateDepts.entity';
-import PlanKpiTemplates from './planKpiTemplates.entity';
+import PlanKpiCategory from './planKpiCategory.entity';
+import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
+import PlanKpiTemplate from './planKpiTemplate.entity';
 
 @Entity({ name: 'plans' })
 class Plan {
@@ -31,16 +31,16 @@ class Plan {
   public year: number;
 
   @OneToMany(
-    () => PlanKpiCategories,
-    (plan_kpi_category: PlanKpiCategories) => plan_kpi_category.plan,
+    () => PlanKpiCategory,
+    (plan_kpi_category: PlanKpiCategory) => plan_kpi_category.plan,
   )
-  public plan_kpi_categories: PlanKpiCategories[];
+  public plan_kpi_categories: PlanKpiCategory[];
 
   @OneToMany(
-    () => PlanKpiTemplates,
-    (plan_kpi_templates: PlanKpiTemplates) => plan_kpi_templates.plan,
+    () => PlanKpiTemplate,
+    (plan_kpi_templates: PlanKpiTemplate) => plan_kpi_templates.plan,
   )
-  public plan_kpi_templates: PlanKpiTemplates[];
+  public plan_kpi_templates: PlanKpiTemplate[];
 
   @CreateDateColumn()
   @Exclude()
