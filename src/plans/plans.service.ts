@@ -357,7 +357,7 @@ export default class PlansService {
             ApproveRegistration.Accepted
           ) {
             throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được duyệt`,
+              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
             );
           }
           quarterly_target = {
@@ -375,7 +375,7 @@ export default class PlansService {
             ApproveRegistration.Accepted
           ) {
             throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được duyệt`,
+              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
             );
           }
           quarterly_target = {
@@ -393,7 +393,7 @@ export default class PlansService {
             ApproveRegistration.Accepted
           ) {
             throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được duyệt`,
+              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
             );
           }
           quarterly_target = {
@@ -411,7 +411,7 @@ export default class PlansService {
             ApproveRegistration.Accepted
           ) {
             throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được duyệt`,
+              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
             );
           }
           quarterly_target = {
@@ -599,7 +599,7 @@ export default class PlansService {
         case 3:
           if (!record.third_quarterly_target) {
             throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu quý ba`,
+              `Không tìm thấy mục tiêu quý ba1`,
             );
           }
           record.third_quarterly_target.approve = approve;

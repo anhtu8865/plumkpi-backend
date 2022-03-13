@@ -1,6 +1,6 @@
 import ApproveRegistration from '../approveRegistration.enum';
 
-export interface QuarterlyTarget {
+export interface RegisterTarget {
   target: number;
   approve: ApproveRegistration;
 }

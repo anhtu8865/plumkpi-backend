@@ -197,4 +197,21 @@ export default class PlansController {
       approve,
     );
   }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put('register-monthly-target/manager')
+  async registerMonthlyTarget(
+    @Body()
+    { plan_id, kpi_template_id, target, quarter }: RegisterQuarterlyTargetDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.registerQuarterlyTarget(
+      plan_id,
+      kpi_template_id,
+      target,
+      quarter,
+      dept_id,
+    );
+  }
 }

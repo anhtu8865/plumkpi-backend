@@ -1,7 +1,7 @@
 import Dept from 'src/departments/dept.entity';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
-import { QuarterlyTarget } from './interfaces/quarterly-target.interface';
+import { RegisterTarget } from './interfaces/register-target.interface';
 import Plan from './plan.entity';
 import PlanKpiTemplate from './planKpiTemplate.entity';
 
@@ -21,14 +21,14 @@ export class PlanKpiTemplateDept {
   dept: Dept;
 
   @Column({ type: 'jsonb', nullable: true })
-  first_quarterly_target: QuarterlyTarget;
+  first_quarterly_target: RegisterTarget;
 
   @Column({ type: 'jsonb', nullable: true })
-  second_quarterly_target: QuarterlyTarget;
+  second_quarterly_target: RegisterTarget;
 
   @Column({ type: 'jsonb', nullable: true })
-  third_quarterly_target: QuarterlyTarget;
+  third_quarterly_target: RegisterTarget;
 
   @Column({ type: 'jsonb', nullable: true })
-  fourth_quarterly_target: QuarterlyTarget;
+  fourth_quarterly_target: RegisterTarget;
 }
