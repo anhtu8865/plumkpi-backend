@@ -43,6 +43,31 @@ export default class KpiTemplatesService {
     };
   }
 
+  async getPersonalKpiTemplates(offset: number, limit: number, name: string) {
+    const whereCondition = {
+      kpi_template_name: name ? Like(`%${name}%`) : undefined,
+      kpi_category: { kpi_category_name: 'Cá nhân' },
+    };
+    Object.keys(whereCondition).forEach(
+      (key) => whereCondition[key] === undefined && delete whereCondition[key],
+    );
+
+    const [items, count] = await this.kpiTemplatesRepository.findAndCount({
+      where: [whereCondition],
+      relations: ['kpi_category'],
+      order: {
+        kpi_template_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
+  }
+
   async getKpiTemplateById(id: number) {
     const kpiTemplate = await this.kpiTemplatesRepository.findOne(id);
     if (kpiTemplate) {

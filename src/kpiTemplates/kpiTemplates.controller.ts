@@ -33,6 +33,16 @@ export default class KpiTemplatesController {
     return this.kpiTemplatesService.getKpiTemplates(params);
   }
 
+  @UseGuards(RoleGuard([Role.Manager, Role.Employee]))
+  @Get('personal-kpis')
+  getPersonalKpiTemplates(@Query() { offset, limit, name }: PaginationParams) {
+    return this.kpiTemplatesService.getPersonalKpiTemplates(
+      offset,
+      limit,
+      name,
+    );
+  }
+
   // @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   // @Get(':id')
   // getKpiTemplateById(@Param() { id }: FindOneParams) {

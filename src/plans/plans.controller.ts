@@ -31,6 +31,7 @@ import { RegisterQuarterlyTargetDto } from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
 import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
 import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
+import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -280,6 +281,20 @@ export default class PlansController {
     return this.plansService.getTargetKpiOfEmployees(
       plan_id,
       kpi_template_id,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Post('register-personal-kpis/manager')
+  async registerPersonalKpis(
+    @Body() { plan_id, personal_kpis }: RegisterPersonalKpisDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.registerPersonalKpis(
+      plan_id,
+      personal_kpis,
       dept_id,
     );
   }

@@ -19,6 +19,8 @@ import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import ApproveRegistration from './approveRegistration.enum';
 import { UsersDto } from './dto/assignKpiEmployees.dto';
 import { TargetUsersDto } from './dto/registerMonthlyTarget.dto';
+import { PersonalKpiDto } from './dto/registerPersonalKpis.dto';
+import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
 
 @Injectable()
 export default class PlansService {
@@ -158,7 +160,10 @@ export default class PlansService {
       const kpiCategoriesInDB = await queryRunner.manager.find(
         PlanKpiCategory,
         {
-          where: { plan: { plan_id } },
+          where: {
+            plan: { plan_id },
+            kpi_category: { kpi_category_name: Not('Cá nhân') },
+          },
           relations: ['kpi_category'],
         },
       );
@@ -1116,5 +1121,80 @@ export default class PlansService {
       return { approve };
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async registerPersonalKpis(
+    plan_id: number,
+    personal_kpis: PersonalKpiDto[],
+    dept_id: number,
+  ) {
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const personalKpisInDB = await queryRunner.manager.find(
+        PlanKpiTemplateDept,
+        {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_category: { kpi_category_name: 'Cá nhân' } },
+            },
+            dept: { dept_id },
+          },
+          relations: [
+            'plan_kpi_template',
+            'dept',
+            'plan_kpi_template.kpi_template',
+            'plan_kpi_template.plan',
+          ],
+        },
+      );
+
+      const personalKpis = personal_kpis.map((item) => item.kpi_template_id);
+      const toDeleteRows = personalKpisInDB.filter(
+        (row) =>
+          !personalKpis.includes(
+            row.plan_kpi_template.kpi_template.kpi_template_id,
+          ),
+      );
+      const toCreateRows = personalKpis.map((kpi_template_id) => {
+        return {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          dept: { dept_id },
+        };
+      });
+
+      await queryRunner.manager.remove(PlanKpiTemplateDept, toDeleteRows);
+
+      const toCreatePlanKpiTemplates = toCreateRows.map((item) => {
+        return {
+          ...item.plan_kpi_template,
+          weight: 0,
+        };
+      });
+      await queryRunner.manager.save(PlanKpiTemplate, toCreatePlanKpiTemplates);
+      const personal_category = await queryRunner.manager.findOne(KpiCategory, {
+        kpi_category_name: 'Cá nhân',
+      });
+      await queryRunner.manager.save(PlanKpiCategory, {
+        plan: { plan_id },
+        kpi_category: personal_category,
+        weight: 0,
+      });
+
+      await queryRunner.manager.save(PlanKpiTemplateDept, toCreateRows);
+
+      await queryRunner.commitTransaction();
+      return toCreateRows;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
