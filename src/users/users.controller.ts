@@ -30,7 +30,7 @@ import { PaginationParams } from 'src/utils/types/paginationParams';
 export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getAllUsers(
     @Query() { offset, limit, user_name, email, role, phone, dept }: UserParams,
