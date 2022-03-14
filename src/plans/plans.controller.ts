@@ -30,6 +30,7 @@ import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
 import { RegisterQuarterlyTargetDto } from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
 import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
+import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -143,6 +144,19 @@ export default class PlansController {
     return this.plansService.getPlanKpiCategoriesByManager(Number(id), dept_id);
   }
 
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Get(':id/kpi-categories/employee')
+  getPlanKpiCategoriesByEmployee(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.getPlanKpiCategoriesByEmployee(
+      Number(id),
+      user_id,
+    );
+  }
+
   @UseGuards(RoleGuard([Role.Manager]))
   @Get(':id/kpis/manager')
   async getKpisOfOneCategoryByManager(
@@ -158,6 +172,24 @@ export default class PlansController {
       name,
       kpi_category_id,
       dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Get(':id/kpis/employee')
+  async getKpisOfOneCategoryByEmployee(
+    @Param() { id }: FindOneParams,
+    @Query() { offset, limit, name, kpi_category_id }: KpisOfOneCategoryParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.getKpisOfOneCategoryByEmployee(
+      Number(id),
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      user_id,
     );
   }
 
@@ -203,15 +235,22 @@ export default class PlansController {
   @Put('register-monthly-target/manager')
   async registerMonthlyTarget(
     @Body()
-    { plan_id, kpi_template_id, target, quarter }: RegisterQuarterlyTargetDto,
-    @Req() request: RequestWithUser,
-  ) {
-    const dept_id = request.user.manage.dept_id;
-    return this.plansService.registerQuarterlyTarget(
+    {
       plan_id,
       kpi_template_id,
       target,
-      quarter,
+      month,
+      users,
+    }: RegisterMonthlyTargetDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.registerMonthlyTarget(
+      plan_id,
+      kpi_template_id,
+      target,
+      month,
+      users,
       dept_id,
     );
   }

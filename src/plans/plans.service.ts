@@ -18,6 +18,7 @@ import { DeptsDto } from './dto/assignKpiDepts.dto';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import ApproveRegistration from './approveRegistration.enum';
 import { UsersDto } from './dto/assignKpiEmployees.dto';
+import { TargetUsersDto } from './dto/registerMonthlyTarget.dto';
 
 @Injectable()
 export default class PlansService {
@@ -441,6 +442,324 @@ export default class PlansService {
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
 
+  async registerMonthlyTarget(
+    plan_id: number,
+    kpi_template_id: number,
+    target: number,
+    month: number,
+    users: TargetUsersDto[],
+    dept_id: number,
+  ) {
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const record = await queryRunner.manager.find(PlanKpiTemplateUser, {
+        where: {
+          plan_kpi_template: {
+            kpi_template: { kpi_template_id },
+            plan: { plan_id },
+          },
+          user: { dept: { dept_id } },
+        },
+        relations: [
+          'plan_kpi_template',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.plan',
+          'user',
+          'user.dept',
+        ],
+      });
+      const userIds = users.map((user) => user.user_id);
+
+      let toDeleteTargetRows = record.filter(
+        (row) => !userIds.includes(row.user.user_id),
+      );
+
+      let toUpdateTargetRows;
+      switch (month) {
+        case 1:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              first_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              first_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 2:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              second_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              second_monthly_target: null,
+            };
+          });
+
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 3:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              third_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              third_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 4:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              fourth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              fourth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 5:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              fifth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              fifth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 6:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              sixth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              sixth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 7:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              seventh_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              seventh_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 8:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              eighth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              eighth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 9:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              ninth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              ninth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 10:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              tenth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              tenth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 11:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              eleventh_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              eleventh_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        case 12:
+          toUpdateTargetRows = users.map((user) => {
+            return {
+              plan_kpi_template: {
+                kpi_template: { kpi_template_id },
+                plan: { plan_id },
+              },
+              user: { user_id: user.user_id },
+              twelfth_monthly_target: user.target ? user.target : target,
+            };
+          });
+          toDeleteTargetRows = toDeleteTargetRows.map((row) => {
+            return {
+              ...row,
+              twelfth_monthly_target: null,
+            };
+          });
+          await queryRunner.manager.save(PlanKpiTemplateUser, [
+            ...toUpdateTargetRows,
+            ...toDeleteTargetRows,
+          ]);
+          break;
+        default:
+          break;
+      }
+      await queryRunner.commitTransaction();
+      for (const row of toUpdateTargetRows) {
+        Object.keys(row).forEach((k) => row[k] === null && delete row[k]);
+      }
+
+      return toUpdateTargetRows;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async assignKpiDepts(
     plan_id: number,
     kpi_template_id: number,
@@ -520,7 +839,7 @@ export default class PlansService {
             plan: { plan_id },
             kpi_template: { kpi_template_id },
           },
-          user: { user_id: Not(In(userIds)) },
+          user: { dept: { dept_id } },
         },
         relations: [
           'plan_kpi_template',
@@ -532,13 +851,16 @@ export default class PlansService {
       });
 
       toDeleteRows = toDeleteRows.filter(
-        (row) => row.user.dept.dept_id === dept_id,
+        (row) => !userIds.includes(row.user.user_id),
       );
 
       await queryRunner.manager.remove(PlanKpiTemplateUser, toDeleteRows);
 
       const result = await queryRunner.manager.save(PlanKpiTemplateUser, rows);
       await queryRunner.commitTransaction();
+      for (const row of result) {
+        Object.keys(row).forEach((key) => row[key] === null && delete row[key]);
+      }
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -617,6 +939,32 @@ export default class PlansService {
     return resArr;
   }
 
+  async getPlanKpiCategoriesByEmployee(plan_id: number, user_id: number) {
+    const rows = await this.planKpiTemplateUsersRepository.find({
+      where: { user: { user_id }, plan_kpi_template: { plan: { plan_id } } },
+      relations: ['plan_kpi_template', 'plan_kpi_template.kpi_template'],
+    });
+
+    const kpi_categories = rows.map((row) => {
+      return {
+        ...row.plan_kpi_template.kpi_template.kpi_category,
+      };
+    });
+
+    const resArr = [];
+    kpi_categories.filter(function (item) {
+      const i = resArr.findIndex(
+        (x) => x.kpi_category_id == item.kpi_category_id,
+      );
+      if (i <= -1) {
+        resArr.push(item);
+      }
+      return null;
+    });
+
+    return resArr;
+  }
+
   async getKpisOfOneCategoryByManager(
     plan_id: number,
     offset: number,
@@ -654,6 +1002,49 @@ export default class PlansService {
       delete item.plan_kpi_template.weight;
       delete item.plan_kpi_template.kpi_template.kpi_category;
       delete item.dept;
+    }
+    return {
+      items,
+      count,
+    };
+  }
+
+  async getKpisOfOneCategoryByEmployee(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    kpi_category_id: number,
+    user_id: number,
+  ) {
+    const [items, count] =
+      await this.planKpiTemplateUsersRepository.findAndCount({
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: {
+              kpi_category: { kpi_category_id },
+              kpi_template_name: Like(`%${name ? name : ''}%`),
+            },
+          },
+          user: { user_id },
+        },
+        relations: [
+          'plan_kpi_template',
+          'user',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.kpi_template.kpi_category',
+        ],
+        order: { createdAt: 'ASC' },
+        skip: offset,
+        take: limit,
+      });
+
+    for (const item of items) {
+      delete item.plan_kpi_template.target;
+      delete item.plan_kpi_template.weight;
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      delete item.user;
     }
     return {
       items,
