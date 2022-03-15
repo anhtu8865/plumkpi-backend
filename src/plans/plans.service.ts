@@ -284,6 +284,16 @@ export default class PlansService {
     name: string,
     kpi_category_id: number,
   ) {
+    const { kpi_category_name } =
+      await this.kpiCategoriesService.getKpiCategoryById(kpi_category_id);
+    if (kpi_category_name === 'Cá nhân') {
+      return this.getKpisOfPersonalKpisOfDeptsByDirector(
+        plan_id,
+        offset,
+        limit,
+        name,
+      );
+    }
     const [items, count] = await this.planKpiTemplatesRepository.findAndCount({
       where: {
         plan: { plan_id },
@@ -318,18 +328,11 @@ export default class PlansService {
       relations: ['plan', 'kpi_template'],
     });
     if (record) {
-      console.log(
-        '🚀 ~ file: plans.service.ts ~ line 310 ~ PlansService ~ record',
-        record,
-      );
       const result = await this.planKpiTemplatesRepository.save({
         ...record,
         target,
       });
-      console.log(
-        '🚀 ~ file: plans.service.ts ~ line 315 ~ PlansService ~ record',
-        record,
-      );
+
       return result;
     }
     throw new CustomNotFoundException(
@@ -447,6 +450,261 @@ export default class PlansService {
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
 
+  async registerMonthlyTargetByEmployee(
+    plan_id: number,
+    kpi_template_id: number,
+    target: number,
+    month: number,
+    user_id: number,
+  ) {
+    const record = await this.planKpiTemplateUsersRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      let monthly_target;
+      switch (month) {
+        case 1:
+          if (
+            record.first_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            first_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 2:
+          if (
+            record.second_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            second_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 3:
+          if (
+            record.third_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            third_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 4:
+          if (
+            record.fourth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            fourth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 5:
+          if (
+            record.fifth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            fifth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 6:
+          if (
+            record.sixth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            sixth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 7:
+          if (
+            record.seventh_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            seventh_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+
+        case 8:
+          if (
+            record.eighth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            eighth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 9:
+          if (
+            record.ninth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            ninth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 10:
+          if (
+            record.tenth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            tenth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 11:
+          if (
+            record.eleventh_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            eleventh_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        case 12:
+          if (
+            record.twelfth_monthly_target?.approve ===
+            ApproveRegistration.Accepted
+          ) {
+            throw new CustomBadRequestException(
+              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+            );
+          }
+          monthly_target = {
+            twelfth_monthly_target: target
+              ? {
+                  target,
+                  approve: ApproveRegistration.Pending,
+                }
+              : null,
+          };
+          break;
+        default:
+          break;
+      }
+
+      await this.planKpiTemplateUsersRepository.save({
+        ...record,
+        ...monthly_target,
+      });
+      return monthly_target;
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
   async registerMonthlyTarget(
     plan_id: number,
     kpi_template_id: number,
@@ -491,7 +749,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              first_monthly_target: user.target ? user.target : target,
+              first_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -513,7 +773,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              second_monthly_target: user.target ? user.target : target,
+              second_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -536,7 +798,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              third_monthly_target: user.target ? user.target : target,
+              third_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -558,7 +822,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              fourth_monthly_target: user.target ? user.target : target,
+              fourth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -580,7 +846,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              fifth_monthly_target: user.target ? user.target : target,
+              fifth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -602,7 +870,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              sixth_monthly_target: user.target ? user.target : target,
+              sixth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -624,7 +894,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              seventh_monthly_target: user.target ? user.target : target,
+              seventh_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -646,7 +918,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              eighth_monthly_target: user.target ? user.target : target,
+              eighth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -668,7 +942,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              ninth_monthly_target: user.target ? user.target : target,
+              ninth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -690,7 +966,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              tenth_monthly_target: user.target ? user.target : target,
+              tenth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -712,7 +990,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              eleventh_monthly_target: user.target ? user.target : target,
+              eleventh_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -734,7 +1014,9 @@ export default class PlansService {
                 plan: { plan_id },
               },
               user: { user_id: user.user_id },
-              twelfth_monthly_target: user.target ? user.target : target,
+              twelfth_monthly_target: user.target
+                ? { target: user.target, approve: ApproveRegistration.Accepted }
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -901,6 +1183,7 @@ export default class PlansService {
         user: { dept: { dept_id } },
       },
       relations: ['user'],
+      order: { user: 'ASC' },
     });
 
     const result = rows.map((row) => {
@@ -1008,6 +1291,119 @@ export default class PlansService {
       delete item.plan_kpi_template.kpi_template.kpi_category;
       delete item.dept;
     }
+    return {
+      items,
+      count,
+    };
+  }
+
+  async getKpisOfPersonalKpisOfEmployeesByManager(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    dept_id: number,
+  ) {
+    const result = await this.planKpiTemplateUsersRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: {
+            kpi_category: { kpi_category_name: 'Cá nhân' },
+            kpi_template_name: Like(`%${name ? name : ''}%`),
+          },
+        },
+        user: { dept: { dept_id } },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.kpi_template.kpi_category',
+        'plan_kpi_template.plan',
+        'user.dept',
+      ],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+    const result2 = result.map((item) => {
+      return {
+        ...item.plan_kpi_template.kpi_template,
+      };
+    });
+
+    let items = [];
+    result2.filter(function (item) {
+      const i = items.findIndex(
+        (x) => x.kpi_template_id === item.kpi_template_id,
+      );
+      if (i <= -1) {
+        items.push(item);
+      }
+      return null;
+    });
+
+    items.sort(function (a, b) {
+      return a.kpi_template_id - b.kpi_template_id;
+    });
+    const count = items.length;
+
+    items = items.slice(offset, offset + limit);
+
+    return {
+      items,
+      count,
+    };
+  }
+
+  async getKpisOfPersonalKpisOfDeptsByDirector(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+  ) {
+    const result = await this.planKpiTemplateDeptsRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: {
+            kpi_category: { kpi_category_name: 'Cá nhân' },
+            kpi_template_name: Like(`%${name ? name : ''}%`),
+          },
+        },
+      },
+      relations: [
+        'plan_kpi_template',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.kpi_template.kpi_category',
+        'plan_kpi_template.plan',
+      ],
+    });
+    const result2 = result.map((item) => {
+      return {
+        ...item.plan_kpi_template.kpi_template,
+      };
+    });
+
+    let items = [];
+    result2.filter(function (item) {
+      const i = items.findIndex(
+        (x) => x.kpi_template_id === item.kpi_template_id,
+      );
+      if (i <= -1) {
+        items.push(item);
+      }
+      return null;
+    });
+
+    items.sort(function (a, b) {
+      return a.kpi_template_id - b.kpi_template_id;
+    });
+    const count = items.length;
+
+    items = items.slice(offset, offset + limit);
+
     return {
       items,
       count,
@@ -1123,7 +1519,137 @@ export default class PlansService {
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
 
-  async registerPersonalKpis(
+  async approveMonthlyTarget(
+    plan_id: number,
+    kpi_template_id: number,
+    user_id: number,
+    month: number,
+    approve: ApproveRegistration,
+  ) {
+    const record = await this.planKpiTemplateUsersRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      switch (month) {
+        case 1:
+          if (!record.first_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng một`,
+            );
+          }
+          record.first_monthly_target.approve = approve;
+          break;
+        case 2:
+          if (!record.second_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng hai`,
+            );
+          }
+          record.second_monthly_target.approve = approve;
+          break;
+        case 3:
+          if (!record.third_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng ba`,
+            );
+          }
+          record.third_monthly_target.approve = approve;
+          break;
+        case 4:
+          if (!record.fourth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng bốn`,
+            );
+          }
+          record.fourth_monthly_target.approve = approve;
+          break;
+        case 5:
+          if (!record.fifth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng năm`,
+            );
+          }
+          record.fifth_monthly_target.approve = approve;
+          break;
+        case 6:
+          if (!record.sixth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng sáu`,
+            );
+          }
+          record.sixth_monthly_target.approve = approve;
+          break;
+        case 7:
+          if (!record.seventh_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng bảy`,
+            );
+          }
+          record.seventh_monthly_target.approve = approve;
+          break;
+        case 8:
+          if (!record.eighth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng tám`,
+            );
+          }
+          record.eighth_monthly_target.approve = approve;
+          break;
+        case 9:
+          if (!record.ninth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng chín`,
+            );
+          }
+          record.ninth_monthly_target.approve = approve;
+          break;
+        case 10:
+          if (!record.tenth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng mười`,
+            );
+          }
+          record.tenth_monthly_target.approve = approve;
+          break;
+        case 11:
+          if (!record.eleventh_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng mười một`,
+            );
+          }
+          record.eleventh_monthly_target.approve = approve;
+          break;
+        case 12:
+          if (!record.twelfth_monthly_target) {
+            throw new CustomBadRequestException(
+              `Không tìm thấy mục tiêu tháng mười hai`,
+            );
+          }
+          record.twelfth_monthly_target.approve = approve;
+          break;
+        default:
+          break;
+      }
+
+      await this.planKpiTemplateUsersRepository.save(record);
+      return { approve };
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async registerPersonalKpisByManager(
     plan_id: number,
     personal_kpis: PersonalKpiDto[],
     dept_id: number,
@@ -1187,6 +1713,81 @@ export default class PlansService {
       });
 
       await queryRunner.manager.save(PlanKpiTemplateDept, toCreateRows);
+
+      await queryRunner.commitTransaction();
+      return toCreateRows;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async registerPersonalKpisByEmployee(
+    plan_id: number,
+    personal_kpis: PersonalKpiDto[],
+    user_id: number,
+  ) {
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const personalKpisInDB = await queryRunner.manager.find(
+        PlanKpiTemplateUser,
+        {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_category: { kpi_category_name: 'Cá nhân' } },
+            },
+            user: { user_id },
+          },
+          relations: [
+            'plan_kpi_template',
+            'user',
+            'plan_kpi_template.kpi_template',
+            'plan_kpi_template.plan',
+          ],
+        },
+      );
+
+      const personalKpis = personal_kpis.map((item) => item.kpi_template_id);
+      const toDeleteRows = personalKpisInDB.filter(
+        (row) =>
+          !personalKpis.includes(
+            row.plan_kpi_template.kpi_template.kpi_template_id,
+          ),
+      );
+      const toCreateRows = personalKpis.map((kpi_template_id) => {
+        return {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: { kpi_template_id },
+          },
+          user: { user_id },
+        };
+      });
+
+      await queryRunner.manager.remove(PlanKpiTemplateUser, toDeleteRows);
+
+      const toCreatePlanKpiTemplates = toCreateRows.map((item) => {
+        return {
+          ...item.plan_kpi_template,
+          weight: 0,
+        };
+      });
+      await queryRunner.manager.save(PlanKpiTemplate, toCreatePlanKpiTemplates);
+      const personal_category = await queryRunner.manager.findOne(KpiCategory, {
+        kpi_category_name: 'Cá nhân',
+      });
+      await queryRunner.manager.save(PlanKpiCategory, {
+        plan: { plan_id },
+        kpi_category: personal_category,
+        weight: 0,
+      });
+
+      await queryRunner.manager.save(PlanKpiTemplateUser, toCreateRows);
 
       await queryRunner.commitTransaction();
       return toCreateRows;

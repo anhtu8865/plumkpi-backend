@@ -1,3 +1,4 @@
+import { ApproveMonthlyTargetDto } from './dto/approveMonthlyTarget.dto';
 import { RegisterKpisDto } from './dto/registerKpis.dto';
 import {
   Body,
@@ -32,6 +33,7 @@ import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
 import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
 import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
 import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
+import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetByEmployee.dto';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -176,6 +178,23 @@ export default class PlansController {
     );
   }
 
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/kpis/manager/personal-kpis-of-employees')
+  async getKpisOfPersonalKpisOfEmployeesByManager(
+    @Param() { id }: FindOneParams,
+    @Query() { offset, limit, name }: PaginationParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getKpisOfPersonalKpisOfEmployeesByManager(
+      Number(id),
+      offset,
+      limit,
+      name,
+      dept_id,
+    );
+  }
+
   @UseGuards(RoleGuard([Role.Employee]))
   @Get(':id/kpis/employee')
   async getKpisOfOneCategoryByEmployee(
@@ -211,6 +230,28 @@ export default class PlansController {
     );
   }
 
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Put('register-monthly-target/employee')
+  async registerMonthlyTargetByEmployee(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      target,
+      month,
+    }: RegisterMonthlyTargetByEmployeeDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.registerMonthlyTargetByEmployee(
+      plan_id,
+      kpi_template_id,
+      target,
+      month,
+      user_id,
+    );
+  }
+
   @UseGuards(RoleGuard([Role.Director]))
   @Put('approve-quarterly-target/director')
   async approveQuarterlyTarget(
@@ -228,6 +269,27 @@ export default class PlansController {
       kpi_template_id,
       dept_id,
       quarter,
+      approve,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put('approve-monthly-target/manager')
+  async approveMonthlyTarget(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      user_id,
+      month,
+      approve,
+    }: ApproveMonthlyTargetDto,
+  ) {
+    return this.plansService.approveMonthlyTarget(
+      plan_id,
+      kpi_template_id,
+      user_id,
+      month,
       approve,
     );
   }
@@ -287,15 +349,29 @@ export default class PlansController {
 
   @UseGuards(RoleGuard([Role.Manager]))
   @Post('register-personal-kpis/manager')
-  async registerPersonalKpis(
+  async registerPersonalKpisByManager(
     @Body() { plan_id, personal_kpis }: RegisterPersonalKpisDto,
     @Req() request: RequestWithUser,
   ) {
     const dept_id = request.user.manage.dept_id;
-    return this.plansService.registerPersonalKpis(
+    return this.plansService.registerPersonalKpisByManager(
       plan_id,
       personal_kpis,
       dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Post('register-personal-kpis/employee')
+  async registerPersonalKpisByEmployee(
+    @Body() { plan_id, personal_kpis }: RegisterPersonalKpisDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.registerPersonalKpisByEmployee(
+      plan_id,
+      personal_kpis,
+      user_id,
     );
   }
 }
