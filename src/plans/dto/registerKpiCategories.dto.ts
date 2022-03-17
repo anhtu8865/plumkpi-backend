@@ -1,26 +1,29 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
 
-export class KpiCategoriesDto {
+export class KpiCategoryDto {
   @IsNumber()
-  @IsNotEmpty()
   kpi_category_id: number;
 
   @IsNumber()
-  @IsNotEmpty()
   weight: number;
+}
+
+export class KpiCategoriesDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => KpiCategoryDto)
+  kpi_categories: KpiCategoryDto[];
 }
 
 export class RegisterKpiCategoriesDto {
   @IsNumber()
-  @IsNotEmpty()
   plan_id: number;
 
-  @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => KpiCategoriesDto)
-  kpi_categories: KpiCategoriesDto[];
+  @Type(() => KpiCategoryDto)
+  kpi_categories: KpiCategoryDto[];
 }
 
 export default RegisterKpiCategoriesDto;

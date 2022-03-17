@@ -10,6 +10,9 @@ export class PlanKpiTemplateDept {
   @Column({ nullable: true })
   target: number;
 
+  @Column({ nullable: true })
+  weight: number;
+
   @ManyToOne(() => PlanKpiTemplate, {
     primary: true,
   })

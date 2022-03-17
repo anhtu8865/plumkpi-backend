@@ -12,6 +12,9 @@ import PlanKpiTemplate from './planKpiTemplate.entity';
 
 @Entity({ name: 'plan_kpi_template_users' })
 export class PlanKpiTemplateUser {
+  @Column({ nullable: true })
+  weight: number;
+
   @ManyToOne(() => PlanKpiTemplate, {
     primary: true,
   })

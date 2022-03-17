@@ -1,5 +1,5 @@
 import { ApproveMonthlyTargetDto } from './dto/approveMonthlyTarget.dto';
-import { RegisterKpisDto } from './dto/registerKpis.dto';
+import { KpisDto, RegisterKpisDto } from './dto/registerKpis.dto';
 import {
   Body,
   Controller,
@@ -23,8 +23,16 @@ import PlansService from './plans.service';
 import CreatePlanDto from './dto/createPlan.dto';
 import UpdatePlanDto from './dto/updatePlan.dto';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
-import { RegisterKpiCategoriesDto } from './dto/registerKpiCategories.dto';
-import { KpisOfOneCategoryParams } from './params/kpisOfOneCategoryParams';
+import {
+  KpiCategoriesDto,
+  KpiCategoryDto,
+  RegisterKpiCategoriesDto,
+} from './dto/registerKpiCategories.dto';
+import {
+  KpisOfOneCategoryInDeptParams,
+  KpisOfOneCategoryOfUserParams,
+  KpisOfOneCategoryParams,
+} from './params/kpisOfOneCategoryParams';
 import { RegisterTargetDto } from './dto/registerTarget.dto';
 import { AssignKpiDeptsDto } from './dto/assignKpiDepts.dto';
 import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
@@ -34,6 +42,7 @@ import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
 import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
 import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
 import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetByEmployee.dto';
+import { DeptParam, UserParam } from './params/deptParam';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -51,6 +60,83 @@ export default class PlansController {
   @Get(':id/kpi-categories/director')
   getPlanKpiCategories(@Param() { id }: FindOneParams) {
     return this.plansService.getPlanKpiCategories(Number(id));
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/kpi-categories/director/dept')
+  getPlanKpiCategoriesDept(
+    @Param() { id }: FindOneParams,
+    @Query() { dept_id }: DeptParam,
+  ) {
+    return this.plansService.getPlanKpiCategoriesByManager(Number(id), dept_id);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/kpi-categories/manager/user')
+  getPlanKpiCategoriesUser(
+    @Param() { id }: FindOneParams,
+    @Query() { user_id }: UserParam,
+  ) {
+    return this.plansService.getPlanKpiCategoriesByEmployee(
+      Number(id),
+      user_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Put(':id/kpi-categories/director/dept')
+  updateWeightPlanKpiCategoriesDept(
+    @Param() { id }: FindOneParams,
+    @Query() { dept_id }: DeptParam,
+    @Body() { kpi_categories }: KpiCategoriesDto,
+  ) {
+    return this.plansService.updateWeightPlanKpiCategoriesDept(
+      Number(id),
+      dept_id,
+      kpi_categories,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put(':id/kpi-categories/manager/user')
+  updateWeightPlanKpiCategoriesUser(
+    @Param() { id }: FindOneParams,
+    @Query() { user_id }: UserParam,
+    @Body() { kpi_categories }: KpiCategoriesDto,
+  ) {
+    return this.plansService.updateWeightPlanKpiCategoriesUser(
+      Number(id),
+      user_id,
+      kpi_categories,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Put(':id/kpis/director/dept')
+  updateWeightPlanKpiTemplatesDept(
+    @Param() { id }: FindOneParams,
+    @Query() { dept_id }: DeptParam,
+    @Body() { kpi_templates }: KpisDto,
+  ) {
+    return this.plansService.updateWeightPlanKpiTemplatesDept(
+      Number(id),
+      dept_id,
+      kpi_templates,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put(':id/kpis/manager/user')
+  updateWeightPlanKpiTemplatesUser(
+    @Param() { id }: FindOneParams,
+    @Query() { user_id }: UserParam,
+    @Body() { kpi_templates }: KpisDto,
+  ) {
+    return this.plansService.updateWeightPlanKpiTemplatesUser(
+      Number(id),
+      user_id,
+      kpi_templates,
+    );
   }
 
   @Get(':id')
@@ -110,6 +196,52 @@ export default class PlansController {
       limit,
       name,
       kpi_category_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/kpis/director/dept')
+  async getKpisOfOneCategoryInDept(
+    @Param() { id }: FindOneParams,
+    @Query()
+    {
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      dept_id,
+    }: KpisOfOneCategoryInDeptParams,
+  ) {
+    return this.plansService.getKpisOfOneCategoryInDept(
+      Number(id),
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/kpis/manager/user')
+  async getKpisOfOneCategoryOfUser(
+    @Param() { id }: FindOneParams,
+    @Query()
+    {
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      user_id,
+    }: KpisOfOneCategoryOfUserParams,
+  ) {
+    return this.plansService.getKpisOfOneCategoryOfUser(
+      Number(id),
+      offset,
+      limit,
+      name,
+      kpi_category_id,
+      user_id,
     );
   }
 

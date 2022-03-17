@@ -11,9 +11,9 @@ import KpiTemplatesService from 'src/kpiTemplates/kpiTemplates.service';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
-import { KpiCategoriesDto } from './dto/registerKpiCategories.dto';
+import { KpiCategoryDto } from './dto/registerKpiCategories.dto';
 import { Injectable } from '@nestjs/common';
-import { KpisDto } from './dto/registerKpis.dto';
+import { KpiDto } from './dto/registerKpis.dto';
 import { DeptsDto } from './dto/assignKpiDepts.dto';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import ApproveRegistration from './approveRegistration.enum';
@@ -21,6 +21,9 @@ import { UsersDto } from './dto/assignKpiEmployees.dto';
 import { TargetUsersDto } from './dto/registerMonthlyTarget.dto';
 import { PersonalKpiDto } from './dto/registerPersonalKpis.dto';
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
+import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
+import PlanKpiCategoryDept from './planKpiCategoryDept.entity';
+import PlanKpiCategoryUser from './planKpiCategoryUser.entity';
 
 @Injectable()
 export default class PlansService {
@@ -30,6 +33,12 @@ export default class PlansService {
 
     @InjectRepository(PlanKpiCategory)
     private plansKpiCategoriesRepository: Repository<PlanKpiCategory>,
+
+    @InjectRepository(PlanKpiCategoryDept)
+    private plansKpiCategoryDeptsRepository: Repository<PlanKpiCategoryDept>,
+
+    @InjectRepository(PlanKpiCategoryUser)
+    private plansKpiCategoryUsersRepository: Repository<PlanKpiCategoryUser>,
 
     private readonly kpiCategoriesService: KpiCategoriesService,
 
@@ -142,7 +151,7 @@ export default class PlansService {
 
   async registerKpiCategories(
     plan_id: number,
-    kpiCategories: KpiCategoriesDto[],
+    kpiCategories: KpiCategoryDto[],
   ) {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -217,11 +226,207 @@ export default class PlansService {
     }
   }
 
-  async registerKpis(
+  async updateWeightPlanKpiCategoriesDept(
     plan_id: number,
-    kpi_category_id: number,
-    kpis: KpisDto[],
+    dept_id: number,
+    kpiCategories: KpiCategoryDto[],
   ) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sum = kpiCategories.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpiCategories.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các danh mục KPI phải bằng 100%`,
+        );
+      }
+
+      const data = [];
+      for (const kpiCategory of kpiCategories) {
+        const temp = await queryRunner.manager.findOne(PlanKpiCategoryDept, {
+          where: {
+            plan_kpi_category: {
+              plan: { plan_id },
+              kpi_category: { kpi_category_id: kpiCategory.kpi_category_id },
+            },
+            dept: { dept_id },
+          },
+          relations: [
+            'plan_kpi_category',
+            'dept',
+            'plan_kpi_category.plan',
+            'plan_kpi_category.kpi_category',
+          ],
+        });
+        temp.weight = kpiCategory.weight;
+        data.push(temp);
+      }
+
+      await queryRunner.manager.save(PlanKpiCategoryDept, data);
+      await queryRunner.commitTransaction();
+      return kpiCategories;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateWeightPlanKpiCategoriesUser(
+    plan_id: number,
+    user_id: number,
+    kpiCategories: KpiCategoryDto[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sum = kpiCategories.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpiCategories.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các danh mục KPI phải bằng 100%`,
+        );
+      }
+
+      const data = [];
+      for (const kpiCategory of kpiCategories) {
+        const temp = await queryRunner.manager.findOne(PlanKpiCategoryUser, {
+          where: {
+            plan_kpi_category: {
+              plan: { plan_id },
+              kpi_category: { kpi_category_id: kpiCategory.kpi_category_id },
+            },
+            user: { user_id },
+          },
+          relations: [
+            'plan_kpi_category',
+            'user',
+            'plan_kpi_category.plan',
+            'plan_kpi_category.kpi_category',
+          ],
+        });
+        temp.weight = kpiCategory.weight;
+        data.push(temp);
+      }
+
+      await queryRunner.manager.save(PlanKpiCategoryUser, data);
+      await queryRunner.commitTransaction();
+      return kpiCategories;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateWeightPlanKpiTemplatesDept(
+    plan_id: number,
+    dept_id: number,
+    kpi_templates: KpiDto[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sum = kpi_templates.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpi_templates.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các danh mục KPI phải bằng 100%`,
+        );
+      }
+
+      const data = [];
+      for (const kpi_template of kpi_templates) {
+        const temp = await queryRunner.manager.findOne(PlanKpiTemplateDept, {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_template_id: kpi_template.kpi_template_id },
+            },
+            dept: { dept_id },
+          },
+          relations: [
+            'plan_kpi_template',
+            'dept',
+            'plan_kpi_template.plan',
+            'plan_kpi_template.kpi_template',
+          ],
+        });
+        temp.weight = kpi_template.weight;
+        data.push(temp);
+      }
+
+      await queryRunner.manager.save(PlanKpiTemplateDept, data);
+      await queryRunner.commitTransaction();
+      return kpi_templates;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateWeightPlanKpiTemplatesUser(
+    plan_id: number,
+    user_id: number,
+    kpi_templates: KpiDto[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sum = kpi_templates.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpi_templates.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các danh mục KPI phải bằng 100%`,
+        );
+      }
+
+      const data = [];
+      for (const kpi_template of kpi_templates) {
+        const temp = await queryRunner.manager.findOne(PlanKpiTemplateUser, {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_template_id: kpi_template.kpi_template_id },
+            },
+            user: { user_id },
+          },
+          relations: [
+            'plan_kpi_template',
+            'user',
+            'plan_kpi_template.plan',
+            'plan_kpi_template.kpi_template',
+          ],
+        });
+        temp.weight = kpi_template.weight;
+        data.push(temp);
+      }
+
+      await queryRunner.manager.save(PlanKpiTemplateUser, data);
+      await queryRunner.commitTransaction();
+      return kpi_templates;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async registerKpis(plan_id: number, kpi_category_id: number, kpis: KpiDto[]) {
     const sum = kpis.reduce((result, item) => {
       return result + item.weight;
     }, 0);
@@ -314,6 +519,116 @@ export default class PlansService {
     }
     return {
       items,
+      count,
+    };
+  }
+
+  async getKpisOfOneCategoryInDept(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    kpi_category_id: number,
+    dept_id: number,
+  ) {
+    // const { kpi_category_name } =
+    //   await this.kpiCategoriesService.getKpiCategoryById(kpi_category_id);
+    // if (kpi_category_name === 'Cá nhân') {
+    //   return this.getKpisOfPersonalKpisOfDeptsByDirector(
+    //     plan_id,
+    //     offset,
+    //     limit,
+    //     name,
+    //   );
+    // }
+    const [items, count] =
+      await this.planKpiTemplateDeptsRepository.findAndCount({
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: {
+              kpi_category: { kpi_category_id },
+              kpi_template_name: Like(`%${name ? name : ''}%`),
+            },
+          },
+          dept: { dept_id },
+        },
+        relations: [
+          'plan_kpi_template',
+          'dept',
+          'plan_kpi_template.plan',
+          'plan_kpi_template.kpi_template',
+        ],
+        order: { weight: 'ASC' },
+        skip: offset,
+        take: limit,
+      });
+
+    const rows = items.map((item) => {
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      const kpi_template = item.plan_kpi_template.kpi_template;
+      delete item.plan_kpi_template;
+      delete item.dept;
+      return { ...item, kpi_template };
+    });
+
+    return {
+      rows,
+      count,
+    };
+  }
+
+  async getKpisOfOneCategoryOfUser(
+    plan_id: number,
+    offset: number,
+    limit: number,
+    name: string,
+    kpi_category_id: number,
+    user_id: number,
+  ) {
+    // const { kpi_category_name } =
+    //   await this.kpiCategoriesService.getKpiCategoryById(kpi_category_id);
+    // if (kpi_category_name === 'Cá nhân') {
+    //   return this.getKpisOfPersonalKpisOfDeptsByDirector(
+    //     plan_id,
+    //     offset,
+    //     limit,
+    //     name,
+    //   );
+    // }
+    const [items, count] =
+      await this.planKpiTemplateUsersRepository.findAndCount({
+        where: {
+          plan_kpi_template: {
+            plan: { plan_id },
+            kpi_template: {
+              kpi_category: { kpi_category_id },
+              kpi_template_name: Like(`%${name ? name : ''}%`),
+            },
+          },
+          user: { user_id },
+        },
+        relations: [
+          'plan_kpi_template',
+          'user',
+          'plan_kpi_template.plan',
+          'plan_kpi_template.kpi_template',
+        ],
+        order: { weight: 'ASC' },
+        skip: offset,
+        take: limit,
+      });
+
+    const rows = items.map((item) => {
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      const kpi_template = item.plan_kpi_template.kpi_template;
+      delete item.plan_kpi_template;
+      delete item.user;
+      return { ...item, kpi_template };
+    });
+
+    return {
+      rows,
       count,
     };
   }
@@ -1066,6 +1381,18 @@ export default class PlansService {
           target: item.target,
         };
       });
+      const { kpi_category } = await queryRunner.manager.findOne(KpiTemplate, {
+        kpi_template_id,
+      });
+      const rows2 = depts.map((item) => {
+        return {
+          plan_kpi_category: {
+            plan: { plan_id },
+            kpi_category,
+          },
+          dept: { dept_id: item.dept_id },
+        };
+      });
 
       const deptIds = rows.map((row) => row.dept.dept_id);
 
@@ -1084,10 +1411,52 @@ export default class PlansService {
           'dept',
         ],
       });
+      const deptIdsToDelete = [];
+      for (const toDeleteRow of toDeleteRows) {
+        const rows = await queryRunner.manager.find(PlanKpiTemplateDept, {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_category },
+            },
+            dept: toDeleteRow.dept,
+          },
+          relations: [
+            'plan_kpi_template',
+            'plan_kpi_template.kpi_template',
+            'plan_kpi_template.kpi_template.kpi_category',
+            'plan_kpi_template.plan',
+            'dept',
+          ],
+        });
+        if (rows.length === 1) {
+          deptIdsToDelete.push(toDeleteRow.dept.dept_id);
+        }
+      }
+      const toDeleteRows2 = await queryRunner.manager.find(
+        PlanKpiCategoryDept,
+        {
+          where: {
+            plan_kpi_category: {
+              plan: { plan_id },
+              kpi_category,
+            },
+            dept: { dept_id: In(deptIdsToDelete) },
+          },
+          relations: [
+            'plan_kpi_category',
+            'plan_kpi_category.kpi_category',
+            'plan_kpi_category.plan',
+            'dept',
+          ],
+        },
+      );
 
       await queryRunner.manager.remove(PlanKpiTemplateDept, toDeleteRows);
+      await queryRunner.manager.remove(PlanKpiCategoryDept, toDeleteRows2);
 
       const result = await queryRunner.manager.save(PlanKpiTemplateDept, rows);
+      await queryRunner.manager.save(PlanKpiCategoryDept, rows2);
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
@@ -1118,6 +1487,19 @@ export default class PlansService {
         };
       });
 
+      const { kpi_category } = await queryRunner.manager.findOne(KpiTemplate, {
+        kpi_template_id,
+      });
+      const rows2 = users.map((item) => {
+        return {
+          plan_kpi_category: {
+            plan: { plan_id },
+            kpi_category,
+          },
+          user: { user_id: item.user_id },
+        };
+      });
+
       const userIds = rows.map((row) => row.user.user_id);
 
       let toDeleteRows = await queryRunner.manager.find(PlanKpiTemplateUser, {
@@ -1141,9 +1523,53 @@ export default class PlansService {
         (row) => !userIds.includes(row.user.user_id),
       );
 
+      const userIdsToDelete = [];
+      for (const toDeleteRow of toDeleteRows) {
+        const rows = await queryRunner.manager.find(PlanKpiTemplateUser, {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_category },
+            },
+            user: toDeleteRow.user,
+          },
+          relations: [
+            'plan_kpi_template',
+            'plan_kpi_template.kpi_template',
+            'plan_kpi_template.kpi_template.kpi_category',
+            'plan_kpi_template.plan',
+            'user',
+          ],
+        });
+        if (rows.length === 1) {
+          userIdsToDelete.push(toDeleteRow.user.user_id);
+        }
+      }
+      const toDeleteRows2 = await queryRunner.manager.find(
+        PlanKpiCategoryUser,
+        {
+          where: {
+            plan_kpi_category: {
+              plan: { plan_id },
+              kpi_category,
+            },
+            user: { user_id: In(userIdsToDelete) },
+          },
+          relations: [
+            'plan_kpi_category',
+            'plan_kpi_category.kpi_category',
+            'plan_kpi_category.plan',
+            'user',
+          ],
+        },
+      );
+
       await queryRunner.manager.remove(PlanKpiTemplateUser, toDeleteRows);
+      await queryRunner.manager.remove(PlanKpiCategoryUser, toDeleteRows2);
 
       const result = await queryRunner.manager.save(PlanKpiTemplateUser, rows);
+      await queryRunner.manager.save(PlanKpiCategoryUser, rows2);
+
       await queryRunner.commitTransaction();
       for (const row of result) {
         Object.keys(row).forEach((key) => row[key] === null && delete row[key]);
@@ -1202,55 +1628,44 @@ export default class PlansService {
   }
 
   async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
-    const rows = await this.planKpiTemplateDeptsRepository.find({
-      where: { dept: { dept_id }, plan_kpi_template: { plan: { plan_id } } },
-      relations: ['plan_kpi_template', 'plan_kpi_template.kpi_template'],
+    const rows = await this.plansKpiCategoryDeptsRepository.find({
+      where: { plan_kpi_category: { plan: { plan_id } }, dept: { dept_id } },
+      relations: [
+        'plan_kpi_category',
+        'plan_kpi_category.plan',
+        'plan_kpi_category.kpi_category',
+        'dept',
+      ],
     });
-
-    const kpi_categories = rows.map((row) => {
+    const result = rows.map((row) => {
       return {
-        ...row.plan_kpi_template.kpi_template.kpi_category,
+        weight: row.weight,
+        kpi_category: row.plan_kpi_category.kpi_category,
       };
     });
-
-    const resArr = [];
-    kpi_categories.filter(function (item) {
-      const i = resArr.findIndex(
-        (x) => x.kpi_category_id == item.kpi_category_id,
-      );
-      if (i <= -1) {
-        resArr.push(item);
-      }
-      return null;
-    });
-
-    return resArr;
+    return result;
   }
 
   async getPlanKpiCategoriesByEmployee(plan_id: number, user_id: number) {
-    const rows = await this.planKpiTemplateUsersRepository.find({
-      where: { user: { user_id }, plan_kpi_template: { plan: { plan_id } } },
-      relations: ['plan_kpi_template', 'plan_kpi_template.kpi_template'],
+    const rows = await this.plansKpiCategoryUsersRepository.find({
+      where: {
+        plan_kpi_category: { plan: { plan_id } },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_category',
+        'plan_kpi_category.plan',
+        'plan_kpi_category.kpi_category',
+        'user',
+      ],
     });
-
-    const kpi_categories = rows.map((row) => {
+    const items = rows.map((row) => {
       return {
-        ...row.plan_kpi_template.kpi_template.kpi_category,
+        weight: row.weight,
+        kpi_category: row.plan_kpi_category.kpi_category,
       };
     });
-
-    const resArr = [];
-    kpi_categories.filter(function (item) {
-      const i = resArr.findIndex(
-        (x) => x.kpi_category_id == item.kpi_category_id,
-      );
-      if (i <= -1) {
-        resArr.push(item);
-      }
-      return null;
-    });
-
-    return resArr;
+    return items;
   }
 
   async getKpisOfOneCategoryByManager(
@@ -1691,6 +2106,7 @@ export default class PlansService {
             kpi_template: { kpi_template_id },
           },
           dept: { dept_id },
+          weight: 0,
         };
       });
 
@@ -1709,6 +2125,15 @@ export default class PlansService {
       await queryRunner.manager.save(PlanKpiCategory, {
         plan: { plan_id },
         kpi_category: personal_category,
+        weight: 0,
+      });
+
+      await queryRunner.manager.save(PlanKpiCategoryDept, {
+        plan_kpi_category: {
+          plan: { plan_id },
+          kpi_category: personal_category,
+        },
+        dept: { dept_id },
         weight: 0,
       });
 
@@ -1784,6 +2209,15 @@ export default class PlansService {
       await queryRunner.manager.save(PlanKpiCategory, {
         plan: { plan_id },
         kpi_category: personal_category,
+        weight: 0,
+      });
+
+      await queryRunner.manager.save(PlanKpiCategoryUser, {
+        plan_kpi_category: {
+          plan: { plan_id },
+          kpi_category: personal_category,
+        },
+        user: { user_id },
         weight: 0,
       });
 

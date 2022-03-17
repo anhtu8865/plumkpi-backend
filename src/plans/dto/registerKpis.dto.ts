@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class KpisDto {
+export class KpiDto {
   @IsNumber()
   @IsNotEmpty()
   kpi_template_id: number;
@@ -15,6 +15,13 @@ export class KpisDto {
   @IsNumber()
   @IsNotEmpty()
   weight: number;
+}
+
+export class KpisDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => KpiDto)
+  kpi_templates: KpiDto[];
 }
 
 export class RegisterKpisDto {
@@ -29,8 +36,8 @@ export class RegisterKpisDto {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => KpisDto)
-  kpis: KpisDto[];
+  @Type(() => KpiDto)
+  kpis: KpiDto[];
 }
 
 export default RegisterKpisDto;

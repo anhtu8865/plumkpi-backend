@@ -9,6 +9,8 @@ import Plan from './plan.entity';
 import PlanKpiTemplate from './planKpiTemplate.entity';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import { PlanKpiTemplateUser } from './planKpiTemplateUser.entity';
+import PlanKpiCategoryDept from './planKpiCategoryDept.entity';
+import PlanKpiCategoryUser from './planKpiCategoryUser.entity';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { PlanKpiTemplateUser } from './planKpiTemplateUser.entity';
     TypeOrmModule.forFeature([
       Plan,
       PlanKpiCategory,
+      PlanKpiCategoryDept,
+      PlanKpiCategoryUser,
       PlanKpiTemplate,
       PlanKpiTemplateDept,
       PlanKpiTemplateUser,
