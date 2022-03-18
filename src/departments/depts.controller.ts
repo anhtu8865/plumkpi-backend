@@ -29,7 +29,7 @@ import UpdateDeptDto from './dto/updateDept.dto';
 export default class DeptsController {
   constructor(private readonly deptsService: DeptsService) {}
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getDepts(@Query() { offset, limit, name }: PaginationParams) {
     return this.deptsService.getDepts(offset, limit, name);

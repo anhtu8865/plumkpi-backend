@@ -241,4 +241,49 @@ export class UsersService {
       select: ['user_id', 'user_name', 'email', 'avatar'],
     });
   }
+
+  async getEmployeesInDeptInfo(
+    dept_id: number,
+    offset: number,
+    limit: number,
+    user_name: string,
+    email: string,
+    phone: string,
+  ) {
+    const whereCondition = {
+      offset,
+      limit,
+      user_name: Like(`%${user_name ? user_name : ''}%`),
+      email: Like(`%${email ? email : ''}%`),
+      phone: phone ? Like(`%${phone}%`) : undefined,
+      dept: { dept_id },
+      role: Role.Employee,
+    };
+
+    delete whereCondition.offset;
+    delete whereCondition.limit;
+    Object.keys(whereCondition).forEach(
+      (key) => whereCondition[key] === undefined && delete whereCondition[key],
+    );
+
+    const [items, count] = await this.usersRepository.findAndCount({
+      where: [whereCondition],
+      relations: ['dept'],
+      order: {
+        user_id: 'ASC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    for (const item of items) {
+      delete item.manage;
+      delete item.dept;
+    }
+
+    return {
+      items,
+      count,
+    };
+  }
 }

@@ -91,4 +91,21 @@ export default class UsersController {
     const dept_id = request.user.manage.dept_id;
     return this.usersService.getEmployeesInDept(dept_id);
   }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get('employees/manager/info')
+  async getEmployeesInDeptInfo(
+    @Req() request: RequestWithUser,
+    @Query() { offset, limit, user_name, email, phone }: UserParams,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.usersService.getEmployeesInDeptInfo(
+      dept_id,
+      offset,
+      limit,
+      user_name,
+      email,
+      phone,
+    );
+  }
 }
