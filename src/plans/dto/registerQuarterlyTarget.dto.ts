@@ -1,16 +1,20 @@
-import { IsNotEmpty, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class RegisterQuarterlyTargetDto {
   @IsNumber()
-  @IsNotEmpty()
   plan_id: number;
 
   @IsNumber()
-  @IsNotEmpty()
   kpi_template_id: number;
 
   @IsNumber()
-  @IsNotEmpty()
   @IsOptional()
   target: number;
 
@@ -18,4 +22,46 @@ export class RegisterQuarterlyTargetDto {
   @Min(1)
   @Max(4)
   quarter: number;
+}
+
+export class EnterDataQuarterlyTargetDto {
+  @IsNumber()
+  plan_id: number;
+
+  @IsNumber()
+  kpi_template_id: number;
+
+  @IsNumber()
+  @Min(1)
+  @Max(4)
+  quarter: number;
+
+  @IsNumber()
+  @IsOptional()
+  value: number;
+
+  @IsString()
+  @IsOptional()
+  note: string;
+}
+
+export class EnterDataMonthlyTargetDto {
+  @IsNumber()
+  plan_id: number;
+
+  @IsNumber()
+  kpi_template_id: number;
+
+  @IsNumber()
+  @Min(1)
+  @Max(12)
+  month: number;
+
+  @IsNumber()
+  @IsOptional()
+  value: number;
+
+  @IsString()
+  @IsOptional()
+  note: string;
 }

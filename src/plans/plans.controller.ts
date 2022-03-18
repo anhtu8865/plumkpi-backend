@@ -36,7 +36,11 @@ import {
 import { RegisterTargetDto } from './dto/registerTarget.dto';
 import { AssignKpiDeptsDto } from './dto/assignKpiDepts.dto';
 import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
-import { RegisterQuarterlyTargetDto } from './dto/registerQuarterlyTarget.dto';
+import {
+  EnterDataMonthlyTargetDto,
+  EnterDataQuarterlyTargetDto,
+  RegisterQuarterlyTargetDto,
+} from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
 import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
 import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
@@ -362,6 +366,48 @@ export default class PlansController {
     );
   }
 
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put('enter-data-quarterly-target/manager')
+  async enterDataQuarterlyTarget(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      quarter,
+      value,
+      note,
+    }: EnterDataQuarterlyTargetDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.enterDataQuarterlyTarget(
+      plan_id,
+      kpi_template_id,
+      quarter,
+      value,
+      note,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Put('enter-data-monthly-target/employee')
+  async enterDataMonthlyTarget(
+    @Body()
+    { plan_id, kpi_template_id, month, value, note }: EnterDataMonthlyTargetDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.enterDataMonthlyTarget(
+      plan_id,
+      kpi_template_id,
+      month,
+      value,
+      note,
+      user_id,
+    );
+  }
+
   @UseGuards(RoleGuard([Role.Employee]))
   @Put('register-monthly-target/employee')
   async registerMonthlyTargetByEmployee(
@@ -401,6 +447,48 @@ export default class PlansController {
       kpi_template_id,
       dept_id,
       quarter,
+      approve,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Put('approve-data-quarterly-target/director')
+  async approveDataQuarterlyTarget(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      dept_id,
+      quarter,
+      approve,
+    }: ApproveQuarterlyTargetDto,
+  ) {
+    return this.plansService.approveDataQuarterlyTarget(
+      plan_id,
+      kpi_template_id,
+      dept_id,
+      quarter,
+      approve,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Put('approve-data-monthly-target/manager')
+  async approveDataMonthlyTarget(
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      user_id,
+      month,
+      approve,
+    }: ApproveMonthlyTargetDto,
+  ) {
+    return this.plansService.approveDataMonthlyTarget(
+      plan_id,
+      kpi_template_id,
+      user_id,
+      month,
       approve,
     );
   }
