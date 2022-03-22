@@ -78,7 +78,10 @@ export default class KpiTemplatesService {
 
   async createKpiTemplate(data: CreateKpiTemplateDto) {
     try {
-      const newKpiTemplate = await this.kpiTemplatesRepository.create(data);
+      const newKpiTemplate = await this.kpiTemplatesRepository.create({
+        ...data,
+        measures: { items: data.measures ? data.measures : [] },
+      });
       await this.kpiTemplatesRepository.save(newKpiTemplate);
       return newKpiTemplate;
     } catch (error) {
@@ -94,7 +97,16 @@ export default class KpiTemplatesService {
   async updateKpiTemplate(id: number, data: UpdateKpiTemplateDto) {
     await this.getKpiTemplateById(id);
     try {
-      await this.kpiTemplatesRepository.save({ ...data, kpi_template_id: id });
+      const temp = {
+        ...data,
+        measures: data.measures ? { items: data.measures } : undefined,
+        kpi_template_id: id,
+      };
+      Object.keys(temp).forEach(
+        (key) => temp[key] === undefined && delete temp[key],
+      );
+
+      await this.kpiTemplatesRepository.save(temp);
       const UpdatedKpiTemplate = await this.kpiTemplatesRepository.findOne(id);
       return UpdatedKpiTemplate;
     } catch (error) {

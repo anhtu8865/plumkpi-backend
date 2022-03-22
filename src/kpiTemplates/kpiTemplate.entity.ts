@@ -9,11 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import Direction from './direction.enum';
-import Frequency from './frequency.enum';
 import Aggregation from './aggregation.enum';
 import { Exclude } from 'class-transformer';
-import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
+import { Measures } from './interface/measures.interface';
 
 @Entity({ name: 'kpi_templates' })
 class KpiTemplate {
@@ -28,20 +26,6 @@ class KpiTemplate {
 
   @Column({
     type: 'enum',
-    enum: Frequency,
-    default: Frequency.Daily,
-  })
-  public frequency: Frequency;
-
-  @Column({
-    type: 'enum',
-    enum: Direction,
-    default: Direction.Up,
-  })
-  public direction: Direction;
-
-  @Column({
-    type: 'enum',
     enum: Aggregation,
     default: Aggregation.Sum,
   })
@@ -50,20 +34,8 @@ class KpiTemplate {
   @Column()
   public unit: string;
 
-  @Column({ nullable: true })
-  public formula: string;
-
-  @Column({ nullable: true })
-  public red_threshold: number;
-
-  @Column({ nullable: true })
-  public red_yellow_threshold: number;
-
-  @Column({ nullable: true })
-  public yellow_green_threshold: number;
-
-  @Column({ nullable: true })
-  public green_threshold: number;
+  @Column({ type: 'jsonb', default: { items: [] } })
+  measures: Measures;
 
   @ManyToOne(
     () => KpiCategory,

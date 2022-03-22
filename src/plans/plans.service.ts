@@ -2787,6 +2787,7 @@ export default class PlansService {
             kpi_template: { kpi_template_id },
           },
           user: { user_id },
+          weight: 0,
         };
       });
 
