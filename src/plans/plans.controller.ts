@@ -47,6 +47,7 @@ import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
 import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
 import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetByEmployee.dto';
 import { DeptParam, UserParam } from './params/deptParam';
+import { monthParams, quarterParams } from 'src/utils/types/monthParams';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -294,6 +295,149 @@ export default class PlansController {
       Number(id),
       user_id,
     );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Get(':id/performance/employee/month')
+  getPerformanceOfEmployeeByMonth(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+    @Query() { month }: monthParams,
+  ) {
+    const user_id = request.user.user_id;
+    return this.plansService.getPerformanceOfEmployee(Number(id), user_id, [
+      Number(month),
+    ]);
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Get(':id/performance/employee/quarter')
+  getPerformanceOfEmployeeByQuarter(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+    @Query() { quarter }: quarterParams,
+  ) {
+    const user_id = request.user.user_id;
+    quarter = Number(quarter);
+    const months =
+      quarter === 1
+        ? [1, 2, 3]
+        : quarter === 2
+        ? [4, 5, 6]
+        : quarter === 3
+        ? [7, 8, 9]
+        : [10, 11, 12];
+    return this.plansService.getPerformanceOfEmployee(
+      Number(id),
+      user_id,
+      months,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Get(':id/performance/employee/year')
+  getPerformanceOfEmployeeByYear(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const user_id = request.user.user_id;
+    const N = 12;
+    const months = [...Array(N + 1).keys()].slice(1);
+    return this.plansService.getPerformanceOfEmployee(
+      Number(id),
+      user_id,
+      months,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/performance/manager/month')
+  getPerformanceOfDeptByMonth(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+    @Query() { month }: monthParams,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getPerformanceOfManager(Number(id), dept_id, [
+      Number(month),
+    ]);
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/performance/director/month')
+  getPerformanceOfDirectorByMonth(
+    @Param() { id }: FindOneParams,
+    @Query() { month }: monthParams,
+  ) {
+    return this.plansService.getPerformanceOfDirector(Number(id), [
+      Number(month),
+    ]);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/performance/manager/quarter')
+  getPerformanceOfDeptByQuarter(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+    @Query() { quarter }: quarterParams,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    quarter = Number(quarter);
+    const months =
+      quarter === 1
+        ? [1, 2, 3]
+        : quarter === 2
+        ? [4, 5, 6]
+        : quarter === 3
+        ? [7, 8, 9]
+        : [10, 11, 12];
+    return this.plansService.getPerformanceOfManager(
+      Number(id),
+      dept_id,
+      months,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/performance/director/quarter')
+  getPerformanceOfDirectorByQuarter(
+    @Param() { id }: FindOneParams,
+    @Query() { quarter }: quarterParams,
+  ) {
+    quarter = Number(quarter);
+    const months =
+      quarter === 1
+        ? [1, 2, 3]
+        : quarter === 2
+        ? [4, 5, 6]
+        : quarter === 3
+        ? [7, 8, 9]
+        : [10, 11, 12];
+    return this.plansService.getPerformanceOfDirector(Number(id), months);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/performance/manager/year')
+  getPerformanceOfDeptByYear(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    const N = 12;
+    const months = [...Array(N + 1).keys()].slice(1);
+    return this.plansService.getPerformanceOfManager(
+      Number(id),
+      dept_id,
+      months,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/performance/director/year')
+  getPerformanceOfDirectorByYear(@Param() { id }: FindOneParams) {
+    const N = 12;
+    const months = [...Array(N + 1).keys()].slice(1);
+    return this.plansService.getPerformanceOfDirector(Number(id), months);
   }
 
   @UseGuards(RoleGuard([Role.Manager]))

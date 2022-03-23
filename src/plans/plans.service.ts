@@ -24,6 +24,13 @@ import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
 import PlanKpiCategoryDept from './planKpiCategoryDept.entity';
 import PlanKpiCategoryUser from './planKpiCategoryUser.entity';
+import { RegisterTarget } from './interfaces/register-target.interface';
+import {
+  Measure,
+  Measures,
+} from 'src/kpiTemplates/interface/measures.interface';
+import Comparison from 'src/kpiTemplates/comparison.enum';
+import Aggregation from 'src/kpiTemplates/aggregation.enum';
 
 @Injectable()
 export default class PlansService {
@@ -2066,6 +2073,1089 @@ export default class PlansService {
       };
     });
     return items;
+  }
+
+  resultOfKpi(target: number, actual: number, measures: Measure[]) {
+    // * target is not assigned
+    if (target === undefined) return 100;
+
+    let result = 0;
+    for (const measure of measures) {
+      const comparedNumber = (measure.percentOfTarget * target) / 100;
+      switch (measure.comparison) {
+        case Comparison.EqualTo:
+          if (actual === comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        case Comparison.NotEqualTo:
+          if (actual !== comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        case Comparison.GreaterThan:
+          if (actual > comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        case Comparison.GreaterThanOrEqual:
+          if (actual >= comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        case Comparison.LessThan:
+          if (actual < comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        case Comparison.LessThanOrEqual:
+          if (actual <= comparedNumber) {
+            result = measure.percentOfKpi;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    return result;
+  }
+
+  async getPerformanceOfEmployee(
+    plan_id: number,
+    user_id: number,
+    months: number[],
+  ) {
+    try {
+      let kpiCategories = await this.getPlanKpiCategoriesByEmployee(
+        plan_id,
+        user_id,
+      );
+      let result = 0;
+
+      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
+      for (const kpiCategory of kpiCategories) {
+        const { items: kpis } = await this.getKpisOfOneCategoryByEmployee(
+          plan_id,
+          null,
+          null,
+          null,
+          kpiCategory.kpi_category.kpi_category_id,
+          user_id,
+        );
+
+        let resultOfKpiCategory = 0;
+        for (const kpi of kpis) {
+          const monthly_targets = [];
+          for (const month of months) {
+            switch (month) {
+              case 1:
+                if (kpi.first_monthly_target)
+                  monthly_targets.push(kpi.first_monthly_target);
+                break;
+              case 2:
+                if (kpi.second_monthly_target)
+                  monthly_targets.push(kpi.second_monthly_target);
+                break;
+              case 3:
+                if (kpi.third_monthly_target)
+                  monthly_targets.push(kpi.third_monthly_target);
+                break;
+              case 4:
+                if (kpi.fourth_monthly_target)
+                  monthly_targets.push(kpi.fourth_monthly_target);
+                break;
+              case 5:
+                if (kpi.fifth_monthly_target)
+                  monthly_targets.push(kpi.fifth_monthly_target);
+                break;
+              case 6:
+                if (kpi.sixth_monthly_target)
+                  monthly_targets.push(kpi.sixth_monthly_target);
+                break;
+              case 7:
+                if (kpi.seventh_monthly_target)
+                  monthly_targets.push(kpi.seventh_monthly_target);
+                break;
+              case 8:
+                if (kpi.eighth_monthly_target)
+                  monthly_targets.push(kpi.eighth_monthly_target);
+                break;
+              case 9:
+                if (kpi.ninth_monthly_target)
+                  monthly_targets.push(kpi.ninth_monthly_target);
+                break;
+              case 10:
+                if (kpi.tenth_monthly_target)
+                  monthly_targets.push(kpi.tenth_monthly_target);
+                break;
+              case 11:
+                if (kpi.eleventh_monthly_target)
+                  monthly_targets.push(kpi.eleventh_monthly_target);
+                break;
+              case 12:
+                if (kpi.twelfth_monthly_target)
+                  monthly_targets.push(kpi.twelfth_monthly_target);
+                break;
+              default:
+                break;
+            }
+          }
+
+          const targets = monthly_targets.map((item) => item.target);
+          const actuals = monthly_targets.map((item) =>
+            !item.actual || item.actual.approve !== ApproveRegistration.Accepted
+              ? 0
+              : item.actual.value,
+          );
+
+          const target = this.aggregateNumbers(
+            targets,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+
+          const actual = this.aggregateNumbers(
+            actuals,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+
+          resultOfKpiCategory +=
+            (this.resultOfKpi(
+              target,
+              actual,
+              kpi.plan_kpi_template.kpi_template.measures.items,
+            ) *
+              kpi.weight) /
+            100;
+        }
+        result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+      }
+
+      return { result };
+    } catch (error) {
+      console.log(error);
+      throw new CustomBadRequestException(
+        `Vui lòng kiểm tra lại trọng số trong kế hoạch của nhân viên id ${user_id}`,
+      );
+    }
+  }
+
+  aggregateNumbers(numbers: number[], aggregation: Aggregation) {
+    const count = numbers.length;
+    if (count !== 0) {
+      switch (aggregation) {
+        case Aggregation.Sum:
+          return numbers.reduce((pre, cur) => pre + cur, 0);
+        case Aggregation.Average:
+          const sum = numbers.reduce((pre, cur) => pre + cur, 0);
+          return sum / count;
+        case Aggregation.Max:
+          return numbers.reduce((pre, cur) => (pre > cur ? pre : cur));
+        case Aggregation.Min:
+          return numbers.reduce((pre, cur) => (pre < cur ? pre : cur));
+        case Aggregation.New:
+          return numbers[count - 1];
+        default:
+          break;
+      }
+    }
+    // * target is not assigned
+    return undefined;
+  }
+
+  async getPerformanceOfManagerByMonth(
+    plan_id: number,
+    dept_id: number,
+    month: number,
+  ) {
+    try {
+      let kpiCategories = await this.getPlanKpiCategoriesByManager(
+        plan_id,
+        dept_id,
+      );
+      let result = 0;
+
+      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
+
+      for (const kpiCategory of kpiCategories) {
+        const { items: kpis } = await this.getKpisOfOneCategoryByManager(
+          plan_id,
+          null,
+          null,
+          null,
+          kpiCategory.kpi_category.kpi_category_id,
+          dept_id,
+        );
+
+        let resultOfKpiCategory = 0;
+        for (const kpi of kpis) {
+          const monthly_target_of_employees = [];
+          const target_kpi_of_employees = await this.getTargetKpiOfEmployees(
+            plan_id,
+            kpi.plan_kpi_template.kpi_template.kpi_template_id,
+            dept_id,
+          );
+          switch (month) {
+            case 1:
+              target_kpi_of_employees.map((item) => {
+                if (item.first_monthly_target)
+                  monthly_target_of_employees.push(item.first_monthly_target);
+              });
+              break;
+            case 2:
+              target_kpi_of_employees.map((item) => {
+                if (item.second_monthly_target)
+                  monthly_target_of_employees.push(item.second_monthly_target);
+              });
+              break;
+            case 3:
+              target_kpi_of_employees.map((item) => {
+                if (item.third_monthly_target)
+                  monthly_target_of_employees.push(item.third_monthly_target);
+              });
+              break;
+            case 4:
+              target_kpi_of_employees.map((item) => {
+                if (item.fourth_monthly_target)
+                  monthly_target_of_employees.push(item.fourth_monthly_target);
+              });
+              break;
+            case 5:
+              target_kpi_of_employees.map((item) => {
+                if (item.fifth_monthly_target)
+                  monthly_target_of_employees.push(item.fifth_monthly_target);
+              });
+              break;
+            case 6:
+              target_kpi_of_employees.map((item) => {
+                if (item.sixth_monthly_target)
+                  monthly_target_of_employees.push(item.sixth_monthly_target);
+              });
+              break;
+            case 7:
+              target_kpi_of_employees.map((item) => {
+                if (item.seventh_monthly_target)
+                  monthly_target_of_employees.push(item.seventh_monthly_target);
+              });
+              break;
+            case 8:
+              target_kpi_of_employees.map((item) => {
+                if (item.eighth_monthly_target)
+                  monthly_target_of_employees.push(item.eighth_monthly_target);
+              });
+              break;
+            case 9:
+              target_kpi_of_employees.map((item) => {
+                if (item.ninth_monthly_target)
+                  monthly_target_of_employees.push(item.ninth_monthly_target);
+              });
+              break;
+            case 10:
+              target_kpi_of_employees.map((item) => {
+                if (item.tenth_monthly_target)
+                  monthly_target_of_employees.push(item.tenth_monthly_target);
+              });
+              break;
+            case 11:
+              target_kpi_of_employees.map((item) => {
+                if (item.eleventh_monthly_target)
+                  monthly_target_of_employees.push(
+                    item.eleventh_monthly_target,
+                  );
+              });
+              break;
+            case 12:
+              target_kpi_of_employees.map((item) => {
+                if (item.twelfth_monthly_target)
+                  monthly_target_of_employees.push(item.twelfth_monthly_target);
+              });
+              break;
+            default:
+              break;
+          }
+
+          const targets = monthly_target_of_employees.map(
+            (item) => item.target,
+          );
+          const actuals = monthly_target_of_employees.map((item) =>
+            !item.actual || item.actual.approve !== ApproveRegistration.Accepted
+              ? 0
+              : item.actual.value,
+          );
+
+          const target = this.aggregateNumbers(targets, Aggregation.Sum);
+
+          const actual = this.aggregateNumbers(actuals, Aggregation.Sum);
+
+          resultOfKpiCategory +=
+            (this.resultOfKpi(
+              target,
+              actual,
+              kpi.plan_kpi_template.kpi_template.measures.items,
+            ) *
+              kpi.weight) /
+            100;
+        }
+        result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+      }
+
+      return { result };
+    } catch (error) {
+      console.log(error);
+      throw new CustomBadRequestException(
+        `Vui lòng kiểm tra lại trọng số trong kế hoạch của phòng ban id ${dept_id}`,
+      );
+    }
+  }
+
+  async getPerformanceOfManager(
+    plan_id: number,
+    dept_id: number,
+    months: number[],
+  ) {
+    try {
+      let kpiCategories = await this.getPlanKpiCategoriesByManager(
+        plan_id,
+        dept_id,
+      );
+      let result = 0;
+
+      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
+
+      for (const kpiCategory of kpiCategories) {
+        const { items: kpis } = await this.getKpisOfOneCategoryByManager(
+          plan_id,
+          null,
+          null,
+          null,
+          kpiCategory.kpi_category.kpi_category_id,
+          dept_id,
+        );
+
+        let resultOfKpiCategory = 0;
+        for (const kpi of kpis) {
+          const multi_months_target = [];
+          const multi_months_actual = [];
+          const target_kpi_of_employees = await this.getTargetKpiOfEmployees(
+            plan_id,
+            kpi.plan_kpi_template.kpi_template.kpi_template_id,
+            dept_id,
+          );
+          for (const month of months) {
+            const monthly_target_of_employees = [];
+            switch (month) {
+              case 1:
+                target_kpi_of_employees.map((item) => {
+                  if (item.first_monthly_target)
+                    monthly_target_of_employees.push(item.first_monthly_target);
+                });
+                break;
+              case 2:
+                target_kpi_of_employees.map((item) => {
+                  if (item.second_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.second_monthly_target,
+                    );
+                });
+                break;
+              case 3:
+                target_kpi_of_employees.map((item) => {
+                  if (item.third_monthly_target)
+                    monthly_target_of_employees.push(item.third_monthly_target);
+                });
+                break;
+              case 4:
+                target_kpi_of_employees.map((item) => {
+                  if (item.fourth_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.fourth_monthly_target,
+                    );
+                });
+                break;
+              case 5:
+                target_kpi_of_employees.map((item) => {
+                  if (item.fifth_monthly_target)
+                    monthly_target_of_employees.push(item.fifth_monthly_target);
+                });
+                break;
+              case 6:
+                target_kpi_of_employees.map((item) => {
+                  if (item.sixth_monthly_target)
+                    monthly_target_of_employees.push(item.sixth_monthly_target);
+                });
+                break;
+              case 7:
+                target_kpi_of_employees.map((item) => {
+                  if (item.seventh_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.seventh_monthly_target,
+                    );
+                });
+                break;
+              case 8:
+                target_kpi_of_employees.map((item) => {
+                  if (item.eighth_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.eighth_monthly_target,
+                    );
+                });
+                break;
+              case 9:
+                target_kpi_of_employees.map((item) => {
+                  if (item.ninth_monthly_target)
+                    monthly_target_of_employees.push(item.ninth_monthly_target);
+                });
+                break;
+              case 10:
+                target_kpi_of_employees.map((item) => {
+                  if (item.tenth_monthly_target)
+                    monthly_target_of_employees.push(item.tenth_monthly_target);
+                });
+                break;
+              case 11:
+                target_kpi_of_employees.map((item) => {
+                  if (item.eleventh_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.eleventh_monthly_target,
+                    );
+                });
+                break;
+              case 12:
+                target_kpi_of_employees.map((item) => {
+                  if (item.twelfth_monthly_target)
+                    monthly_target_of_employees.push(
+                      item.twelfth_monthly_target,
+                    );
+                });
+                break;
+              default:
+                break;
+            }
+            const targets = monthly_target_of_employees.map(
+              (item) => item.target,
+            );
+            const actuals = monthly_target_of_employees.map((item) =>
+              !item.actual ||
+              item.actual.approve !== ApproveRegistration.Accepted
+                ? 0
+                : item.actual.value,
+            );
+            const target = this.aggregateNumbers(targets, Aggregation.Sum);
+            const actual = this.aggregateNumbers(actuals, Aggregation.Sum);
+            if (target !== undefined) {
+              multi_months_target.push(target);
+              multi_months_actual.push(actual);
+            }
+          }
+
+          let target = this.aggregateNumbers(
+            multi_months_target,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+
+          const actual = this.aggregateNumbers(
+            multi_months_actual,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+
+          if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
+            target = kpi.first_quarterly_target?.target;
+          }
+          if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
+            target = kpi.second_quarterly_target?.target;
+          }
+          if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
+            target = kpi.third_quarterly_target?.target;
+          }
+          if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
+            target = kpi.fourth_quarterly_target?.target;
+          }
+          if (months.length === 12) {
+            target = kpi.target ? kpi.target : undefined;
+          }
+
+          resultOfKpiCategory +=
+            (this.resultOfKpi(
+              target,
+              actual,
+              kpi.plan_kpi_template.kpi_template.measures.items,
+            ) *
+              kpi.weight) /
+            100;
+        }
+        result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+      }
+
+      return { result };
+    } catch (error) {
+      console.log(error);
+      throw new CustomBadRequestException(
+        `Vui lòng kiểm tra lại trọng số trong kế hoạch của phòng ban id ${dept_id}`,
+      );
+    }
+  }
+
+  async getPerformanceOfDirector(plan_id: number, months: number[]) {
+    try {
+      let kpiCategories = await this.getPlanKpiCategories(plan_id);
+      let result = 0;
+
+      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
+      for (const kpiCategory of kpiCategories) {
+        const { items: kpis } = await this.getKpisOfOneCategory(
+          plan_id,
+          null,
+          null,
+          null,
+          kpiCategory.kpi_category.kpi_category_id,
+        );
+
+        let resultOfKpiCategory = 0;
+        for (const kpi of kpis) {
+          const multi_months_target = [];
+          const multi_months_actual = [];
+          const target_kpi_of_depts = await this.getTargetKpiOfdepts(
+            plan_id,
+            kpi.kpi_template.kpi_template_id,
+          );
+
+          for (const month of months) {
+            const monthly_target_of_depts = [];
+            const monthly_actual_of_depts = [];
+            switch (month) {
+              case 1:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.first_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.first_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 2:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.second_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.second_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 3:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.third_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.third_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 4:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.fourth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.fourth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 5:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.fifth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.fifth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 6:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.sixth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.sixth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 7:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.seventh_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.seventh_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 8:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.eighth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.eighth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 9:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.ninth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.ninth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 10:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.tenth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.tenth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 11:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.eleventh_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.eleventh_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              case 12:
+                for (const target_kpi_of_dept of target_kpi_of_depts) {
+                  const monthly_target_of_employees = [];
+                  const target_kpi_of_employees =
+                    await this.getTargetKpiOfEmployees(
+                      plan_id,
+                      kpi.kpi_template.kpi_template_id,
+                      target_kpi_of_dept.dept.dept_id,
+                    );
+                  target_kpi_of_employees.map((item) => {
+                    if (item.twelfth_monthly_target)
+                      monthly_target_of_employees.push(
+                        item.twelfth_monthly_target,
+                      );
+                  });
+                  const targets = monthly_target_of_employees.map(
+                    (item) => item.target,
+                  );
+                  const actuals = monthly_target_of_employees.map((item) =>
+                    !item.actual ||
+                    item.actual.approve !== ApproveRegistration.Accepted
+                      ? 0
+                      : item.actual.value,
+                  );
+                  const target = this.aggregateNumbers(
+                    targets,
+                    Aggregation.Sum,
+                  );
+                  const actual = this.aggregateNumbers(
+                    actuals,
+                    Aggregation.Sum,
+                  );
+                  if (target !== undefined) {
+                    monthly_target_of_depts.push(target);
+                    monthly_actual_of_depts.push(actual);
+                  }
+                }
+                break;
+              default:
+                break;
+            }
+            const target = this.aggregateNumbers(
+              monthly_target_of_depts,
+              Aggregation.Sum,
+            );
+
+            const actual = this.aggregateNumbers(
+              monthly_actual_of_depts,
+              Aggregation.Sum,
+            );
+            if (target !== undefined) {
+              multi_months_target.push(target);
+              multi_months_actual.push(actual);
+            }
+          }
+          let target = this.aggregateNumbers(
+            multi_months_target,
+            kpi.kpi_template.aggregation,
+          );
+
+          const actual = this.aggregateNumbers(
+            multi_months_actual,
+            kpi.kpi_template.aggregation,
+          );
+
+          const targets = [];
+
+          if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
+            for (const target_kpi_of_dept of target_kpi_of_depts) {
+              if (target_kpi_of_dept.first_quarterly_target)
+                targets.push(target_kpi_of_dept.first_quarterly_target.target);
+            }
+          }
+          if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
+            for (const target_kpi_of_dept of target_kpi_of_depts) {
+              if (target_kpi_of_dept.second_quarterly_target)
+                targets.push(target_kpi_of_dept.second_quarterly_target.target);
+            }
+          }
+          if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
+            for (const target_kpi_of_dept of target_kpi_of_depts) {
+              if (target_kpi_of_dept.third_quarterly_target)
+                targets.push(target_kpi_of_dept.third_quarterly_target.target);
+            }
+          }
+          if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
+            for (const target_kpi_of_dept of target_kpi_of_depts) {
+              if (target_kpi_of_dept.fourth_quarterly_target)
+                targets.push(target_kpi_of_dept.fourth_quarterly_target.target);
+            }
+          }
+          if (months.length === 3)
+            target = this.aggregateNumbers(
+              targets,
+              kpi.kpi_template.aggregation,
+            );
+
+          if (months.length === 12) {
+            target = kpi.target ? kpi.target : undefined;
+          }
+
+          resultOfKpiCategory +=
+            (this.resultOfKpi(target, actual, kpi.kpi_template.measures.items) *
+              kpi.weight) /
+            100;
+        }
+        result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+      }
+
+      return { result };
+    } catch (error) {
+      console.log(error);
+      throw new CustomBadRequestException(
+        `Vui lòng kiểm tra lại trọng số trong kế hoạch`,
+      );
+    }
   }
 
   async getKpisOfOneCategoryByManager(
