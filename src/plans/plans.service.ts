@@ -2228,6 +2228,8 @@ export default class PlansService {
             weight: kpi.weight,
             kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
             resultOfKpi,
+            target,
+            actual,
           });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
@@ -2595,6 +2597,8 @@ export default class PlansService {
             weight: kpi.weight,
             kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
             resultOfKpi,
+            target,
+            actual,
           });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
@@ -3176,6 +3180,8 @@ export default class PlansService {
             weight: kpi.weight,
             kpi_template_id: kpi.kpi_template.kpi_template_id,
             resultOfKpi,
+            target,
+            actual,
           });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
