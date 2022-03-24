@@ -2131,7 +2131,7 @@ export default class PlansService {
         user_id,
       );
       let result = 0;
-
+      const kpi_categories = [];
       kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
       for (const kpiCategory of kpiCategories) {
         const { items: kpis } = await this.getKpisOfOneCategoryByEmployee(
@@ -2144,6 +2144,7 @@ export default class PlansService {
         );
 
         let resultOfKpiCategory = 0;
+        const kpi_templates = [];
         for (const kpi of kpis) {
           const monthly_targets = [];
           for (const month of months) {
@@ -2217,22 +2218,33 @@ export default class PlansService {
             actuals,
             kpi.plan_kpi_template.kpi_template.aggregation,
           );
-
-          resultOfKpiCategory +=
-            (this.resultOfKpi(
-              target,
-              actual,
-              kpi.plan_kpi_template.kpi_template.measures.items,
-            ) *
-              kpi.weight) /
-            100;
+          const resultOfKpi = this.resultOfKpi(
+            target,
+            actual,
+            kpi.plan_kpi_template.kpi_template.measures.items,
+          );
+          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          kpi_templates.push({
+            weight: kpi.weight,
+            kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
+            resultOfKpi,
+          });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+        kpi_categories.push({
+          weight: kpiCategory.weight,
+          kpi_category_id: kpiCategory.kpi_category.kpi_category_id,
+          resultOfKpiCategory,
+          kpi_templates,
+        });
       }
 
-      return { result };
+      return { result, kpi_categories };
     } catch (error) {
-      console.log(error);
+      console.log(
+        '🚀 ~ file: plans.service.ts ~ line 2235 ~ PlansService ~ error',
+        error,
+      );
       throw new CustomBadRequestException(
         `Vui lòng kiểm tra lại trọng số trong kế hoạch của nhân viên id ${user_id}`,
       );
@@ -2418,7 +2430,7 @@ export default class PlansService {
         dept_id,
       );
       let result = 0;
-
+      const kpi_categories = [];
       kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
 
       for (const kpiCategory of kpiCategories) {
@@ -2432,6 +2444,7 @@ export default class PlansService {
         );
 
         let resultOfKpiCategory = 0;
+        const kpi_templates = [];
         for (const kpi of kpis) {
           const multi_months_target = [];
           const multi_months_actual = [];
@@ -2572,22 +2585,34 @@ export default class PlansService {
           if (months.length === 12) {
             target = kpi.target ? kpi.target : undefined;
           }
-
-          resultOfKpiCategory +=
-            (this.resultOfKpi(
-              target,
-              actual,
-              kpi.plan_kpi_template.kpi_template.measures.items,
-            ) *
-              kpi.weight) /
-            100;
+          const resultOfKpi = this.resultOfKpi(
+            target,
+            actual,
+            kpi.plan_kpi_template.kpi_template.measures.items,
+          );
+          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          kpi_templates.push({
+            weight: kpi.weight,
+            kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
+            resultOfKpi,
+          });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+        kpi_categories.push({
+          weight: kpiCategory.weight,
+          kpi_category_id: kpiCategory.kpi_category.kpi_category_id,
+          resultOfKpiCategory,
+          kpi_templates,
+        });
       }
 
-      return { result };
+      return { result, kpi_categories };
     } catch (error) {
-      console.log(error);
+      console.log(
+        '🚀 ~ file: plans.service.ts ~ line 2611 ~ PlansService ~ error',
+        error,
+      );
+
       throw new CustomBadRequestException(
         `Vui lòng kiểm tra lại trọng số trong kế hoạch của phòng ban id ${dept_id}`,
       );
@@ -2598,7 +2623,7 @@ export default class PlansService {
     try {
       let kpiCategories = await this.getPlanKpiCategories(plan_id);
       let result = 0;
-
+      const kpi_categories = [];
       kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
       for (const kpiCategory of kpiCategories) {
         const { items: kpis } = await this.getKpisOfOneCategory(
@@ -2610,6 +2635,7 @@ export default class PlansService {
         );
 
         let resultOfKpiCategory = 0;
+        const kpi_templates = [];
         for (const kpi of kpis) {
           const multi_months_target = [];
           const multi_months_actual = [];
@@ -3140,18 +3166,34 @@ export default class PlansService {
           if (months.length === 12) {
             target = kpi.target ? kpi.target : undefined;
           }
-
-          resultOfKpiCategory +=
-            (this.resultOfKpi(target, actual, kpi.kpi_template.measures.items) *
-              kpi.weight) /
-            100;
+          const resultOfKpi = this.resultOfKpi(
+            target,
+            actual,
+            kpi.kpi_template.measures.items,
+          );
+          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          kpi_templates.push({
+            weight: kpi.weight,
+            kpi_template_id: kpi.kpi_template.kpi_template_id,
+            resultOfKpi,
+          });
         }
         result += (resultOfKpiCategory * kpiCategory.weight) / 100;
+        kpi_categories.push({
+          weight: kpiCategory.weight,
+          kpi_category_id: kpiCategory.kpi_category.kpi_category_id,
+          resultOfKpiCategory,
+          kpi_templates,
+        });
       }
 
-      return { result };
+      return { result, kpi_categories };
     } catch (error) {
-      console.log(error);
+      console.log(
+        '🚀 ~ file: plans.service.ts ~ line 3188 ~ PlansService ~ getPerformanceOfDirector ~ error',
+        error,
+      );
+
       throw new CustomBadRequestException(
         `Vui lòng kiểm tra lại trọng số trong kế hoạch`,
       );
