@@ -8,6 +8,8 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { UsersModule } from './users/users.module';
+import { DashboardsModule } from './dashboards/dashboards.module';
+import { ChartsModule } from './charts/charts.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { UsersModule } from './users/users.module';
     KpiCategoriesModule,
     KpiTemplatesModule,
     PlansModule,
+    DashboardsModule,
+    ChartsModule,
   ],
   controllers: [],
   providers: [],

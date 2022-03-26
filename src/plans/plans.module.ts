@@ -28,5 +28,6 @@ import PlanKpiCategoryUser from './planKpiCategoryUser.entity';
   ],
   controllers: [PlansController],
   providers: [PlansService],
+  exports: [PlansService],
 })
 export class PlansModule {}

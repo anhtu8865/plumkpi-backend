@@ -12,11 +12,13 @@ export class KpisOfOneCategoryParams extends PaginationParams {
 export class KpisOfOneCategoryInDeptParams extends KpisOfOneCategoryParams {
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   dept_id: number;
 }
 
 export class KpisOfOneCategoryOfUserParams extends KpisOfOneCategoryParams {
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   user_id: number;
 }
