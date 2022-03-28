@@ -8,4 +8,5 @@ export interface Measure {
   comparison: Comparison;
   percentOfTarget: number;
   percentOfKpi: number;
+  color: string;
 }

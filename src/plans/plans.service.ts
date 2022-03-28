@@ -2077,47 +2077,54 @@ export default class PlansService {
 
   resultOfKpi(target: number, actual: number, measures: Measure[]) {
     // * target is not assigned
-    if (target === undefined) return 100;
+    if (target === undefined) return { result: 100, color: 'Tím' };
 
     let result = 0;
+    let color = 'Tím';
     for (const measure of measures) {
       const comparedNumber = (measure.percentOfTarget * target) / 100;
       switch (measure.comparison) {
         case Comparison.EqualTo:
           if (actual === comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         case Comparison.NotEqualTo:
           if (actual !== comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         case Comparison.GreaterThan:
           if (actual > comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         case Comparison.GreaterThanOrEqual:
           if (actual >= comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         case Comparison.LessThan:
           if (actual < comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         case Comparison.LessThanOrEqual:
           if (actual <= comparedNumber) {
             result = measure.percentOfKpi;
+            color = measure.color;
           }
           break;
         default:
           break;
       }
     }
-    return result;
+    return { result, color };
   }
 
   monthlyKey(month: number) {
@@ -2239,7 +2246,7 @@ export default class PlansService {
             actual,
             kpi.plan_kpi_template.kpi_template.measures.items,
           );
-          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          resultOfKpiCategory += (resultOfKpi.result * kpi.weight) / 100;
           kpi_templates.push({
             weight: kpi.weight,
             kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
@@ -2385,7 +2392,7 @@ export default class PlansService {
             actual,
             kpi.plan_kpi_template.kpi_template.measures.items,
           );
-          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          resultOfKpiCategory += (resultOfKpi.result * kpi.weight) / 100;
           kpi_templates.push({
             weight: kpi.weight,
             kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
@@ -2535,7 +2542,7 @@ export default class PlansService {
             actual,
             kpi.kpi_template.measures.items,
           );
-          resultOfKpiCategory += (resultOfKpi * kpi.weight) / 100;
+          resultOfKpiCategory += (resultOfKpi.result * kpi.weight) / 100;
           kpi_templates.push({
             weight: kpi.weight,
             kpi_template_id: kpi.kpi_template.kpi_template_id,

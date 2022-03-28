@@ -8,6 +8,7 @@ import {
   IsArray,
   ValidateNested,
   IsEnum,
+  IsString,
 } from 'class-validator';
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
 import Aggregation from '../aggregation.enum';
@@ -26,6 +27,10 @@ export class Measure {
   @Min(0)
   @Max(100)
   percentOfKpi: number;
+
+  @IsNotEmpty({ message: 'Vui lòng chọn màu' })
+  @IsString()
+  color: string;
 }
 
 export class CreateKpiTemplateDto {

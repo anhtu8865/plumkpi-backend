@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Properties } from './interface/properties.interface';
 
 @Entity({ name: 'charts' })
 export class Chart {
@@ -26,6 +27,9 @@ export class Chart {
 
   @ManyToOne(() => Plan)
   plan: Plan;
+
+  @Column({ type: 'jsonb', nullable: true })
+  properties: Properties;
 
   @CreateDateColumn()
   @Exclude()
