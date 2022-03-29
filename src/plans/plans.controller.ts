@@ -144,6 +144,11 @@ export default class PlansController {
     );
   }
 
+  @Get('all')
+  getAllPlans() {
+    return this.plansService.getAllPlans();
+  }
+
   @Get(':id')
   getPlanById(@Param() { id }: FindOneParams) {
     return this.plansService.getPlanById(Number(id));
@@ -491,6 +496,16 @@ export default class PlansController {
       kpi_category_id,
       user_id,
     );
+  }
+
+  @Get(':id/kpis/user')
+  async getKpis(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const user = request.user;
+    const plan = await this.plansService.getPlanById(Number(id));
+    return this.plansService.getKpis(plan, user);
   }
 
   @UseGuards(RoleGuard([Role.Manager]))

@@ -30,7 +30,7 @@ export default class KpiTemplatesController {
   @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getKpiTemplates(@Query() params: KpiTemplateParams) {
-    return this.kpiTemplatesService.getKpiTemplates(params);
+    return this.kpiTemplatesService.getKpiTemplatesOfCategory(params);
   }
 
   @UseGuards(RoleGuard([Role.Manager, Role.Employee]))

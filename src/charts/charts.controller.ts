@@ -28,7 +28,14 @@ export default class ChartsController {
 
   @Post()
   async createChart(
-    @Body() { chart_name, description, plan_id, dashboard_id }: CreateChartDto,
+    @Body()
+    {
+      chart_name,
+      description,
+      plan_id,
+      dashboard_id,
+      properties,
+    }: CreateChartDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
@@ -38,6 +45,7 @@ export default class ChartsController {
         description,
         plan_id,
         dashboard_id,
+        properties,
       },
       user,
     );
@@ -46,14 +54,14 @@ export default class ChartsController {
   @Put('chart')
   async updateChart(
     @Query() { chart_id, dashboard_id }: ChartParam,
-    @Body() { chart_name, description }: UpdateChartDto,
+    @Body() { chart_name, description, properties }: UpdateChartDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
     chart_id = Number(chart_id);
     dashboard_id = Number(dashboard_id);
     return this.chartsService.updateChart(
-      { chart_name, description },
+      { chart_name, description, properties },
       chart_id,
       dashboard_id,
       user,
@@ -78,5 +86,16 @@ export default class ChartsController {
   ) {
     const user = request.user;
     return this.chartsService.getCharts(dashboard_id, user);
+  }
+
+  @Get('chart')
+  async getChart(
+    @Query() { chart_id, dashboard_id }: ChartParam,
+    @Req() request: RequestWithUser,
+  ) {
+    const user = request.user;
+    chart_id = Number(chart_id);
+    dashboard_id = Number(dashboard_id);
+    return this.chartsService.getChart(chart_id, dashboard_id, user);
   }
 }

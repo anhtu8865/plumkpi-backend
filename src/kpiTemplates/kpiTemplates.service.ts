@@ -4,7 +4,7 @@ import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
 import KpiTemplate from './kpiTemplate.entity';
 import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
@@ -17,7 +17,7 @@ export default class KpiTemplatesService {
     private kpiTemplatesRepository: Repository<KpiTemplate>,
   ) {}
 
-  async getKpiTemplates(params: KpiTemplateParams) {
+  async getKpiTemplatesOfCategory(params: KpiTemplateParams) {
     const { offset, limit, name, kpi_category_id } = params;
 
     const whereCondition = {
@@ -124,5 +124,14 @@ export default class KpiTemplatesService {
     if (!deleteResponse.affected) {
       throw new CustomNotFoundException(`KPI template id ${id} không tồn tại`);
     }
+  }
+
+  async getKpiTemplates(ids: number[]) {
+    return this.kpiTemplatesRepository.find({
+      where: {
+        kpi_template_id: In(ids),
+      },
+      order: { kpi_template_id: 'ASC' },
+    });
   }
 }

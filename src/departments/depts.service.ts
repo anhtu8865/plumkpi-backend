@@ -65,6 +65,28 @@ export default class DeptsService {
     });
   }
 
+  async getAllDeptsWithEmployees() {
+    const depts = await this.deptsRepository.find({
+      select: ['dept_id', 'dept_name', 'users'],
+      relations: ['users'],
+      order: { dept_id: 'ASC' },
+    });
+    return depts.map((dept) => {
+      return {
+        dept_id: dept.dept_id,
+        dept_name: dept.dept_name,
+        users: dept.users.map((user) => {
+          return {
+            user_id: user.user_id,
+            user_name: user.user_name,
+            avatar: user.avatar,
+            role: user.role,
+          };
+        }),
+      };
+    });
+  }
+
   async getDeptById(id: number) {
     const dept = await this.deptsRepository.findOne(id, {
       relations: ['users', 'manager'],

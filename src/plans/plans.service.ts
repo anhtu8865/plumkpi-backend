@@ -31,6 +31,8 @@ import {
 } from 'src/kpiTemplates/interface/measures.interface';
 import Comparison from 'src/kpiTemplates/comparison.enum';
 import Aggregation from 'src/kpiTemplates/aggregation.enum';
+import User from 'src/users/user.entity';
+import Role from 'src/users/role.enum';
 
 @Injectable()
 export default class PlansService {
@@ -154,6 +156,10 @@ export default class PlansService {
       items,
       count,
     };
+  }
+
+  async getAllPlans() {
+    return this.plansRepository.find();
   }
 
   async registerKpiCategories(
@@ -3333,5 +3339,118 @@ export default class PlansService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async getKpis(plan: Plan, user: User) {
+    const role = user.role;
+    let result;
+    let result2;
+    if (role === Role.Director) {
+      result = await this.planKpiTemplatesRepository.find({
+        where: {
+          plan,
+        },
+        relations: ['plan', 'kpi_template'],
+      });
+
+      result2 = await this.plansKpiCategoriesRepository.find({
+        where: { plan },
+        relations: ['plan', 'kpi_category'],
+      });
+      const kpis = result.map((item) => item.kpi_template);
+      const kpi_categories = result2.map((item) => item.kpi_category);
+      for (const kpi_category of kpi_categories) {
+        const kpi_templates = kpis.filter(
+          (item) =>
+            item.kpi_category.kpi_category_id === kpi_category.kpi_category_id,
+        );
+        kpi_category.kpi_templates = kpi_templates;
+      }
+      for (const kpi_category of kpi_categories) {
+        for (const kpi_template of kpi_category.kpi_templates) {
+          delete kpi_template.aggregation,
+            delete kpi_template.measures,
+            delete kpi_template.kpi_category;
+          delete kpi_template.unit;
+        }
+      }
+      return kpi_categories;
+    } else if (role === Role.Manager) {
+      const dept = user.manage;
+      result = await this.planKpiTemplateDeptsRepository.find({
+        where: {
+          dept,
+          plan_kpi_template: { plan },
+        },
+        relations: [
+          'dept',
+          'plan_kpi_template',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.plan',
+        ],
+      });
+
+      result2 = await this.plansKpiCategoryDeptsRepository.find({
+        where: { dept, plan_kpi_category: { plan } },
+        relations: [
+          'plan_kpi_category',
+          'dept',
+          'plan_kpi_category.plan',
+          'plan_kpi_category.kpi_category',
+        ],
+      });
+    } else {
+      result = await this.planKpiTemplateUsersRepository.find({
+        where: { user, plan_kpi_template: { plan } },
+        relations: [
+          'user',
+          'plan_kpi_template',
+          'plan_kpi_template.kpi_template',
+          'plan_kpi_template.plan',
+        ],
+      });
+
+      result2 = await this.plansKpiCategoryUsersRepository.find({
+        where: { user, plan_kpi_category: { plan } },
+        relations: [
+          'plan_kpi_category',
+          'user',
+          'plan_kpi_category.plan',
+          'plan_kpi_category.kpi_category',
+        ],
+      });
+    }
+    const kpis = result.map((item) => item.plan_kpi_template.kpi_template);
+    const kpi_categories = result2.map(
+      (item) => item.plan_kpi_category.kpi_category,
+    );
+    for (const kpi_category of kpi_categories) {
+      const kpi_templates = kpis.filter(
+        (item) =>
+          item.kpi_category.kpi_category_id === kpi_category.kpi_category_id,
+      );
+      kpi_category.kpi_templates = kpi_templates;
+    }
+    for (const kpi_category of kpi_categories) {
+      for (const kpi_template of kpi_category.kpi_templates) {
+        delete kpi_template.aggregation,
+          delete kpi_template.measures,
+          delete kpi_template.kpi_category;
+        delete kpi_template.unit;
+      }
+    }
+    return kpi_categories;
+  }
+
+  async getDataOfUser(plan: Plan, kpi_template: KpiTemplate, user: User) {
+    return this.planKpiTemplateUsersRepository.findOne({
+      where: { plan_kpi_template: { plan, kpi_template }, user },
+      // relations: [
+      //   'plan_kpi_template',
+      //   'user',
+      //   'plan_kpi_template.plan',
+      //   'plan_kpi_template.kpi_template',
+      // ],
+    });
   }
 }
