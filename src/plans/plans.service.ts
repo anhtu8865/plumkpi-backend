@@ -2087,8 +2087,9 @@ export default class PlansService {
     // * OK
     let result = 100;
     let color = 'Tím';
-    if (target === undefined || measures.length === 0) return { result, color };
-
+    if (target === undefined) return { result, color };
+    if (actual === undefined) return { result: 0, color };
+    if (measures.length === 0) return { result, color };
     for (const measure of measures) {
       const comparedNumber = (measure.percentOfTarget * target) / 100;
       switch (measure.comparison) {
@@ -2238,7 +2239,7 @@ export default class PlansService {
           const targets = monthly_targets.map((item) => item.target);
           const actuals = monthly_targets.map((item) =>
             !item.actual || item.actual.approve !== ApproveRegistration.Accepted
-              ? 0
+              ? undefined
               : item.actual.value,
           );
 
@@ -2289,6 +2290,8 @@ export default class PlansService {
   aggregateNumbers(numbers: number[], aggregation: Aggregation) {
     const count = numbers.length;
     if (count !== 0) {
+      numbers = numbers.filter((item) => item !== undefined);
+      if (numbers.length === 0) return undefined;
       switch (aggregation) {
         case Aggregation.Sum:
           return numbers.reduce((pre, cur) => pre + cur, 0);
@@ -2300,7 +2303,7 @@ export default class PlansService {
         case Aggregation.Min:
           return numbers.reduce((pre, cur) => (pre < cur ? pre : cur));
         case Aggregation.New:
-          return numbers[count - 1];
+          return numbers[numbers.length - 1];
         default:
           break;
       }
@@ -2358,7 +2361,7 @@ export default class PlansService {
             const actuals = monthly_target_of_employees.map((item) =>
               !item.actual ||
               item.actual.approve !== ApproveRegistration.Accepted
-                ? 0
+                ? undefined
                 : item.actual.value,
             );
             const target = this.aggregateNumbers(
@@ -2457,7 +2460,7 @@ export default class PlansService {
           const targets = quarterly_targets.map((item) => item.target);
           const actuals = quarterly_targets.map((item) =>
             !item.actual || item.actual.approve !== ApproveRegistration.Accepted
-              ? 0
+              ? undefined
               : item.actual.value,
           );
 
@@ -2552,7 +2555,7 @@ export default class PlansService {
               const actuals = monthly_target_of_employees.map((item) =>
                 !item.actual ||
                 item.actual.approve !== ApproveRegistration.Accepted
-                  ? 0
+                  ? undefined
                   : item.actual.value,
               );
               const target = this.aggregateNumbers(
