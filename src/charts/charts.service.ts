@@ -8,7 +8,12 @@ import User from 'src/users/user.entity';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import { Like, Repository } from 'typeorm';
 import { Chart } from './chart.entity';
-import { CreateChartDto, PropertiesDto, UpdateChartDto } from './dto/chart.dto';
+import {
+  CreateChartDto,
+  PropertiesDto,
+  UpdateChartDto,
+  FilterDto,
+} from './dto/chart.dto';
 import Role from 'src/users/role.enum';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { UsersService } from 'src/users/users.service';
@@ -159,13 +164,120 @@ export default class ChartsService {
     throw new CustomNotFoundException(`Không tìm thấy biểu đồ id ${chart_id}`);
   }
 
+  monthToString(month: number) {
+    let key;
+    switch (month) {
+      case 1:
+        key = 'Tháng 1';
+        break;
+      case 2:
+        key = 'Tháng 2';
+        break;
+      case 3:
+        key = 'Tháng 3';
+        break;
+      case 4:
+        key = 'Tháng 4';
+        break;
+      case 5:
+        key = 'Tháng 5';
+        break;
+      case 6:
+        key = 'Tháng 6';
+        break;
+      case 7:
+        key = 'Tháng 7';
+        break;
+      case 8:
+        key = 'Tháng 8';
+        break;
+      case 9:
+        key = 'Tháng 9';
+        break;
+      case 10:
+        key = 'Tháng 10';
+        break;
+      case 11:
+        key = 'Tháng 11';
+        break;
+      case 12:
+        key = 'Tháng 12';
+        break;
+      default:
+        break;
+    }
+    return key;
+  }
+
+  quarterToString(quarter: number) {
+    let key;
+    switch (quarter) {
+      case 1:
+        key = 'Quý 1';
+        break;
+      case 2:
+        key = 'Quý 2';
+        break;
+      case 3:
+        key = 'Quý 3';
+        break;
+      case 4:
+        key = 'Quý 4';
+        break;
+      default:
+        break;
+    }
+    return key;
+  }
+
+  // TODO:
+  getPoints(chart: Chart) {
+    const points = [];
+    const { properties } = chart;
+    const { view, months } = properties;
+    switch (view) {
+      case ViewType.Month:
+        for (const month of months) {
+          const point = { label: this.monthToString(month) };
+          points.push(point);
+        }
+        break;
+      case ViewType.Quarter:
+        for (const month of months) {
+          if ([1, 2, 3].includes(month)) {
+            const point = { label: this.quarterToString(1) };
+            points.push(point);
+          } else if ([4, 5, 6].includes(month)) {
+            const point = { label: this.quarterToString(2) };
+            points.push(point);
+          } else if ([7, 8, 9].includes(month)) {
+            const point = { label: this.quarterToString(3) };
+            points.push(point);
+          } else {
+            const point = { label: this.quarterToString(4) };
+            points.push(point);
+          }
+        }
+        break;
+      case ViewType.Year:
+        break;
+      case ViewType.Employee:
+        break;
+      case ViewType.Department:
+        break;
+      default:
+        break;
+    }
+    return points;
+  }
+
   async getChart(chart_id: number, dashboard_id: number, user: User) {
     const chart = await this.getChartById(chart_id, dashboard_id, user);
-    const { chart_name, description, properties, plan } = chart;
-    const { kpis, months, filters, view, chartType } = properties;
-
+    const { plan, properties } = chart;
+    const { kpis } = properties;
     const kpi_templates = await this.kpiTemplatesService.getKpiTemplates(kpis);
     const kpi_template = kpi_templates[0];
+
     const { kpi_template_id, kpi_template_name, unit } = kpi_template;
 
     const data = await this.plansService.getDataOfUser(
@@ -173,27 +285,33 @@ export default class ChartsService {
       kpi_template,
       user,
     );
-
     const target = data.first_monthly_target.target;
     const actual = data.first_monthly_target.actual.value;
     const measures = kpi_template.measures.items;
-
     const resultOfKpi = await this.plansService.resultOfKpi(
       target,
       actual,
       measures,
     );
-    const first_month = { resultOfKpi, target, actual };
 
-    return {
-      chart_id,
-      chart_name,
-      description,
-      plan,
-      months,
-      view,
-      chartType,
-      kpi: { kpi_template_id, kpi_template_name, unit, first_month },
-    };
+    // TODO number of points
+    const points = this.getPoints(chart);
+
+    // const point = {
+    //   label: 'Tháng 1',
+    //   series: [
+    //     {
+    //       kpi_template_id,
+    //       kpi_template_name,
+    //       unit,
+    //       target,
+    //       actual,
+    //       resultOfKpi,
+    //     },
+    //   ],
+    // };
+    // const points = [point];
+
+    return { points };
   }
 }

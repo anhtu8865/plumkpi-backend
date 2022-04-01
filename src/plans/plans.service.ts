@@ -97,11 +97,12 @@ export default class PlansService {
 
   async getPlanKpiCategories(plan_id: number) {
     try {
-      const result = await this.plansKpiCategoriesRepository.find({
+      let result = await this.plansKpiCategoriesRepository.find({
         where: { plan: { plan_id } },
         relations: ['kpi_category'],
       });
       if (result) {
+        result = result.filter((item) => item.weight !== 0);
         return result;
       }
       throw new CustomNotFoundException(`Kế hoạch id ${plan_id} không tồn tại`);
@@ -502,16 +503,16 @@ export default class PlansService {
     name: string,
     kpi_category_id: number,
   ) {
-    const { kpi_category_name } =
-      await this.kpiCategoriesService.getKpiCategoryById(kpi_category_id);
-    if (kpi_category_name === 'Cá nhân') {
-      return this.getKpisOfPersonalKpisOfDeptsByDirector(
-        plan_id,
-        offset,
-        limit,
-        name,
-      );
-    }
+    // const { kpi_category_name } =
+    //   await this.kpiCategoriesService.getKpiCategoryById(kpi_category_id);
+    // if (kpi_category_name === 'Cá nhân') {
+    //   return this.getKpisOfPersonalKpisOfDeptsByDirector(
+    //     plan_id,
+    //     offset,
+    //     limit,
+    //     name,
+    //   );
+    // }
     const [items, count] = await this.planKpiTemplatesRepository.findAndCount({
       where: {
         plan: { plan_id },
@@ -2083,10 +2084,11 @@ export default class PlansService {
 
   resultOfKpi(target: number, actual: number, measures: Measure[]) {
     // * target is not assigned
-    if (target === undefined) return { result: 100, color: 'Tím' };
-
-    let result = 0;
+    // * OK
+    let result = 100;
     let color = 'Tím';
+    if (target === undefined || measures.length === 0) return { result, color };
+
     for (const measure of measures) {
       const comparedNumber = (measure.percentOfTarget * target) / 100;
       switch (measure.comparison) {
@@ -2205,13 +2207,13 @@ export default class PlansService {
     months: number[],
   ) {
     try {
-      let kpiCategories = await this.getPlanKpiCategoriesByEmployee(
+      const kpiCategories = await this.getPlanKpiCategoriesByEmployee(
         plan_id,
         user_id,
       );
       let result = 0;
       const kpi_categories = [];
-      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
+      // kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
       for (const kpiCategory of kpiCategories) {
         const { items: kpis } = await this.getKpisOfOneCategoryByEmployee(
           plan_id,
@@ -2228,7 +2230,9 @@ export default class PlansService {
           const monthly_targets = [];
           for (const month of months) {
             const key = this.monthlyKey(month);
-            if (kpi[key]) monthly_targets.push(kpi[key]);
+            // To personal kpi, if its approve # chấp nhận, equal not assigned
+            if (kpi[key] && kpi[key].approve === ApproveRegistration.Accepted)
+              monthly_targets.push(kpi[key]);
           }
 
           const targets = monthly_targets.map((item) => item.target);
@@ -2311,14 +2315,16 @@ export default class PlansService {
     months: number[],
   ) {
     try {
-      let kpiCategories = await this.getPlanKpiCategoriesByManager(
-        plan_id,
-        dept_id,
-      );
+      const rows = await this.getPlanKpiCategoriesByManager(plan_id, dept_id);
       let result = 0;
       const kpi_categories = [];
-      kpiCategories = kpiCategories.filter((item) => item.weight !== 0);
 
+      const kpiCategories = [];
+      let personalCategory;
+      rows.map((item) => {
+        if (item.weight !== 0) kpiCategories.push(item);
+        else personalCategory = item;
+      });
       for (const kpiCategory of kpiCategories) {
         const { items: kpis } = await this.getKpisOfOneCategoryByManager(
           plan_id,
@@ -2343,6 +2349,7 @@ export default class PlansService {
             const monthly_target_of_employees = [];
             const key = this.monthlyKey(month);
             target_kpi_of_employees.map((item) => {
+              // * there is no personal kpi of employee, so approve is always 'Chấp nhận'
               if (item[key]) monthly_target_of_employees.push(item[key]);
             });
             const targets = monthly_target_of_employees.map(
@@ -2411,6 +2418,76 @@ export default class PlansService {
         kpi_categories.push({
           weight: kpiCategory.weight,
           kpi_category_id: kpiCategory.kpi_category.kpi_category_id,
+          resultOfKpiCategory,
+          kpi_templates,
+        });
+      }
+
+      // TODO add personal kpi of manager
+      if (personalCategory) {
+        const { items: kpis } = await this.getKpisOfOneCategoryByManager(
+          plan_id,
+          null,
+          null,
+          null,
+          personalCategory.kpi_category.kpi_category_id,
+          dept_id,
+        );
+        let resultOfKpiCategory = 0;
+        const kpi_templates = [];
+        for (const kpi of kpis) {
+          const quarterly_targets = [];
+          const quarters = [];
+          if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
+            quarters.push(1);
+          } else if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
+            quarters.push(2);
+          } else if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
+            quarters.push(3);
+          } else if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
+            quarters.push(4);
+          } else if (months.length === 12) {
+            quarters.push(1, 2, 3, 4);
+          }
+          for (const quarter of quarters) {
+            const key = this.quarterlyKey(quarter);
+            if (kpi[key] && kpi[key].approve === ApproveRegistration.Accepted)
+              quarterly_targets.push(kpi[key]);
+          }
+          const targets = quarterly_targets.map((item) => item.target);
+          const actuals = quarterly_targets.map((item) =>
+            !item.actual || item.actual.approve !== ApproveRegistration.Accepted
+              ? 0
+              : item.actual.value,
+          );
+
+          const target = this.aggregateNumbers(
+            targets,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+
+          const actual = this.aggregateNumbers(
+            actuals,
+            kpi.plan_kpi_template.kpi_template.aggregation,
+          );
+          const resultOfKpi = this.resultOfKpi(
+            target,
+            actual,
+            kpi.plan_kpi_template.kpi_template.measures.items,
+          );
+          resultOfKpiCategory += (resultOfKpi.result * kpi.weight) / 100;
+          kpi_templates.push({
+            weight: kpi.weight,
+            kpi_template_id: kpi.plan_kpi_template.kpi_template.kpi_template_id,
+            resultOfKpi,
+            target,
+            actual,
+          });
+        }
+        result += (resultOfKpiCategory * personalCategory.weight) / 100;
+        kpi_categories.push({
+          weight: personalCategory.weight,
+          kpi_category_id: personalCategory.kpi_category.kpi_category_id,
           resultOfKpiCategory,
           kpi_templates,
         });

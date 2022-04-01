@@ -28,3 +28,22 @@ export enum ChartType {
   List = 'Danh sách', // * ViewType = null
   Gauge = 'Đo', // * ViewType = null, use color of measure of kpi
 }
+
+export interface ResultOfKpi {
+  result: number;
+  color: string;
+}
+
+export interface ASeries {
+  kpi_template_id: number;
+  kpi_template_name: string;
+  unit: string;
+  target: number;
+  actual: number;
+  resultOfKpi: ResultOfKpi;
+}
+
+export interface Point {
+  label: string;
+  series: ASeries[];
+}

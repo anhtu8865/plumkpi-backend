@@ -480,6 +480,20 @@ export default class PlansController {
     );
   }
 
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get(':id/kpis/director/personal-kpis-of-depts')
+  async getKpisOfPersonalKpisOfDeptsByDirector(
+    @Param() { id }: FindOneParams,
+    @Query() { offset, limit, name }: PaginationParams,
+  ) {
+    return this.plansService.getKpisOfPersonalKpisOfDeptsByDirector(
+      Number(id),
+      offset,
+      limit,
+      name,
+    );
+  }
+
   @UseGuards(RoleGuard([Role.Employee]))
   @Get(':id/kpis/employee')
   async getKpisOfOneCategoryByEmployee(
