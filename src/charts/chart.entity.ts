@@ -1,6 +1,5 @@
 import { Exclude } from 'class-transformer';
 import { Dashboard } from 'src/dashboards/dashboard.entity';
-import Plan from 'src/plans/plan.entity';
 import {
   Column,
   CreateDateColumn,

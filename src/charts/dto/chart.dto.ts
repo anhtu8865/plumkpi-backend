@@ -5,7 +5,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
 } from 'class-validator';
 import { ChartType, DateType } from '../interface/properties.interface';
