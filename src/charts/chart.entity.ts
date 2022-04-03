@@ -16,19 +16,10 @@ export class Chart {
   @PrimaryGeneratedColumn()
   chart_id: number;
 
-  @Column()
-  chart_name: string;
-
-  @Column({ nullable: true })
-  description?: string;
-
   @ManyToOne(() => Dashboard)
   dashboard: Dashboard;
 
-  @ManyToOne(() => Plan)
-  plan: Plan;
-
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'jsonb' })
   properties: Properties;
 
   @CreateDateColumn()

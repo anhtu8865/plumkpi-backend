@@ -29,43 +29,33 @@ export default class ChartsController {
   @Post()
   async createChart(
     @Body()
-    {
-      chart_name,
-      description,
-      plan_id,
-      dashboard_id,
-      properties,
-    }: CreateChartDto,
+    data: CreateChartDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
-    return this.chartsService.createChart(
-      {
-        chart_name,
-        description,
-        plan_id,
-        dashboard_id,
-        properties,
-      },
-      user,
-    );
+    return this.chartsService.createChart(data, user);
   }
 
   @Put('chart')
   async updateChart(
     @Query() { chart_id, dashboard_id }: ChartParam,
-    @Body() { chart_name, description, properties }: UpdateChartDto,
+    @Body() data: UpdateChartDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
     chart_id = Number(chart_id);
     dashboard_id = Number(dashboard_id);
-    return this.chartsService.updateChart(
-      { chart_name, description, properties },
-      chart_id,
-      dashboard_id,
-      user,
-    );
+    return this.chartsService.updateChart(data, chart_id, dashboard_id, user);
+  }
+
+  @Get()
+  async getCharts(
+    @Req() request: RequestWithUser,
+    @Query() { dashboard_id }: DashboardParam,
+  ) {
+    const user = request.user;
+    dashboard_id = Number(dashboard_id);
+    return this.chartsService.getCharts(dashboard_id, user);
   }
 
   @Delete('chart')
@@ -79,23 +69,14 @@ export default class ChartsController {
     return this.chartsService.deleteChart(chart_id, dashboard_id, user);
   }
 
-  @Get()
-  async getCharts(
-    @Req() request: RequestWithUser,
-    @Query() { dashboard_id }: DashboardParam,
-  ) {
-    const user = request.user;
-    return this.chartsService.getCharts(dashboard_id, user);
-  }
-
-  @Get('chart')
-  async getChart(
+  @Get('data')
+  async getDataChart(
     @Query() { chart_id, dashboard_id }: ChartParam,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
     chart_id = Number(chart_id);
     dashboard_id = Number(dashboard_id);
-    return this.chartsService.getChart(chart_id, dashboard_id, user);
+    return this.chartsService.getDataChart(chart_id, dashboard_id, user);
   }
 }

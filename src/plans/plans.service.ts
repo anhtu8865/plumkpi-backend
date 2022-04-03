@@ -3522,15 +3522,19 @@ export default class PlansService {
     return kpi_categories;
   }
 
-  async getDataOfUser(plan: Plan, kpi_template: KpiTemplate, user: User) {
+  async getMonthlyTargetsOfUser(
+    plan: Plan,
+    kpi_template: KpiTemplate,
+    user: User,
+  ) {
     return this.planKpiTemplateUsersRepository.findOne({
-      where: { plan_kpi_template: { plan, kpi_template }, user },
-      // relations: [
-      //   'plan_kpi_template',
-      //   'user',
-      //   'plan_kpi_template.plan',
-      //   'plan_kpi_template.kpi_template',
-      // ],
+      where: {
+        plan_kpi_template: {
+          plan,
+          kpi_template,
+        },
+        user,
+      },
     });
   }
 }

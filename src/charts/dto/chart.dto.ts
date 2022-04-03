@@ -1,83 +1,66 @@
-import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
-  Max,
-  Min,
-  ValidateNested,
+  IsString,
 } from 'class-validator';
-import { ChartType, ViewType } from '../interface/properties.interface';
-
-export class FilterDto {
-  @IsNumber()
-  @Min(1)
-  dept_id: number;
-
-  @IsNumber({}, { each: true })
-  @IsArray()
-  user_ids: number[];
-}
-
-export class PropertiesDto {
-  @IsNumber({}, { each: true })
-  @ArrayNotEmpty()
-  @IsArray()
-  kpis: number[];
-
-  @IsNumber({}, { each: true })
-  @Min(1, { each: true })
-  @Max(12, { each: true })
-  @ArrayNotEmpty()
-  @IsArray()
-  months: number[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => FilterDto)
-  filters: FilterDto[];
-
-  @IsEnum(ViewType)
-  view: ViewType;
-
-  @IsEnum(ChartType)
-  chartType: ChartType;
-}
+import { DateType } from '../interface/properties.interface';
 
 export class CreateChartDto {
   @IsNumber()
   dashboard_id: number;
 
-  @IsNumber()
-  plan_id: number;
-
   @IsNotEmpty({ message: 'Tên biểu đồ không được để trống' })
   chart_name: string;
 
-  description?: string;
+  @IsString()
+  description: string;
 
-  @IsObject()
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PropertiesDto)
-  properties: PropertiesDto;
+  @IsNumber()
+  plan_id: number;
+
+  @IsNumber({}, { each: true })
+  @ArrayNotEmpty()
+  @IsArray()
+  kpis: number[];
+
+  @IsEnum(DateType)
+  dateType: DateType;
+
+  @IsNumber({}, { each: true })
+  @IsArray()
+  period: number[];
+
+  @IsBoolean()
+  separated: boolean;
 }
 
 export class UpdateChartDto {
   @IsNotEmpty({ message: 'Tên biểu đồ không được để trống' })
-  @IsOptional()
-  chart_name?: string;
+  chart_name: string;
 
-  description?: string;
+  @IsString()
+  description: string;
 
-  @IsObject()
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PropertiesDto)
-  @IsOptional()
-  properties?: PropertiesDto;
+  @IsNumber()
+  plan_id: number;
+
+  @IsNumber({}, { each: true })
+  @ArrayNotEmpty()
+  @IsArray()
+  kpis: number[];
+
+  @IsEnum(DateType)
+  dateType: DateType;
+
+  @IsNumber({}, { each: true })
+  @IsArray()
+  period: number[];
+
+  @IsBoolean()
+  separated: boolean;
 }
