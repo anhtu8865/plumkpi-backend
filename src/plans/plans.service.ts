@@ -33,6 +33,7 @@ import Comparison from 'src/kpiTemplates/comparison.enum';
 import Aggregation from 'src/kpiTemplates/aggregation.enum';
 import User from 'src/users/user.entity';
 import Role from 'src/users/role.enum';
+import Dept from 'src/departments/dept.entity';
 
 @Injectable()
 export default class PlansService {
@@ -2041,6 +2042,26 @@ export default class PlansService {
     return result;
   }
 
+  async getTargetKpiOfEmployeesWithoutPagination(
+    plan_id: number,
+    kpi_template_id: number,
+    dept_id: number,
+  ) {
+    const rows = await this.planKpiTemplateUsersRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: { kpi_template_id },
+        },
+        user: { dept: { dept_id } },
+      },
+      relations: ['user'],
+      order: { user: 'ASC' },
+    });
+
+    return rows;
+  }
+
   async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
     const rows = await this.plansKpiCategoryDeptsRepository.find({
       where: { plan_kpi_category: { plan: { plan_id } }, dept: { dept_id } },
@@ -3454,7 +3475,9 @@ export default class PlansService {
           delete kpi_template.unit;
         }
       }
-      return kpi_categories;
+      return kpi_categories.filter(
+        (kpi_category) => kpi_category.kpi_category_name !== 'Cá nhân',
+      );
     } else if (role === Role.Manager) {
       const dept = user.manage;
       result = await this.planKpiTemplateDeptsRepository.find({
@@ -3519,7 +3542,10 @@ export default class PlansService {
         delete kpi_template.unit;
       }
     }
-    return kpi_categories;
+
+    return kpi_categories.filter(
+      (kpi_category) => kpi_category.kpi_category_name !== 'Cá nhân',
+    );
   }
 
   async getMonthlyTargetsOfUser(
@@ -3534,6 +3560,22 @@ export default class PlansService {
           kpi_template,
         },
         user,
+      },
+    });
+  }
+
+  async getQuarterlyTargetsOfDept(
+    plan: Plan,
+    kpi_template: KpiTemplate,
+    dept: Dept,
+  ) {
+    return this.planKpiTemplateDeptsRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          plan,
+          kpi_template,
+        },
+        dept,
       },
     });
   }
