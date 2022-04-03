@@ -15,9 +15,6 @@ export interface Properties {
 }
 
 export enum ChartType {
-  Line = 'Đường',
-  Column = 'Cột',
-  Pie = 'Tròn',
-  List = 'Danh sách', // * ViewType = null
-  Gauge = 'Đo', // * ViewType = null, use color of measure of kpi
+  Chart = 'Biểu đồ',
+  Report = 'Báo cáo',
 }

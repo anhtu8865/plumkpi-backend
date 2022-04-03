@@ -7,7 +7,7 @@ import User from 'src/users/user.entity';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import { Like, Repository } from 'typeorm';
 import { Chart } from './chart.entity';
-import { CreateChartDto, UpdateChartDto } from './dto/chart.dto';
+import { CreateChartDto, PropertiesDto } from './dto/chart.dto';
 import Role from 'src/users/role.enum';
 import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 import { UsersService } from 'src/users/users.service';
@@ -44,6 +44,7 @@ export default class ChartsService {
       dateType,
       period,
       separated,
+      chart_type,
     } = data;
 
     const dashboard = await this.dashboardsService.getDashboardById(
@@ -59,7 +60,7 @@ export default class ChartsService {
       period,
       separated,
     };
-    return this.chartsRepository.save({ dashboard, properties });
+    return this.chartsRepository.save({ dashboard, properties, chart_type });
   }
 
   async getChartById(chart_id: number, dashboard_id: number, user: User) {
@@ -78,7 +79,7 @@ export default class ChartsService {
   }
 
   async updateChart(
-    data: UpdateChartDto,
+    data: PropertiesDto,
     chart_id: number,
     dashboard_id: number,
     user: User,
@@ -522,7 +523,7 @@ export default class ChartsService {
       actual,
       kpi_template.measures.items,
     );
-    return { target, actual, resultOfKpi };
+    return { target, actual, resultOfKpi, unit: kpi_template.unit };
   }
 
   getDataPointOfDept(
@@ -613,7 +614,7 @@ export default class ChartsService {
       actual,
       kpi_template.measures.items,
     );
-    return { target, actual, resultOfKpi };
+    return { target, actual, resultOfKpi, unit: kpi_template.unit };
   }
 
   getDataPointOfUser(
@@ -673,7 +674,7 @@ export default class ChartsService {
       actual,
       kpi_template.measures.items,
     );
-    return { target, actual, resultOfKpi };
+    return { target, actual, resultOfKpi, unit: kpi_template.unit };
   }
 
   getLabels(dateType: DateType, period: number[], plan: Plan) {
@@ -752,5 +753,45 @@ export default class ChartsService {
         break;
     }
     return key;
+  }
+
+  async getData(data: PropertiesDto, user: User) {
+    const { plan_id, kpis, dateType, period, separated } = data;
+
+    const plan = await this.plansService.getPlanById(plan_id);
+    const labels = this.getLabels(dateType, period, plan);
+
+    const kpi_templates = await this.kpiTemplatesService.getKpiTemplates(kpis);
+
+    let datasets = [];
+    const role = user.role;
+    if (role === Role.Employee) {
+      datasets = await this.getDatasetsOfUser(
+        kpi_templates,
+        plan,
+        user,
+        dateType,
+        period,
+      );
+    } else if (role === Role.Manager) {
+      const dept = user.manage;
+      datasets = await this.getDatasetsOfDept(
+        kpi_templates,
+        plan,
+        dept,
+        dateType,
+        period,
+        separated,
+      );
+    } else {
+      datasets = await this.getDatasetsOfDirector(
+        kpi_templates,
+        plan,
+        dateType,
+        period,
+        separated,
+      );
+    }
+    return { labels, datasets };
   }
 }

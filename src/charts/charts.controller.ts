@@ -16,7 +16,7 @@ import RequestWithUser from 'src/authentication/requestWithUser.interface';
 import Role from 'src/users/role.enum';
 import RoleGuard from 'src/users/role.guard';
 import ChartsService from './charts.service';
-import { CreateChartDto, UpdateChartDto } from './dto/chart.dto';
+import { CreateChartDto, PropertiesDto } from './dto/chart.dto';
 import { ChartParam, DashboardParam } from './params/chartParams';
 
 @Controller('charts')
@@ -39,7 +39,7 @@ export default class ChartsController {
   @Put('chart')
   async updateChart(
     @Query() { chart_id, dashboard_id }: ChartParam,
-    @Body() data: UpdateChartDto,
+    @Body() data: PropertiesDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
@@ -69,14 +69,20 @@ export default class ChartsController {
     return this.chartsService.deleteChart(chart_id, dashboard_id, user);
   }
 
+  // @Get('data')
+  // async getDataChart(
+  //   @Query() { chart_id, dashboard_id }: ChartParam,
+  //   @Req() request: RequestWithUser,
+  // ) {
+  //   const user = request.user;
+  //   chart_id = Number(chart_id);
+  //   dashboard_id = Number(dashboard_id);
+  //   return this.chartsService.getDataChart(chart_id, dashboard_id, user);
+  // }
+
   @Get('data')
-  async getDataChart(
-    @Query() { chart_id, dashboard_id }: ChartParam,
-    @Req() request: RequestWithUser,
-  ) {
+  async getData(@Req() request: RequestWithUser, @Body() data: PropertiesDto) {
     const user = request.user;
-    chart_id = Number(chart_id);
-    dashboard_id = Number(dashboard_id);
-    return this.chartsService.getDataChart(chart_id, dashboard_id, user);
+    return this.chartsService.getData(data, user);
   }
 }

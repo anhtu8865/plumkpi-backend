@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { DateType } from '../interface/properties.interface';
+import { ChartType, DateType } from '../interface/properties.interface';
 
 export class CreateChartDto {
   @IsNumber()
@@ -37,9 +37,12 @@ export class CreateChartDto {
 
   @IsBoolean()
   separated: boolean;
+
+  @IsEnum(ChartType)
+  chart_type: ChartType;
 }
 
-export class UpdateChartDto {
+export class PropertiesDto {
   @IsNotEmpty({ message: 'Tên biểu đồ không được để trống' })
   chart_name: string;
 

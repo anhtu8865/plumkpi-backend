@@ -9,12 +9,19 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Properties } from './interface/properties.interface';
+import { ChartType, Properties } from './interface/properties.interface';
 
 @Entity({ name: 'charts' })
 export class Chart {
   @PrimaryGeneratedColumn()
   chart_id: number;
+
+  @Column({
+    type: 'enum',
+    enum: ChartType,
+    default: ChartType.Chart,
+  })
+  chart_type: ChartType;
 
   @ManyToOne(() => Dashboard)
   dashboard: Dashboard;
