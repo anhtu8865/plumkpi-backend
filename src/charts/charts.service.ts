@@ -19,6 +19,7 @@ import ApproveRegistration from 'src/plans/approveRegistration.enum';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
 import Dept from 'src/departments/dept.entity';
 import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
+import PlanKpiTemplate from 'src/plans/planKpiTemplate.entity';
 
 @Injectable()
 export default class ChartsService {
@@ -152,6 +153,13 @@ export default class ChartsService {
         separated,
       );
     } else {
+      datasets = await this.getDatasetsOfDirector(
+        kpi_templates,
+        plan,
+        dateType,
+        period,
+        separated,
+      );
     }
     return { labels, datasets };
   }
@@ -191,6 +199,47 @@ export default class ChartsService {
           plan,
           kpi_template,
           dept,
+          dateType,
+          period,
+        );
+        datasets.push(dataset);
+      }
+    }
+    return datasets;
+  }
+
+  async getDatasetsOfDirector(
+    kpi_templates: KpiTemplate[],
+    plan: Plan,
+    dateType: DateType,
+    period: number[],
+    separated: boolean,
+  ) {
+    const datasets = [];
+    if (separated && kpi_templates.length === 1) {
+      const kpi_template = kpi_templates[0];
+      const target_kpi_of_depts = await this.plansService.getTargetKpiOfdepts(
+        plan.plan_id,
+        kpi_template.kpi_template_id,
+      );
+
+      const depts = target_kpi_of_depts.map((item) => item.dept);
+      for (const dept of depts) {
+        const dataset = await this.getDatasetOfDept(
+          plan,
+          kpi_template,
+          dept,
+          dateType,
+          period,
+        );
+        dataset.label = dept.dept_name;
+        datasets.push(dataset);
+      }
+    } else {
+      for (const kpi_template of kpi_templates) {
+        const dataset = await this.getDatasetOfDirector(
+          plan,
+          kpi_template,
           dateType,
           period,
         );
@@ -298,6 +347,182 @@ export default class ChartsService {
         ),
       );
     return { label, data };
+  }
+
+  async getDatasetOfDirector(
+    plan: Plan,
+    kpi_template: KpiTemplate,
+    dateType: DateType,
+    period: number[],
+  ) {
+    const yearly_target_kpi = await this.plansService.getYearlyTargetKpi(
+      plan,
+      kpi_template,
+    );
+
+    const target_kpi_of_depts = await this.plansService.getTargetKpiOfdepts(
+      plan.plan_id,
+      kpi_template.kpi_template_id,
+    );
+
+    const label = kpi_template.kpi_template_name;
+    const data = [];
+    if (dateType === DateType.Year) {
+      const dataPoint = await this.getDataPointOfDirector(
+        yearly_target_kpi,
+        target_kpi_of_depts,
+        dateType,
+        0,
+        kpi_template,
+        plan,
+      );
+      data.push(dataPoint);
+    } else {
+      for (const time of period) {
+        const dataPoint = await this.getDataPointOfDirector(
+          yearly_target_kpi,
+          target_kpi_of_depts,
+          dateType,
+          time,
+          kpi_template,
+          plan,
+        );
+        data.push(dataPoint);
+      }
+    }
+
+    return { label, data };
+  }
+
+  async getDataPointOfDirector(
+    yearly_target_kpi: PlanKpiTemplate,
+    target_kpi_of_depts: PlanKpiTemplateDept[],
+    dateType: DateType,
+    time: number,
+    kpi_template: KpiTemplate,
+    plan: Plan,
+  ) {
+    const monthly_targets = [];
+    const monthly_actuals = [];
+    let months;
+    if (dateType === DateType.Month) {
+      months = [time];
+    } else if (dateType === DateType.Quarter) {
+      switch (time) {
+        case 1:
+          months = [1, 2, 3];
+          break;
+        case 2:
+          months = [4, 5, 6];
+          break;
+        case 3:
+          months = [7, 8, 9];
+          break;
+        case 4:
+          months = [10, 11, 12];
+          break;
+      }
+    } else {
+      months = [...Array(13).keys()].slice(1);
+    }
+    const keys = months.map((item) => this.plansService.monthlyKey(item));
+
+    for (const key of keys) {
+      const monthly_target_of_depts = [];
+      const monthly_actual_of_depts = [];
+      for (const target_kpi_of_dept of target_kpi_of_depts) {
+        const monthly_target_of_employees = [];
+        const target_kpi_of_employees =
+          await this.plansService.getTargetKpiOfEmployees(
+            plan.plan_id,
+            kpi_template.kpi_template_id,
+            target_kpi_of_dept.dept.dept_id,
+          );
+        target_kpi_of_employees.map((item) => {
+          // * there is no personal kpi of employee, so approve is always 'Chấp nhận'
+          if (item[key]) monthly_target_of_employees.push(item[key]);
+        });
+
+        const targets = monthly_target_of_employees.map((item) => item.target);
+        const actuals = monthly_target_of_employees.map((item) =>
+          !item.actual || item.actual.approve !== ApproveRegistration.Accepted
+            ? undefined
+            : item.actual.value,
+        );
+
+        const target = this.plansService.aggregateNumbers(
+          targets,
+          kpi_template.aggregation,
+        );
+        const actual = this.plansService.aggregateNumbers(
+          actuals,
+          kpi_template.aggregation,
+        );
+        if (target !== undefined) {
+          monthly_target_of_depts.push(target);
+          monthly_actual_of_depts.push(actual);
+        }
+      }
+      const target = this.plansService.aggregateNumbers(
+        monthly_target_of_depts,
+        kpi_template.aggregation,
+      );
+
+      const actual = this.plansService.aggregateNumbers(
+        monthly_actual_of_depts,
+        kpi_template.aggregation,
+      );
+      if (target !== undefined) {
+        monthly_targets.push(target);
+        monthly_actuals.push(actual);
+      }
+    }
+
+    let target = this.plansService.aggregateNumbers(
+      monthly_targets,
+      kpi_template.aggregation,
+    );
+
+    const actual = this.plansService.aggregateNumbers(
+      monthly_actuals,
+      kpi_template.aggregation,
+    );
+
+    if (months.length === 3) {
+      const targets = [];
+      let key;
+      if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
+        key = this.plansService.quarterlyKey(1);
+      }
+      if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
+        key = this.plansService.quarterlyKey(2);
+      }
+      if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
+        key = this.plansService.quarterlyKey(3);
+      }
+      if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
+        key = this.plansService.quarterlyKey(4);
+      }
+      for (const target_kpi_of_dept of target_kpi_of_depts) {
+        if (target_kpi_of_dept[key])
+          targets.push(target_kpi_of_dept[key].target);
+      }
+      target = this.plansService.aggregateNumbers(
+        targets,
+        kpi_template.aggregation,
+      );
+    }
+
+    if (months.length === 12) {
+      target = yearly_target_kpi.target ? yearly_target_kpi.target : undefined;
+    }
+
+    const resultOfKpi = this.plansService.resultOfKpi(
+      target,
+      actual,
+      kpi_template.measures.items,
+    );
+    return { target, actual, resultOfKpi };
   }
 
   getDataPointOfDept(

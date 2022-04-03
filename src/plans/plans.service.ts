@@ -3579,4 +3579,8 @@ export default class PlansService {
       },
     });
   }
+
+  async getYearlyTargetKpi(plan: Plan, kpi_template: KpiTemplate) {
+    return this.planKpiTemplatesRepository.findOne({ plan, kpi_template });
+  }
 }
