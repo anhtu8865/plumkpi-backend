@@ -279,6 +279,14 @@ export default class PlansController {
     return this.plansService.getTargetKpiOfdepts(plan_id, kpi_template_id);
   }
 
+  @UseGuards(RoleGuard([Role.Director]))
+  @Get('plan/depts-assigned-kpi')
+  async getDeptsAssignedKpi(
+    @Query() { plan_id, kpi_template_id }: TargetKpiOfDeptsParams,
+  ) {
+    return this.plansService.getDeptsAssignedKpi(plan_id, kpi_template_id);
+  }
+
   @UseGuards(RoleGuard([Role.Manager]))
   @Get(':id/kpi-categories/manager')
   getPlanKpiCategoriesByManager(
@@ -734,6 +742,20 @@ export default class PlansController {
   ) {
     const dept_id = request.user.manage.dept_id;
     return this.plansService.getTargetKpiOfEmployees(
+      plan_id,
+      kpi_template_id,
+      dept_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get('plan/employees-assigned-kpi')
+  async getEmployeesAssignedKpi(
+    @Query() { plan_id, kpi_template_id }: TargetKpiOfDeptsParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getEmployeesAssignedKpi(
       plan_id,
       kpi_template_id,
       dept_id,

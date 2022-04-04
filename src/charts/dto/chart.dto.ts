@@ -34,8 +34,9 @@ export class CreateChartDto {
   @IsArray()
   period: number[];
 
-  @IsBoolean()
-  separated: boolean;
+  @IsNumber({}, { each: true })
+  @IsArray()
+  filter: number[];
 
   @IsEnum(ChartType)
   chart_type: ChartType;
@@ -63,6 +64,7 @@ export class PropertiesDto {
   @IsArray()
   period: number[];
 
-  @IsBoolean()
-  separated: boolean;
+  @IsNumber({}, { each: true })
+  @IsArray()
+  filter: number[];
 }

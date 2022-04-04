@@ -11,7 +11,7 @@ export interface Properties {
   kpis: number[];
   dateType: DateType;
   period: number[];
-  separated: boolean;
+  filter: number[];
 }
 
 export enum ChartType {

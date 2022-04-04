@@ -43,7 +43,7 @@ export default class ChartsService {
       kpis,
       dateType,
       period,
-      separated,
+      filter,
       chart_type,
     } = data;
 
@@ -58,7 +58,7 @@ export default class ChartsService {
       kpis,
       dateType,
       period,
-      separated,
+      filter,
     };
     return this.chartsRepository.save({ dashboard, properties, chart_type });
   }
@@ -85,15 +85,8 @@ export default class ChartsService {
     user: User,
   ) {
     const chart = await this.getChartById(chart_id, dashboard_id, user);
-    const {
-      chart_name,
-      description,
-      plan_id,
-      kpis,
-      dateType,
-      period,
-      separated,
-    } = data;
+    const { chart_name, description, plan_id, kpis, dateType, period, filter } =
+      data;
 
     const properties = {
       chart_name,
@@ -102,7 +95,7 @@ export default class ChartsService {
       kpis,
       dateType,
       period,
-      separated,
+      filter,
     };
 
     return this.chartsRepository.save({ ...chart, properties });
@@ -137,7 +130,7 @@ export default class ChartsService {
   async getDataChart(chart_id: number, dashboard_id: number, user: User) {
     const chart = await this.getChartById(chart_id, dashboard_id, user);
     const { properties } = chart;
-    const { plan_id, kpis, dateType, period, separated } = properties;
+    const { plan_id, kpis, dateType, period, filter } = properties;
     const plan = await this.plansService.getPlanById(plan_id);
     const labels = this.getLabels(dateType, period, plan);
 
@@ -161,7 +154,7 @@ export default class ChartsService {
         dept,
         dateType,
         period,
-        separated,
+        filter,
       );
     } else {
       datasets = await this.getDatasetsOfDirector(
@@ -169,7 +162,7 @@ export default class ChartsService {
         plan,
         dateType,
         period,
-        separated,
+        filter,
       );
     }
     return { labels, datasets };
@@ -181,10 +174,10 @@ export default class ChartsService {
     dept: Dept,
     dateType: DateType,
     period: number[],
-    separated: boolean,
+    filter: number[],
   ) {
     const datasets = [];
-    if (separated && kpi_templates.length === 1) {
+    if (filter.length !== 0 && kpi_templates.length === 1) {
       const kpi_template = kpi_templates[0];
       const target_kpi_of_employees =
         await this.plansService.getTargetKpiOfEmployeesWithoutPagination(
@@ -192,7 +185,8 @@ export default class ChartsService {
           kpi_template.kpi_template_id,
           dept.dept_id,
         );
-      const users = target_kpi_of_employees.map((item) => item.user);
+      let users = target_kpi_of_employees.map((item) => item.user);
+      users = users.filter((user) => filter.includes(user.user_id));
       for (const user of users) {
         const dataset = await this.getDatasetOfUser(
           plan,
@@ -224,17 +218,18 @@ export default class ChartsService {
     plan: Plan,
     dateType: DateType,
     period: number[],
-    separated: boolean,
+    filter: number[],
   ) {
     const datasets = [];
-    if (separated && kpi_templates.length === 1) {
+    if (filter.length !== 0 && kpi_templates.length === 1) {
       const kpi_template = kpi_templates[0];
       const target_kpi_of_depts = await this.plansService.getTargetKpiOfdepts(
         plan.plan_id,
         kpi_template.kpi_template_id,
       );
 
-      const depts = target_kpi_of_depts.map((item) => item.dept);
+      let depts = target_kpi_of_depts.map((item) => item.dept);
+      depts = depts.filter((dept) => filter.includes(dept.dept_id));
       for (const dept of depts) {
         const dataset = await this.getDatasetOfDept(
           plan,
@@ -766,7 +761,7 @@ export default class ChartsService {
   }
 
   async getData(data: PropertiesDto, user: User) {
-    const { plan_id, kpis, dateType, period, separated } = data;
+    const { plan_id, kpis, dateType, period, filter } = data;
 
     const plan = await this.plansService.getPlanById(plan_id);
     const labels = this.getLabels(dateType, period, plan);
@@ -791,7 +786,7 @@ export default class ChartsService {
         dept,
         dateType,
         period,
-        separated,
+        filter,
       );
     } else {
       datasets = await this.getDatasetsOfDirector(
@@ -799,7 +794,7 @@ export default class ChartsService {
         plan,
         dateType,
         period,
-        separated,
+        filter,
       );
     }
     return { labels, datasets };

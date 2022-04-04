@@ -2010,6 +2010,15 @@ export default class PlansService {
     });
   }
 
+  async getDeptsAssignedKpi(plan_id: number, kpi_template_id: number) {
+    const target_kpi_of_depts = await this.getTargetKpiOfdepts(
+      plan_id,
+      kpi_template_id,
+    );
+    const depts = target_kpi_of_depts.map((item) => item.dept);
+    return depts;
+  }
+
   async getTargetKpiOfEmployees(
     plan_id: number,
     kpi_template_id: number,
@@ -2060,6 +2069,22 @@ export default class PlansService {
     });
 
     return rows;
+  }
+
+  async getEmployeesAssignedKpi(
+    plan_id: number,
+    kpi_template_id: number,
+    dept_id: number,
+  ) {
+    const target_kpi_of_employees =
+      await this.getTargetKpiOfEmployeesWithoutPagination(
+        plan_id,
+        kpi_template_id,
+        dept_id,
+      );
+
+    const users = target_kpi_of_employees.map((item) => item.user);
+    return users;
   }
 
   async getPlanKpiCategoriesByManager(plan_id: number, dept_id: number) {
