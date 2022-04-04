@@ -113,10 +113,20 @@ export default class ChartsService {
       dashboard_id,
       user,
     );
-    return this.chartsRepository.find({
+    const charts = await this.chartsRepository.find({
       where: { dashboard },
       order: { chart_id: 'ASC' },
     });
+    for (const chart of charts) {
+      const { kpis, plan_id } = chart.properties;
+      const kpi_templates = await this.kpiTemplatesService.getKpiTemplates(
+        kpis,
+      );
+      const plan = await this.plansService.getPlanById(plan_id);
+      chart['kpi_templates'] = kpi_templates;
+      chart['plan'] = plan;
+    }
+    return charts;
   }
 
   async deleteChart(chart_id: number, dashboard_id: number, user: User) {
