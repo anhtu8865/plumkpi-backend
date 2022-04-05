@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Post,
   Put,
   Query,
@@ -80,7 +81,8 @@ export default class ChartsController {
   //   return this.chartsService.getDataChart(chart_id, dashboard_id, user);
   // }
 
-  @Get('data')
+  @HttpCode(200)
+  @Post('data')
   async getData(@Req() request: RequestWithUser, @Body() data: PropertiesDto) {
     const user = request.user;
     return this.chartsService.getData(data, user);
