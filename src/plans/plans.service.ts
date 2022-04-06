@@ -34,6 +34,7 @@ import Aggregation from 'src/kpiTemplates/aggregation.enum';
 import User from 'src/users/user.entity';
 import Role from 'src/users/role.enum';
 import Dept from 'src/departments/dept.entity';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export default class PlansService {
@@ -61,6 +62,8 @@ export default class PlansService {
     @InjectRepository(PlanKpiTemplate)
     private planKpiTemplatesRepository: Repository<PlanKpiTemplate>,
     private readonly kpiTemplatesService: KpiTemplatesService,
+
+    private readonly filesService: FilesService,
 
     private connection: Connection,
   ) {}
@@ -804,97 +807,24 @@ export default class PlansService {
       ],
     });
     if (record) {
-      let quarterly_target;
-      switch (quarter) {
-        case 1:
-          quarterly_target = {
-            first_quarterly_target: record.first_quarterly_target,
-          };
-          if (
-            quarterly_target.first_quarterly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target.first_quarterly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 2:
-          quarterly_target = {
-            second_quarterly_target: record.second_quarterly_target,
-          };
-          if (
-            quarterly_target.second_quarterly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target.second_quarterly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 3:
-          quarterly_target = {
-            third_quarterly_target: record.third_quarterly_target,
-          };
-          if (
-            quarterly_target.third_quarterly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target.third_quarterly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 4:
-          quarterly_target = {
-            fourth_quarterly_target: record.fourth_quarterly_target,
-          };
-          if (
-            quarterly_target.fourth_quarterly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target.fourth_quarterly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        default:
-          break;
+      const key = this.quarterlyKey(quarter);
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Giám đốc phê duyệt`,
+        );
       }
+      note = note !== undefined ? note : record[key]?.actual?.note;
+      value = value !== undefined ? value : record[key]?.actual?.value;
+      const files = record[key]?.actual?.files;
 
-      await this.planKpiTemplateDeptsRepository.save({
-        ...record,
-        ...quarterly_target,
-      });
-      return quarterly_target;
+      record[key].actual = {
+        value,
+        approve: ApproveRegistration.Pending,
+        note,
+        files,
+      };
+      await this.planKpiTemplateDeptsRepository.save(record);
+      return record[key];
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
@@ -923,259 +853,198 @@ export default class PlansService {
       ],
     });
     if (record) {
-      let monthly_target;
-      switch (month) {
-        case 1:
-          monthly_target = {
-            first_monthly_target: record.first_monthly_target,
-          };
-          if (
-            monthly_target.first_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.first_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 2:
-          monthly_target = {
-            second_monthly_target: record.second_monthly_target,
-          };
-          if (
-            monthly_target.second_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.second_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-
-        case 3:
-          monthly_target = {
-            third_monthly_target: record.third_monthly_target,
-          };
-          if (
-            monthly_target.third_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.third_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 4:
-          monthly_target = {
-            fourth_monthly_target: record.fourth_monthly_target,
-          };
-          if (
-            monthly_target.fourth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.fourth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 5:
-          monthly_target = {
-            fifth_monthly_target: record.fifth_monthly_target,
-          };
-          if (
-            monthly_target.fifth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.fifth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 6:
-          monthly_target = {
-            sixth_monthly_target: record.sixth_monthly_target,
-          };
-          if (
-            monthly_target.sixth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.sixth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-
-        case 7:
-          monthly_target = {
-            seventh_monthly_target: record.seventh_monthly_target,
-          };
-          if (
-            monthly_target.seventh_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.seventh_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 8:
-          monthly_target = {
-            eighth_monthly_target: record.eighth_monthly_target,
-          };
-          if (
-            monthly_target.eighth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.eighth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 9:
-          monthly_target = {
-            ninth_monthly_target: record.ninth_monthly_target,
-          };
-          if (
-            monthly_target.ninth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.ninth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 10:
-          monthly_target = {
-            tenth_monthly_target: record.tenth_monthly_target,
-          };
-          if (
-            monthly_target.tenth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.tenth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 11:
-          monthly_target = {
-            eleventh_monthly_target: record.eleventh_monthly_target,
-          };
-          if (
-            monthly_target.eleventh_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.eleventh_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        case 12:
-          monthly_target = {
-            twelfth_monthly_target: record.twelfth_monthly_target,
-          };
-          if (
-            monthly_target.twelfth_monthly_target?.actual?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target.twelfth_monthly_target.actual = value
-            ? {
-                value,
-                approve: ApproveRegistration.Pending,
-                note,
-              }
-            : null;
-          break;
-        default:
-          break;
+      const key = this.monthlyKey(month);
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
+        );
       }
+      note = note !== undefined ? note : record[key]?.actual?.note;
+      value = value !== undefined ? value : record[key]?.actual?.value;
+      const files = record[key]?.actual?.files;
 
-      await this.planKpiTemplateUsersRepository.save({
-        ...record,
-        ...monthly_target,
-      });
-      return monthly_target;
+      record[key].actual = {
+        value,
+        approve: ApproveRegistration.Pending,
+        note,
+        files,
+      };
+      await this.planKpiTemplateUsersRepository.save(record);
+      return record[key];
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async addFileToMonthlyTargetByEmployee(
+    plan_id: number,
+    kpi_template_id: number,
+    month: number,
+    user_id: number,
+    imageBuffer: Buffer,
+    filename: string,
+  ) {
+    const record = await this.planKpiTemplateUsersRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      const key = this.monthlyKey(month);
+      if (!record[key]?.actual)
+        throw new CustomNotFoundException(
+          `Vui lòng nhập dữ liệu trước khi nộp minh chứng`,
+        );
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
+        );
+      }
+      const file = await this.filesService.uploadPublicFile(
+        imageBuffer,
+        filename,
+      );
+      const files = record[key]?.actual?.files ? record[key].actual.files : [];
+      files.push(file);
+      record[key].actual.files = files;
+      await this.planKpiTemplateUsersRepository.save(record);
+      return record[key];
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async addFileToQuarterlyTargetByManager(
+    plan_id: number,
+    kpi_template_id: number,
+    quarter: number,
+    dept_id,
+    imageBuffer: Buffer,
+    filename: string,
+  ) {
+    const record = await this.planKpiTemplateDeptsRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      const key = this.quarterlyKey(quarter);
+      if (!record[key]?.actual)
+        throw new CustomNotFoundException(
+          `Vui lòng nhập dữ liệu trước khi nộp minh chứng`,
+        );
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Giám đốc phê duyệt`,
+        );
+      }
+      const file = await this.filesService.uploadPublicFile(
+        imageBuffer,
+        filename,
+      );
+      const files = record[key]?.actual?.files ? record[key].actual.files : [];
+      files.push(file);
+      record[key].actual.files = files;
+      await this.planKpiTemplateDeptsRepository.save(record);
+      return record[key];
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async deleteFileToMonthlyTargetByEmployee(
+    plan_id: number,
+    kpi_template_id: number,
+    month: number,
+    user_id: number,
+    file_id: number,
+  ) {
+    const record = await this.planKpiTemplateUsersRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      const key = this.monthlyKey(month);
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
+        );
+      }
+      await this.filesService.deletePublicFile(file_id);
+      const files = record[key].actual.files.filter(
+        (file) => file.id !== file_id,
+      );
+      record[key].actual.files = files;
+      await this.planKpiTemplateUsersRepository.save(record);
+      return record[key];
+    }
+    throw new CustomNotFoundException(`Không tìm thấy`);
+  }
+
+  async deleteFileToQuarterlyTargetByManager(
+    plan_id: number,
+    kpi_template_id: number,
+    quarter: number,
+    dept_id: number,
+    file_id: number,
+  ) {
+    const record = await this.planKpiTemplateDeptsRepository.findOne({
+      where: {
+        plan_kpi_template: {
+          kpi_template: { kpi_template_id },
+          plan: { plan_id },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.plan',
+      ],
+    });
+    if (record) {
+      const key = this.quarterlyKey(quarter);
+      if (record[key]?.actual?.approve === ApproveRegistration.Accepted) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu đã được Quản lý phê duyệt`,
+        );
+      }
+      await this.filesService.deletePublicFile(file_id);
+      const files = record[key].actual.files.filter(
+        (file) => file.id !== file_id,
+      );
+      record[key].actual.files = files;
+      await this.planKpiTemplateDeptsRepository.save(record);
+      return record[key];
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
   }

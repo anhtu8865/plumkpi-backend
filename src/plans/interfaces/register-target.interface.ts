@@ -1,3 +1,4 @@
+import PublicFile from 'src/files/publicFile.entity';
 import ApproveRegistration from '../approveRegistration.enum';
 
 export interface RegisterTarget {
@@ -10,5 +11,5 @@ export interface Actual {
   value: number;
   approve: ApproveRegistration;
   note: string;
-  images: number[];
+  files: PublicFile[];
 }

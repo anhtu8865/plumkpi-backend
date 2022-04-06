@@ -13,6 +13,7 @@ import {
   ClassSerializerInterceptor,
   Query,
   Req,
+  UploadedFile,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import Role from 'src/users/role.enum';
@@ -37,8 +38,12 @@ import { RegisterTargetDto } from './dto/registerTarget.dto';
 import { AssignKpiDeptsDto } from './dto/assignKpiDepts.dto';
 import { TargetKpiOfDeptsParams } from 'src/utils/types/targetKpiOfDeptsParams';
 import {
+  DeleteFileMonthlyTargetDto,
+  DeleteFileQuarterlyTargetDto,
   EnterDataMonthlyTargetDto,
   EnterDataQuarterlyTargetDto,
+  FileMonthlyTargetDto,
+  FileQuarterlyTargetDto,
   RegisterQuarterlyTargetDto,
 } from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
@@ -48,6 +53,7 @@ import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
 import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetByEmployee.dto';
 import { DeptParam, UserParam } from './params/deptParam';
 import { monthParams, quarterParams } from 'src/utils/types/monthParams';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -586,6 +592,93 @@ export default class PlansController {
       value,
       note,
       user_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Post('add-file-to-monthly-target/employee')
+  @UseInterceptors(FileInterceptor('file'))
+  async addFileToMonthlyTargetByEmployee(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() request: RequestWithUser,
+    @Body() { plan_id, kpi_template_id, month }: FileMonthlyTargetDto,
+  ) {
+    plan_id = Number(plan_id);
+    kpi_template_id = Number(kpi_template_id);
+    month = Number(month);
+    return this.plansService.addFileToMonthlyTargetByEmployee(
+      plan_id,
+      kpi_template_id,
+      month,
+      request.user.user_id,
+      file.buffer,
+      file.originalname,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Employee]))
+  @Delete('delete-file-of-monthly-target/employee')
+  async deleteFileToMonthlyTargetByEmployee(
+    @Req() request: RequestWithUser,
+    @Query()
+    { plan_id, kpi_template_id, month, file_id }: DeleteFileMonthlyTargetDto,
+  ) {
+    plan_id = Number(plan_id);
+    kpi_template_id = Number(kpi_template_id);
+    month = Number(month);
+    file_id = Number(file_id);
+    return this.plansService.deleteFileToMonthlyTargetByEmployee(
+      plan_id,
+      kpi_template_id,
+      month,
+      request.user.user_id,
+      file_id,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Post('add-file-to-quarterly-target/manager')
+  @UseInterceptors(FileInterceptor('file'))
+  async addFileToQuarterlyTargetByManager(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() request: RequestWithUser,
+    @Body() { plan_id, kpi_template_id, quarter }: FileQuarterlyTargetDto,
+  ) {
+    plan_id = Number(plan_id);
+    kpi_template_id = Number(kpi_template_id);
+    quarter = Number(quarter);
+    return this.plansService.addFileToQuarterlyTargetByManager(
+      plan_id,
+      kpi_template_id,
+      quarter,
+      request.user.manage.dept_id,
+      file.buffer,
+      file.originalname,
+    );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Delete('delete-file-of-quarterly-target/manager')
+  async deleteFileToQuarterlyTargetByManager(
+    @Req() request: RequestWithUser,
+    @Query()
+    {
+      plan_id,
+      kpi_template_id,
+      quarter,
+      file_id,
+    }: DeleteFileQuarterlyTargetDto,
+  ) {
+    plan_id = Number(plan_id);
+    kpi_template_id = Number(kpi_template_id);
+    quarter = Number(quarter);
+    file_id = Number(file_id);
+    return this.plansService.deleteFileToQuarterlyTargetByManager(
+      plan_id,
+      kpi_template_id,
+      quarter,
+      request.user.manage.dept_id,
+      file_id,
     );
   }
 

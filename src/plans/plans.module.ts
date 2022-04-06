@@ -11,11 +11,13 @@ import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import { PlanKpiTemplateUser } from './planKpiTemplateUser.entity';
 import PlanKpiCategoryDept from './planKpiCategoryDept.entity';
 import PlanKpiCategoryUser from './planKpiCategoryUser.entity';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   imports: [
     KpiCategoriesModule,
     KpiTemplatesModule,
+    FilesModule,
     TypeOrmModule.forFeature([
       Plan,
       PlanKpiCategory,
