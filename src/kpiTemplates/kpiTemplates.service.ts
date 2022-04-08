@@ -34,9 +34,7 @@ export default class KpiTemplatesService {
 
     const [items, count] = await this.kpiTemplatesRepository.findAndCount({
       where: [whereCondition],
-      order: {
-        kpi_template_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });
@@ -65,9 +63,7 @@ export default class KpiTemplatesService {
     const [items, count] = await this.kpiTemplatesRepository.findAndCount({
       where: [whereCondition],
       relations: ['kpi_category'],
-      order: {
-        kpi_template_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });
@@ -167,7 +163,7 @@ export default class KpiTemplatesService {
       where: {
         kpi_template_id: In(ids),
       },
-      order: { kpi_template_id: 'ASC' },
+      order: { createdAt: 'ASC' },
     });
   }
 }

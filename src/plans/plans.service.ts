@@ -103,6 +103,7 @@ export default class PlansService {
       let result = await this.plansKpiCategoriesRepository.find({
         where: { plan: { plan_id } },
         relations: ['kpi_category'],
+        order: { createdAt: 'ASC' },
       });
       if (result) {
         result = result.filter((item) => item.weight !== 0);
@@ -149,9 +150,7 @@ export default class PlansService {
   async getPlans(offset: number, limit: number, name?: string) {
     const [items, count] = await this.plansRepository.findAndCount({
       where: [{ plan_name: Like(`%${name ? name : ''}%`) }],
-      order: {
-        year: 'DESC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });
@@ -163,7 +162,9 @@ export default class PlansService {
   }
 
   async getAllPlans() {
-    return this.plansRepository.find();
+    return this.plansRepository.find({
+      order: { createdAt: 'ASC' },
+    });
   }
 
   async registerKpiCategories(
@@ -191,6 +192,7 @@ export default class PlansService {
             kpi_category: { kpi_category_name: Not('Cá nhân') },
           },
           relations: ['kpi_category'],
+          order: { createdAt: 'ASC' },
         },
       );
       const kpiCategoriesIdInDB = kpiCategoriesInDB.map(
@@ -208,6 +210,7 @@ export default class PlansService {
           },
         },
         relations: ['kpi_template'],
+        order: { createdAt: 'ASC' },
       });
       if (kpisInDB.length > 0) {
         throw new CustomBadRequestException(
@@ -232,6 +235,7 @@ export default class PlansService {
       const plan = await queryRunner.manager.find(PlanKpiCategory, {
         where: { plan: { plan_id } },
         relations: ['kpi_category'],
+        order: { createdAt: 'ASC' },
       });
       await queryRunner.commitTransaction();
       return plan;
@@ -460,6 +464,7 @@ export default class PlansService {
       const kpisInDB = await queryRunner.manager.find(PlanKpiTemplate, {
         where: { kpi_template: { kpi_category: { kpi_category_id } } },
         relations: ['kpi_template'],
+        order: { createdAt: 'ASC' },
       });
       const kpisIdInDB = [];
       for (const kpi of kpisInDB) {
@@ -525,9 +530,7 @@ export default class PlansService {
         },
       },
       relations: ['kpi_template'],
-      order: {
-        kpi_template: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });
@@ -576,7 +579,7 @@ export default class PlansService {
           'plan_kpi_template.plan',
           'plan_kpi_template.kpi_template',
         ],
-        order: { weight: 'ASC' },
+        order: { createdAt: 'ASC' },
         skip: offset,
         take: limit,
       });
@@ -631,7 +634,7 @@ export default class PlansService {
           'plan_kpi_template.plan',
           'plan_kpi_template.kpi_template',
         ],
-        order: { weight: 'ASC' },
+        order: { createdAt: 'ASC' },
         skip: offset,
         take: limit,
       });
@@ -1330,6 +1333,7 @@ export default class PlansService {
           'user',
           'user.dept',
         ],
+        order: { createdAt: 'ASC' },
       });
       const userIds = users.map((user) => user.user_id);
 
@@ -1693,6 +1697,7 @@ export default class PlansService {
           'plan_kpi_template.plan',
           'dept',
         ],
+        order: { createdAt: 'ASC' },
       });
       const deptIdsToDelete = [];
       for (const toDeleteRow of toDeleteRows) {
@@ -1711,6 +1716,7 @@ export default class PlansService {
             'plan_kpi_template.plan',
             'dept',
           ],
+          order: { createdAt: 'ASC' },
         });
         if (rows.length === 1) {
           deptIdsToDelete.push(toDeleteRow.dept.dept_id);
@@ -1732,6 +1738,7 @@ export default class PlansService {
             'plan_kpi_category.plan',
             'dept',
           ],
+          order: { createdAt: 'ASC' },
         },
       );
 
@@ -1800,6 +1807,7 @@ export default class PlansService {
           'user',
           'user.dept',
         ],
+        order: { createdAt: 'ASC' },
       });
 
       toDeleteRows = toDeleteRows.filter(
@@ -1823,6 +1831,7 @@ export default class PlansService {
             'plan_kpi_template.plan',
             'user',
           ],
+          order: { createdAt: 'ASC' },
         });
         if (rows.length === 1) {
           userIdsToDelete.push(toDeleteRow.user.user_id);
@@ -1844,6 +1853,7 @@ export default class PlansService {
             'plan_kpi_category.plan',
             'user',
           ],
+          order: { createdAt: 'ASC' },
         },
       );
 
@@ -1875,6 +1885,7 @@ export default class PlansService {
         },
       },
       relations: ['dept'],
+      order: { createdAt: 'ASC' },
     });
   }
 
@@ -1901,7 +1912,7 @@ export default class PlansService {
         user: { dept: { dept_id } },
       },
       relations: ['user'],
-      order: { user: 'ASC' },
+      order: { createdAt: 'ASC' },
     });
 
     const result = rows.map((row) => {
@@ -1933,7 +1944,7 @@ export default class PlansService {
         user: { dept: { dept_id } },
       },
       relations: ['user'],
-      order: { user: 'ASC' },
+      order: { createdAt: 'ASC' },
     });
 
     return rows;
@@ -1964,6 +1975,7 @@ export default class PlansService {
         'plan_kpi_category.kpi_category',
         'dept',
       ],
+      order: { createdAt: 'ASC' },
     });
     const result = rows.map((row) => {
       return {
@@ -1986,6 +1998,7 @@ export default class PlansService {
         'plan_kpi_category.kpi_category',
         'user',
       ],
+      order: { createdAt: 'ASC' },
     });
     const items = rows.map((row) => {
       return {
@@ -2599,9 +2612,7 @@ export default class PlansService {
           'plan_kpi_template.kpi_template',
           'plan_kpi_template.kpi_template.kpi_category',
         ],
-        order: {
-          target: 'ASC',
-        },
+        order: { createdAt: 'ASC' },
         skip: offset,
         take: limit,
       });
@@ -2634,9 +2645,7 @@ export default class PlansService {
         'plan_kpi_template.kpi_template',
         'plan_kpi_template.kpi_template.kpi_category',
       ],
-      order: {
-        target: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
     });
     for (const item of items) {
       delete item.plan_kpi_template.target;
@@ -2673,9 +2682,7 @@ export default class PlansService {
         'plan_kpi_template.plan',
         'user.dept',
       ],
-      order: {
-        createdAt: 'DESC',
-      },
+      order: { createdAt: 'ASC' },
     });
     const result2 = result.map((item) => {
       return {
@@ -2729,6 +2736,7 @@ export default class PlansService {
         'plan_kpi_template.kpi_template.kpi_category',
         'plan_kpi_template.plan',
       ],
+      order: { createdAt: 'ASC' },
     });
     const result2 = result.map((item) => {
       return {
@@ -3249,6 +3257,7 @@ export default class PlansService {
             'plan_kpi_template.kpi_template',
             'plan_kpi_template.plan',
           ],
+          order: { createdAt: 'ASC' },
         },
       );
 
@@ -3334,6 +3343,7 @@ export default class PlansService {
             'plan_kpi_template.kpi_template',
             'plan_kpi_template.plan',
           ],
+          order: { createdAt: 'ASC' },
         },
       );
 
@@ -3404,11 +3414,13 @@ export default class PlansService {
           plan,
         },
         relations: ['plan', 'kpi_template'],
+        order: { createdAt: 'ASC' },
       });
 
       result2 = await this.plansKpiCategoriesRepository.find({
         where: { plan },
         relations: ['plan', 'kpi_category'],
+        order: { createdAt: 'ASC' },
       });
       const kpis = result.map((item) => item.kpi_template);
       const kpi_categories = result2.map((item) => item.kpi_category);
@@ -3443,6 +3455,7 @@ export default class PlansService {
           'plan_kpi_template.kpi_template',
           'plan_kpi_template.plan',
         ],
+        order: { createdAt: 'ASC' },
       });
 
       result2 = await this.plansKpiCategoryDeptsRepository.find({
@@ -3453,6 +3466,7 @@ export default class PlansService {
           'plan_kpi_category.plan',
           'plan_kpi_category.kpi_category',
         ],
+        order: { createdAt: 'ASC' },
       });
     } else {
       result = await this.planKpiTemplateUsersRepository.find({
@@ -3463,6 +3477,7 @@ export default class PlansService {
           'plan_kpi_template.kpi_template',
           'plan_kpi_template.plan',
         ],
+        order: { createdAt: 'ASC' },
       });
 
       result2 = await this.plansKpiCategoryUsersRepository.find({
@@ -3473,6 +3488,7 @@ export default class PlansService {
           'plan_kpi_category.plan',
           'plan_kpi_category.kpi_category',
         ],
+        order: { createdAt: 'ASC' },
       });
     }
     const kpis = result.map((item) => item.plan_kpi_template.kpi_template);

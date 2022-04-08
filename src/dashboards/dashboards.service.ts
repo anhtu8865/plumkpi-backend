@@ -68,6 +68,7 @@ export default class DashboardsService {
           user: null,
           dashboard_name: Like(`%${dashboard_name ? dashboard_name : ''}%`),
         },
+        order: { createdAt: 'ASC' },
       });
     } else if (role === Role.Manager) {
       const dept_id = user.manage.dept_id;
@@ -76,6 +77,7 @@ export default class DashboardsService {
           dept: { dept_id },
           dashboard_name: Like(`%${dashboard_name ? dashboard_name : ''}%`),
         },
+        order: { createdAt: 'ASC' },
       });
     } else {
       const user_id = user.user_id;
@@ -84,6 +86,7 @@ export default class DashboardsService {
           user: { user_id },
           dashboard_name: Like(`%${dashboard_name ? dashboard_name : ''}%`),
         },
+        order: { createdAt: 'ASC' },
       });
     }
     return dashboards;

@@ -108,7 +108,7 @@ export default class ChartsService {
     );
     const charts = await this.chartsRepository.find({
       where: { dashboard },
-      order: { chart_id: 'ASC' },
+      order: { createdAt: 'ASC' },
     });
     for (const chart of charts) {
       const { kpis, plan_id } = chart.properties;

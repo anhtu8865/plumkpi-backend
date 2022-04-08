@@ -48,9 +48,7 @@ export class UsersService {
 
     const [items, count] = await this.usersRepository.findAndCount({
       where: [whereCondition],
-      order: {
-        user_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: userParams.offset,
       take: userParams.limit,
     });
@@ -66,7 +64,7 @@ export class UsersService {
     if (user) {
       return user;
     }
-    throw new CustomNotFoundException(`Email ${email} không tồn tại`);
+    throw new CustomNotFoundException(`Email hoặc Password không chính xác`);
   }
 
   async getById(user_id: number) {
@@ -232,6 +230,7 @@ export class UsersService {
     return this.usersRepository.find({
       select: ['user_id', 'user_name', 'email', 'avatar'],
       where: { role: Role.Employee },
+      order: { createdAt: 'ASC' },
     });
   }
 
@@ -239,6 +238,7 @@ export class UsersService {
     return this.usersRepository.find({
       where: { dept: { dept_id }, role: Role.Employee },
       select: ['user_id', 'user_name', 'email', 'avatar'],
+      order: { createdAt: 'ASC' },
     });
   }
 
@@ -269,9 +269,7 @@ export class UsersService {
     const [items, count] = await this.usersRepository.findAndCount({
       where: [whereCondition],
       relations: ['dept'],
-      order: {
-        user_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });

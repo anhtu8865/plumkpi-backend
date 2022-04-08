@@ -21,6 +21,10 @@ export class AuthenticationService {
   public async getAuthenticatedUser(email: string, plainTextPassword: string) {
     try {
       const user = await this.usersService.getByEmail(email);
+      if (!user.is_active)
+        throw new CustomBadRequestException(
+          `Tài khoản ${user.email} tạm thời bị khoá, vui lòng liên hệ Admin`,
+        );
       await this.verifyPassword(plainTextPassword, user.password);
       user.password = undefined;
       return user;

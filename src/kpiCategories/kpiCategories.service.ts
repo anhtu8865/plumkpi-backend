@@ -19,9 +19,7 @@ export default class KpiCategoriesService {
   async getKpiCategories(offset: number, limit: number, name?: string) {
     const [items, count] = await this.kpiCategoriesRepository.findAndCount({
       where: [{ kpi_category_name: Like(`%${name ? name : ''}%`) }],
-      order: {
-        kpi_category_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
     });
@@ -35,6 +33,7 @@ export default class KpiCategoriesService {
   async getAllKpiCategories() {
     return this.kpiCategoriesRepository.find({
       select: ['kpi_category_id', 'kpi_category_name'],
+      order: { createdAt: 'ASC' },
     });
   }
 

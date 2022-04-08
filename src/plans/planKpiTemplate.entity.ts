@@ -1,8 +1,13 @@
-import { PlanKpiTemplateDept } from 'src/plans/planKpiTemplateDept.entity';
 import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
-import ApproveRegistration from './approveRegistration.enum';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import Plan from './plan.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'plan_kpi_templates' })
 class PlanKpiTemplate {
@@ -11,13 +16,6 @@ class PlanKpiTemplate {
 
   @Column({ nullable: true })
   target: number;
-
-  // @Column({
-  //   type: 'enum',
-  //   enum: ApproveRegistration,
-  //   default: ApproveRegistration.None,
-  // })
-  // approve_registration: ApproveRegistration;
 
   @ManyToOne(() => Plan, (plan: Plan) => plan.plan_kpi_templates, {
     primary: true,
@@ -29,10 +27,17 @@ class PlanKpiTemplate {
     (kpi_template: KpiTemplate) => kpi_template.plan_kpi_templates,
     {
       primary: true,
-      // eager: true,
     },
   )
   public kpi_template: KpiTemplate;
+
+  @Exclude()
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Exclude()
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
 
 export default PlanKpiTemplate;

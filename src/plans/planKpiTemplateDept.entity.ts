@@ -1,8 +1,15 @@
+import { Exclude } from 'class-transformer';
 import Dept from 'src/departments/dept.entity';
-import KpiTemplate from 'src/kpiTemplates/kpiTemplate.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import { RegisterTarget } from './interfaces/register-target.interface';
-import Plan from './plan.entity';
+
 import PlanKpiTemplate from './planKpiTemplate.entity';
 
 @Entity({ name: 'plan_kpi_template_depts' })
@@ -34,4 +41,12 @@ export class PlanKpiTemplateDept {
 
   @Column({ type: 'jsonb', nullable: true })
   fourth_quarterly_target: RegisterTarget;
+
+  @Exclude()
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Exclude()
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

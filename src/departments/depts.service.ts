@@ -31,9 +31,7 @@ export default class DeptsService {
   async getDepts(offset: number, limit: number, name?: string) {
     const [items, count] = await this.deptsRepository.findAndCount({
       where: [{ dept_name: Like(`%${name ? name : ''}%`) }],
-      order: {
-        dept_id: 'ASC',
-      },
+      order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
       relations: ['manager'],
@@ -49,6 +47,7 @@ export default class DeptsService {
     const depts = await this.deptsRepository.find({
       select: ['dept_id', 'dept_name', 'manager'],
       relations: ['manager'],
+      order: { createdAt: 'ASC' },
     });
     return depts.map((dept) => {
       return {
@@ -69,7 +68,7 @@ export default class DeptsService {
     const depts = await this.deptsRepository.find({
       select: ['dept_id', 'dept_name', 'users'],
       relations: ['users'],
-      order: { dept_id: 'ASC' },
+      order: { createdAt: 'ASC' },
     });
     return depts.map((dept) => {
       return {
