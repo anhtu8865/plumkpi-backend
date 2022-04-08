@@ -1,3 +1,4 @@
+import User from 'src/users/user.entity';
 import { KpiTemplateParams } from './../utils/types/kpiTemplateParams';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
@@ -9,12 +10,15 @@ import { CustomBadRequestException } from 'src/utils/exception/BadRequest.except
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
+import Role from 'src/users/role.enum';
+import PlansService from 'src/plans/plans.service';
 
 @Injectable()
 export default class KpiTemplatesService {
   constructor(
     @InjectRepository(KpiTemplate)
     private kpiTemplatesRepository: Repository<KpiTemplate>,
+    private readonly plansService: PlansService,
   ) {}
 
   async getKpiTemplatesOfCategory(params: KpiTemplateParams) {
@@ -43,7 +47,13 @@ export default class KpiTemplatesService {
     };
   }
 
-  async getPersonalKpiTemplates(offset: number, limit: number, name: string) {
+  async getPersonalKpiTemplates(
+    offset: number,
+    limit: number,
+    name: string,
+    plan_id: number,
+    user: User,
+  ) {
     const whereCondition = {
       kpi_template_name: name ? Like(`%${name}%`) : undefined,
       kpi_category: { kpi_category_name: 'Cá nhân' },
@@ -62,6 +72,32 @@ export default class KpiTemplatesService {
       take: limit,
     });
 
+    const role = user.role;
+    let registeredKpis = [];
+    if (role === Role.Manager) {
+      const dept_id = user.manage.dept_id;
+      registeredKpis = await this.plansService.getPersonalKpisByManager(
+        plan_id,
+        dept_id,
+      );
+    } else {
+      const user_id = user.user_id;
+      registeredKpis = await this.plansService.getPersonalKpisByEmployee(
+        plan_id,
+        user_id,
+      );
+    }
+
+    const registeredKpis_id = registeredKpis.map(
+      (item) => item.plan_kpi_template.kpi_template.kpi_template_id,
+    );
+    for (const item of items) {
+      if (registeredKpis_id.includes(item.kpi_template_id)) {
+        item['registered'] = true;
+      } else {
+        item['registered'] = false;
+      }
+    }
     return {
       items,
       count,

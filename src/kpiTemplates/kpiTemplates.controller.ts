@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Query,
+  Req,
 } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import FindOneParams from 'src/utils/findOneParams';
@@ -18,8 +19,12 @@ import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
 import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
 import RoleGuard from 'src/users/role.guard';
 import Role from 'src/users/role.enum';
-import { PaginationParams } from 'src/utils/types/paginationParams';
+import {
+  GetPersonalKpisParams,
+  PaginationParams,
+} from 'src/utils/types/paginationParams';
 import { KpiTemplateParams } from 'src/utils/types/kpiTemplateParams';
+import RequestWithUser from 'src/authentication/requestWithUser.interface';
 
 @Controller('kpi-templates')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -35,11 +40,18 @@ export default class KpiTemplatesController {
 
   @UseGuards(RoleGuard([Role.Manager, Role.Employee]))
   @Get('personal-kpis')
-  getPersonalKpiTemplates(@Query() { offset, limit, name }: PaginationParams) {
+  getPersonalKpiTemplates(
+    @Query() { offset, limit, name, plan_id }: GetPersonalKpisParams,
+    @Req() request: RequestWithUser,
+  ) {
+    plan_id = Number(plan_id);
+    const user = request.user;
     return this.kpiTemplatesService.getPersonalKpiTemplates(
       offset,
       limit,
       name,
+      plan_id,
+      user,
     );
   }
 

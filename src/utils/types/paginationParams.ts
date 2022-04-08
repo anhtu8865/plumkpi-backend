@@ -26,3 +26,10 @@ export class PaginationParams {
   @IsNotEmpty()
   name?: string;
 }
+
+export class GetPersonalKpisParams extends PaginationParams {
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  plan_id: number;
+}

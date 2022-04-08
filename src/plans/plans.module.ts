@@ -16,7 +16,6 @@ import { FilesModule } from 'src/files/files.module';
 @Module({
   imports: [
     KpiCategoriesModule,
-    KpiTemplatesModule,
     FilesModule,
     TypeOrmModule.forFeature([
       Plan,

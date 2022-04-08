@@ -61,7 +61,6 @@ export default class PlansService {
 
     @InjectRepository(PlanKpiTemplate)
     private planKpiTemplatesRepository: Repository<PlanKpiTemplate>,
-    private readonly kpiTemplatesService: KpiTemplatesService,
 
     private readonly filesService: FilesService,
 
@@ -2618,6 +2617,36 @@ export default class PlansService {
     };
   }
 
+  async getPersonalKpisByManager(plan_id: number, dept_id: number) {
+    const items = await this.planKpiTemplateDeptsRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: {
+            kpi_category: { kpi_category_name: 'Cá nhân' },
+          },
+        },
+        dept: { dept_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'dept',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.kpi_template.kpi_category',
+      ],
+      order: {
+        target: 'ASC',
+      },
+    });
+    for (const item of items) {
+      delete item.plan_kpi_template.target;
+      delete item.plan_kpi_template.weight;
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      delete item.dept;
+    }
+    return items;
+  }
+
   async getKpisOfPersonalKpisOfEmployeesByManager(
     plan_id: number,
     offset: number,
@@ -2772,6 +2801,35 @@ export default class PlansService {
       items,
       count,
     };
+  }
+
+  async getPersonalKpisByEmployee(plan_id: number, user_id: number) {
+    const items = await this.planKpiTemplateUsersRepository.find({
+      where: {
+        plan_kpi_template: {
+          plan: { plan_id },
+          kpi_template: {
+            kpi_category: { kpi_category_name: 'Cá nhân' },
+          },
+        },
+        user: { user_id },
+      },
+      relations: [
+        'plan_kpi_template',
+        'user',
+        'plan_kpi_template.kpi_template',
+        'plan_kpi_template.kpi_template.kpi_category',
+      ],
+      order: { createdAt: 'ASC' },
+    });
+
+    for (const item of items) {
+      delete item.plan_kpi_template.target;
+      delete item.plan_kpi_template.weight;
+      delete item.plan_kpi_template.kpi_template.kpi_category;
+      delete item.user;
+    }
+    return items;
   }
 
   async approveQuarterlyTarget(
