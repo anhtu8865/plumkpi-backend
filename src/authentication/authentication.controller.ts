@@ -21,6 +21,7 @@ import JwtAuthenticationGuard from './jwt-authentication.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import UpdateInfoDto from 'src/users/dto/updateInfo.dto';
+import { time } from 'console';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor) //do not return password
@@ -109,5 +110,17 @@ export class AuthenticationController {
   @Post('adminAndDirector')
   async createAdminAndDirector() {
     return this.usersService.createAdminAndDirector();
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('time')
+  async getTime() {
+    return this.usersService.getTime();
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Put('time')
+  async updateTime(@Body() { time }) {
+    return this.usersService.updateTime(time);
   }
 }

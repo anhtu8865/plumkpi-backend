@@ -21,6 +21,7 @@ import DeptsService from 'src/departments/depts.service';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import UpdateInfoDto from './dto/updateInfo.dto';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
+import Time from './time.entity';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,9 @@ export class UsersService {
     private readonly filesService: FilesService,
     @Inject(forwardRef(() => DeptsService))
     private readonly deptsService: DeptsService,
+
+    @InjectRepository(Time)
+    private timesRepository: Repository<Time>,
   ) {}
 
   async getAllUsers(userParams: UserParams) {
@@ -57,6 +61,14 @@ export class UsersService {
       items,
       count,
     };
+  }
+
+  async getTime() {
+    return this.timesRepository.findOne(1);
+  }
+
+  async updateTime(time: string) {
+    return this.timesRepository.save({ time_id: 1, time });
   }
 
   async getByEmail(email: string) {
