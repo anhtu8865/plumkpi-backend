@@ -10,6 +10,7 @@ import { AuthenticationModule } from './authentication/authentication.module';
 import { UsersModule } from './users/users.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { ChartsModule } from './charts/charts.module';
+import { NotifsModule } from './notifications/notifs.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ChartsModule } from './charts/charts.module';
     PlansModule,
     DashboardsModule,
     ChartsModule,
+    NotifsModule,
   ],
   controllers: [],
   providers: [],
