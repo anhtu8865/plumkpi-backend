@@ -5,6 +5,7 @@ export interface RegisterTarget {
   target: number;
   approve: ApproveRegistration;
   actual: Actual;
+  resultDay: string;
 }
 
 export interface Actual {

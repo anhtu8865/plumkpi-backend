@@ -9,5 +9,6 @@ import Time from './time.entity';
   imports: [TypeOrmModule.forFeature([Notif, Time])],
   controllers: [NotifsController],
   providers: [NotifsService],
+  exports: [NotifsService],
 })
 export class NotifsModule {}

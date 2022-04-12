@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsDefined,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   Max,
@@ -32,6 +32,9 @@ export class RegisterMonthlyTargetDto {
   @Min(1)
   @Max(12)
   month: number;
+
+  @IsNotEmpty({ message: 'Vui lòng chọn ngày nhận kết quả' })
+  resultDay: string;
 
   @IsArray()
   @ValidateNested({ each: true })

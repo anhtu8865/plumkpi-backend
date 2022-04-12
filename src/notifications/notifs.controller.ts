@@ -26,10 +26,10 @@ import { NotifIdParam } from './params/notifParams';
 export default class NotifsController {
   constructor(private readonly notifsService: NotifsService) {}
 
-  @Post()
-  async createNotif(@Body() data: CreateNotifDto) {
-    return this.notifsService.createNotif(data);
-  }
+  // @Post()
+  // async createNotif(@Body() data: CreateNotifDto) {
+  //   return this.notifsService.createNotif(data);
+  // }
 
   @Get()
   async getNotifs(

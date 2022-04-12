@@ -18,15 +18,32 @@ export default class NotifsService {
     private timesRepository: Repository<Time>,
   ) {}
 
-  async createNotif(data: CreateNotifDto) {
-    const { title, content, time, user_id } = data;
-    return this.notifsRepository.save({
-      title,
-      content,
-      time,
-      user: { user_id },
+  async createNotif(
+    title: string,
+    content: string,
+    time: string,
+    user_ids: number[],
+  ) {
+    const data = user_ids.map((user_id) => {
+      return {
+        title,
+        content,
+        time,
+        user: { user_id },
+      };
     });
+    return this.notifsRepository.save(data);
   }
+
+  // async createNotif(data: CreateNotifDto) {
+  //   const { title, content, time, user_id } = data;
+  //   return this.notifsRepository.save({
+  //     title,
+  //     content,
+  //     time,
+  //     user: { user_id },
+  //   });
+  // }
 
   async getNotifById(notif_id: number) {
     const notif = await this.notifsRepository.findOne(notif_id);

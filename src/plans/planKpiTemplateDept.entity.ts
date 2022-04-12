@@ -42,6 +42,18 @@ export class PlanKpiTemplateDept {
   @Column({ type: 'jsonb', nullable: true })
   fourth_quarterly_target: RegisterTarget;
 
+  @Column({ type: 'date', nullable: true })
+  first_quarterly_register_day: string;
+
+  @Column({ type: 'date', nullable: true })
+  second_quarterly_register_day: string;
+
+  @Column({ type: 'date', nullable: true })
+  third_quarterly_register_day: string;
+
+  @Column({ type: 'date', nullable: true })
+  fourth_quarterly_register_day: string;
+
   @Exclude()
   @CreateDateColumn()
   createdAt: Date;

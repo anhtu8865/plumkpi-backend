@@ -272,9 +272,29 @@ export default class PlansController {
   @UseGuards(RoleGuard([Role.Director]))
   @Post('assign-kpi-depts')
   async assignKpiDepts(
-    @Body() { plan_id, kpi_template_id, depts }: AssignKpiDeptsDto,
+    @Body()
+    {
+      plan_id,
+      kpi_template_id,
+      depts,
+      first_quarterly_register_day,
+      second_quarterly_register_day,
+      third_quarterly_register_day,
+      fourth_quarterly_register_day,
+    }: AssignKpiDeptsDto,
+    @Req() request: RequestWithUser,
   ) {
-    return this.plansService.assignKpiDepts(plan_id, kpi_template_id, depts);
+    const director = request.user.user_id;
+    return this.plansService.assignKpiDepts(
+      plan_id,
+      kpi_template_id,
+      depts,
+      first_quarterly_register_day,
+      second_quarterly_register_day,
+      third_quarterly_register_day,
+      fourth_quarterly_register_day,
+      director,
+    );
   }
 
   @UseGuards(RoleGuard([Role.Director]))
@@ -798,10 +818,12 @@ export default class PlansController {
       target,
       month,
       users,
+      resultDay,
     }: RegisterMonthlyTargetDto,
     @Req() request: RequestWithUser,
   ) {
     const dept_id = request.user.manage.dept_id;
+    const manager = request.user.user_id;
     return this.plansService.registerMonthlyTarget(
       plan_id,
       kpi_template_id,
@@ -809,6 +831,8 @@ export default class PlansController {
       month,
       users,
       dept_id,
+      resultDay,
+      manager,
     );
   }
 

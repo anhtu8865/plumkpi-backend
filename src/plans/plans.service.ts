@@ -35,6 +35,7 @@ import User from 'src/users/user.entity';
 import Role from 'src/users/role.enum';
 import Dept from 'src/departments/dept.entity';
 import { FilesService } from 'src/files/files.service';
+import NotifsService from 'src/notifications/notifs.service';
 
 @Injectable()
 export default class PlansService {
@@ -63,6 +64,8 @@ export default class PlansService {
     private planKpiTemplatesRepository: Repository<PlanKpiTemplate>,
 
     private readonly filesService: FilesService,
+
+    private readonly notifsService: NotifsService,
 
     private connection: Connection,
   ) {}
@@ -1313,6 +1316,8 @@ export default class PlansService {
     month: number,
     users: TargetUsersDto[],
     dept_id: number,
+    resultDay: string,
+    manager: number,
   ) {
     const queryRunner = await this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -1352,8 +1357,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               first_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1376,8 +1385,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               second_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1401,8 +1414,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               third_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1425,8 +1442,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               fourth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1449,8 +1470,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               fifth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1473,8 +1498,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               sixth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1497,8 +1526,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               seventh_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1521,8 +1554,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               eighth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1545,8 +1582,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               ninth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1569,8 +1610,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               tenth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1593,8 +1638,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               eleventh_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1617,8 +1666,12 @@ export default class PlansService {
               },
               user: { user_id: user.user_id },
               twelfth_monthly_target: user.target
-                ? { target: user.target, approve: ApproveRegistration.Accepted }
-                : { target, approve: ApproveRegistration.Accepted },
+                ? {
+                    target: user.target,
+                    approve: ApproveRegistration.Accepted,
+                    resultDay,
+                  }
+                : { target, approve: ApproveRegistration.Accepted, resultDay },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1635,11 +1688,31 @@ export default class PlansService {
         default:
           break;
       }
+
+      const kpi_template = await queryRunner.manager.findOne(
+        KpiTemplate,
+        kpi_template_id,
+      );
+
       await queryRunner.commitTransaction();
+
+      await this.notifsService.createNotif(
+        'Nhập số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của tháng ${month} đã đến, vui lòng kiểm tra lại số liệu`,
+        resultDay,
+        userIds,
+      );
+
+      await this.notifsService.createNotif(
+        'Duyệt số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của tháng ${month} đã đến, vui lòng kiểm tra lại số liệu`,
+        resultDay,
+        [manager],
+      );
+
       for (const row of toUpdateTargetRows) {
         Object.keys(row).forEach((k) => row[k] === null && delete row[k]);
       }
-
       return toUpdateTargetRows;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -1653,6 +1726,11 @@ export default class PlansService {
     plan_id: number,
     kpi_template_id: number,
     depts: DeptsDto[],
+    first_quarterly_register_day: string,
+    second_quarterly_register_day: string,
+    third_quarterly_register_day: string,
+    fourth_quarterly_register_day: string,
+    director: number,
   ) {
     const queryRunner = await this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -1666,11 +1744,16 @@ export default class PlansService {
           },
           dept: { dept_id: item.dept_id },
           target: item.target,
+          first_quarterly_register_day,
+          second_quarterly_register_day,
+          third_quarterly_register_day,
+          fourth_quarterly_register_day,
         };
       });
-      const { kpi_category } = await queryRunner.manager.findOne(KpiTemplate, {
-        kpi_template_id,
-      });
+      const { kpi_category, kpi_template_name } =
+        await queryRunner.manager.findOne(KpiTemplate, {
+          kpi_template_id,
+        });
       const rows2 = depts.map((item) => {
         return {
           plan_kpi_category: {
@@ -1747,7 +1830,74 @@ export default class PlansService {
 
       const result = await queryRunner.manager.save(PlanKpiTemplateDept, rows);
       await queryRunner.manager.save(PlanKpiCategoryDept, rows2);
+
+      const manager = await queryRunner.manager.find(User, {
+        where: {
+          manage: { dept_id: In(deptIds) },
+        },
+        relations: ['manage'],
+      });
+
       await queryRunner.commitTransaction();
+
+      const user_ids = manager.map((item) => item.user_id);
+
+      await this.notifsService.createNotif(
+        'Đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 1 đã đến, vui lòng kiểm tra lại số liệu`,
+        first_quarterly_register_day,
+        user_ids,
+      );
+
+      await this.notifsService.createNotif(
+        'Đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 2 đã đến, vui lòng kiểm tra lại số liệu`,
+        second_quarterly_register_day,
+        user_ids,
+      );
+
+      await this.notifsService.createNotif(
+        'Đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 3 đã đến, vui lòng kiểm tra lại số liệu`,
+        third_quarterly_register_day,
+        user_ids,
+      );
+
+      await this.notifsService.createNotif(
+        'Đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 4 đã đến, vui lòng kiểm tra lại số liệu`,
+        fourth_quarterly_register_day,
+        user_ids,
+      );
+
+      await this.notifsService.createNotif(
+        'Duyệt đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 1 đã đến, vui lòng kiểm tra lại số liệu`,
+        first_quarterly_register_day,
+        [director],
+      );
+
+      await this.notifsService.createNotif(
+        'Duyệt đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 2 đã đến, vui lòng kiểm tra lại số liệu`,
+        second_quarterly_register_day,
+        [director],
+      );
+
+      await this.notifsService.createNotif(
+        'Duyệt đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 3 đã đến, vui lòng kiểm tra lại số liệu`,
+        third_quarterly_register_day,
+        [director],
+      );
+
+      await this.notifsService.createNotif(
+        'Duyệt đăng kí chỉ tiêu kpi',
+        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 4 đã đến, vui lòng kiểm tra lại số liệu`,
+        fourth_quarterly_register_day,
+        [director],
+      );
+
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
