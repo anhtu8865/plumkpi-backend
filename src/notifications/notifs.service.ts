@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/users/user.entity';
+
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Like, Repository } from 'typeorm';
 import { CreateNotifDto } from './dto/notif.dto';
 import { Notif } from './notif.entity';
+import Time from './time.entity';
 
 @Injectable()
 export default class NotifsService {
   constructor(
     @InjectRepository(Notif)
     private notifsRepository: Repository<Notif>,
+
+    @InjectRepository(Time)
+    private timesRepository: Repository<Time>,
   ) {}
 
   async createNotif(data: CreateNotifDto) {
@@ -39,7 +44,26 @@ export default class NotifsService {
     return this.notifsRepository.save(notif);
   }
 
-  async getNotifs(user: User) {
-    return this.notifsRepository.find({ user });
+  async getNotifs(user: User, offset: number, limit: number, title: string) {
+    const { time } = await this.getTime();
+    const [items, count] = await this.notifsRepository.findAndCount({
+      where: {
+        user,
+        time: LessThanOrEqual(time),
+        title: Like(`%${title ? title : ''}%`),
+      },
+      order: { time: 'DESC' },
+      skip: offset,
+      take: limit,
+    });
+    return { items, count };
+  }
+
+  async getTime() {
+    return this.timesRepository.findOne(1);
+  }
+
+  async updateTime(time: string) {
+    return this.timesRepository.save({ time_id: 1, time });
   }
 }

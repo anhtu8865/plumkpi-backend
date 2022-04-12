@@ -5,11 +5,10 @@ import User from './user.entity';
 import UsersController from './users.controller';
 import { FilesModule } from 'src/files/files.module';
 import { DeptsModule } from 'src/departments/depts.module';
-import Time from './time.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Time]),
+    TypeOrmModule.forFeature([User]),
     FilesModule,
     forwardRef(() => DeptsModule),
   ],

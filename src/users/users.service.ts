@@ -1,16 +1,9 @@
 import { UserParams } from './../utils/types/userParams';
 import Role from 'src/users/role.enum';
-import {
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, QueryRunner, Repository } from 'typeorm';
 import User from './user.entity';
-import CreateUserDto from './dto/createUser.dto';
 import UpdateUserDto from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
 import PostgresErrorCodes from 'src/database/postgresErrorCodes.enum';
@@ -21,7 +14,6 @@ import DeptsService from 'src/departments/depts.service';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import UpdateInfoDto from './dto/updateInfo.dto';
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
-import Time from './time.entity';
 
 @Injectable()
 export class UsersService {
@@ -31,9 +23,6 @@ export class UsersService {
     private readonly filesService: FilesService,
     @Inject(forwardRef(() => DeptsService))
     private readonly deptsService: DeptsService,
-
-    @InjectRepository(Time)
-    private timesRepository: Repository<Time>,
   ) {}
 
   async getAllUsers(userParams: UserParams) {
@@ -61,14 +50,6 @@ export class UsersService {
       items,
       count,
     };
-  }
-
-  async getTime() {
-    return this.timesRepository.findOne(1);
-  }
-
-  async updateTime(time: string) {
-    return this.timesRepository.save({ time_id: 1, time });
   }
 
   async getByEmail(email: string) {
