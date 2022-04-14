@@ -1,5 +1,10 @@
 import Plan from 'src/plans/plan.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import DashboardsService from 'src/dashboards/dashboards.service';
 import PlansService from 'src/plans/plans.service';
@@ -27,10 +32,13 @@ export default class ChartsService {
     @InjectRepository(Chart)
     private chartsRepository: Repository<Chart>,
 
+    @Inject(forwardRef(() => PlansService))
     private readonly plansService: PlansService,
     private readonly dashboardsService: DashboardsService,
     private readonly usersService: UsersService,
     private readonly deptsService: DeptsService,
+
+    @Inject(forwardRef(() => KpiTemplatesService))
     private readonly kpiTemplatesService: KpiTemplatesService,
   ) {}
 

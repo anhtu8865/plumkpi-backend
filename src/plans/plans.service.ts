@@ -12,7 +12,7 @@ import { CustomBadRequestException } from 'src/utils/exception/BadRequest.except
 import { CustomInternalServerException } from 'src/utils/exception/InternalServer.exception';
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import { KpiCategoryDto } from './dto/registerKpiCategories.dto';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { KpiDto } from './dto/registerKpis.dto';
 import { DeptsDto } from './dto/assignKpiDepts.dto';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
@@ -36,6 +36,8 @@ import Role from 'src/users/role.enum';
 import Dept from 'src/departments/dept.entity';
 import { FilesService } from 'src/files/files.service';
 import NotifsService from 'src/notifications/notifs.service';
+import ChartsService from 'src/charts/charts.service';
+import { DateType } from 'src/charts/interface/properties.interface';
 
 @Injectable()
 export default class PlansService {
@@ -66,6 +68,12 @@ export default class PlansService {
     private readonly filesService: FilesService,
 
     private readonly notifsService: NotifsService,
+
+    @Inject(forwardRef(() => ChartsService))
+    private readonly chartsService: ChartsService,
+
+    @Inject(forwardRef(() => KpiTemplatesService))
+    private readonly kpiTemplatesService: KpiTemplatesService,
 
     private connection: Connection,
   ) {}
@@ -2024,6 +2032,49 @@ export default class PlansService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async getTargetKpiOfdeptsWithActual(
+    plan_id: number,
+    kpi_template_id: number,
+    user: User,
+  ) {
+    const rows = await this.getTargetKpiOfdepts(plan_id, kpi_template_id);
+    const { kpi_category } = await this.kpiTemplatesService.getKpiTemplateById(
+      kpi_template_id,
+    );
+    if (kpi_category.kpi_category_name === 'Cá nhân') return rows;
+
+    const deptIds = rows.map((row) => row.dept.dept_id);
+    const properties = {
+      kpis: [kpi_template_id],
+      period: [1, 2, 3, 4],
+      plan_id,
+      dateType: DateType.Quarter,
+      filter: deptIds,
+      chart_name: 'abc',
+      description: '',
+    };
+    const { datasets } = await this.chartsService.getData(properties, user);
+
+    for (const [i, row] of rows.entries()) {
+      if (row.first_quarterly_target !== null) {
+        row.first_quarterly_target['resultDept'] = datasets[i].data[0].actual;
+      }
+
+      if (row.second_quarterly_target !== null) {
+        row.second_quarterly_target['resultDept'] = datasets[i].data[1].actual;
+      }
+
+      if (row.third_quarterly_target !== null) {
+        row.third_quarterly_target['resultDept'] = datasets[i].data[2].actual;
+      }
+
+      if (row.fourth_quarterly_target !== null) {
+        row.fourth_quarterly_target['resultDept'] = datasets[i].data[3].actual;
+      }
+    }
+    return rows;
   }
 
   async getTargetKpiOfdepts(plan_id: number, kpi_template_id: number) {

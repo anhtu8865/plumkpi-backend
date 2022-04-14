@@ -301,8 +301,14 @@ export default class PlansController {
   @Get('plan/target-kpi-of-depts')
   async getTargetKpiOfdepts(
     @Query() { plan_id, kpi_template_id }: TargetKpiOfDeptsParams,
+    @Req() request: RequestWithUser,
   ) {
-    return this.plansService.getTargetKpiOfdepts(plan_id, kpi_template_id);
+    const user = request.user;
+    return this.plansService.getTargetKpiOfdeptsWithActual(
+      plan_id,
+      kpi_template_id,
+      user,
+    );
   }
 
   @UseGuards(RoleGuard([Role.Director]))

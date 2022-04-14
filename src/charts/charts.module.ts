@@ -1,6 +1,6 @@
 import { KpiTemplatesModule } from './../kpiTemplates/kpiTemplates.module';
 import { UsersModule } from 'src/users/users.module';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DashboardsModule } from 'src/dashboards/dashboards.module';
 import { PlansModule } from 'src/plans/plans.module';
@@ -12,13 +12,14 @@ import { DeptsModule } from 'src/departments/depts.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Chart]),
-    PlansModule,
+    forwardRef(() => PlansModule),
     DashboardsModule,
     UsersModule,
     DeptsModule,
-    KpiTemplatesModule,
+    forwardRef(() => KpiTemplatesModule),
   ],
   controllers: [ChartsController],
   providers: [ChartsService],
+  exports: [ChartsService],
 })
 export class ChartsModule {}

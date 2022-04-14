@@ -1,6 +1,12 @@
 import User from 'src/users/user.entity';
 import { KpiTemplateParams } from './../utils/types/kpiTemplateParams';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import CreateKpiTemplateDto from './dto/createKpiTemplate.dto';
 import KpiTemplate from './kpiTemplate.entity';
 import UpdateKpiTemplateDto from './dto/updateKpiTemplate.dto';
@@ -18,6 +24,8 @@ export default class KpiTemplatesService {
   constructor(
     @InjectRepository(KpiTemplate)
     private kpiTemplatesRepository: Repository<KpiTemplate>,
+
+    @Inject(forwardRef(() => PlansService))
     private readonly plansService: PlansService,
   ) {}
 
