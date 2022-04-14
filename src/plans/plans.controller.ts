@@ -783,13 +783,16 @@ export default class PlansController {
       month,
       approve,
     }: ApproveMonthlyTargetDto,
+    @Req() request: RequestWithUser,
   ) {
+    const dept = request.user.manage;
     return this.plansService.approveDataMonthlyTarget(
       plan_id,
       kpi_template_id,
       user_id,
       month,
       approve,
+      dept,
     );
   }
 
@@ -828,7 +831,7 @@ export default class PlansController {
     }: RegisterMonthlyTargetDto,
     @Req() request: RequestWithUser,
   ) {
-    const dept_id = request.user.manage.dept_id;
+    const dept = request.user.manage;
     const manager = request.user.user_id;
     return this.plansService.registerMonthlyTarget(
       plan_id,
@@ -836,7 +839,7 @@ export default class PlansController {
       target,
       month,
       users,
-      dept_id,
+      dept,
       resultDay,
       manager,
     );

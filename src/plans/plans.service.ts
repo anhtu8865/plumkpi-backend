@@ -1323,10 +1323,25 @@ export default class PlansService {
     target: number,
     month: number,
     users: TargetUsersDto[],
-    dept_id: number,
+    dept: Dept,
     resultDay: string,
     manager: number,
   ) {
+    const kpi_template = await this.kpiTemplatesService.getKpiTemplateById(
+      kpi_template_id,
+    );
+    const plan = await this.getPlanById(plan_id);
+    const quarterly_targets_of_dept = await this.getQuarterlyTargetsOfDept(
+      plan,
+      kpi_template,
+      dept,
+    );
+    if (this.isAccepted(quarterly_targets_of_dept, month)) {
+      throw new CustomBadRequestException(
+        `Không thể thay đổi số liệu của quý đã được Ban Giám Đốc phê duyệt`,
+      );
+    }
+
     const queryRunner = await this.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -1337,7 +1352,7 @@ export default class PlansService {
             kpi_template: { kpi_template_id },
             plan: { plan_id },
           },
-          user: { dept: { dept_id } },
+          user: { dept },
         },
         relations: [
           'plan_kpi_template',
@@ -3173,13 +3188,60 @@ export default class PlansService {
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
 
+  isAccepted(quarterly_targets_of_dept: PlanKpiTemplateDept, month: number) {
+    const {
+      first_quarterly_target,
+      second_quarterly_target,
+      third_quarterly_target,
+      fourth_quarterly_target,
+    } = quarterly_targets_of_dept;
+    if (
+      [1, 2, 3].includes(month) &&
+      first_quarterly_target?.actual?.approve === ApproveRegistration.Accepted
+    ) {
+      return true;
+    } else if (
+      [4, 5, 6].includes(month) &&
+      second_quarterly_target?.actual?.approve === ApproveRegistration.Accepted
+    ) {
+      return true;
+    } else if (
+      [7, 8, 9].includes(month) &&
+      third_quarterly_target?.actual?.approve === ApproveRegistration.Accepted
+    ) {
+      return true;
+    } else if (
+      fourth_quarterly_target?.actual?.approve === ApproveRegistration.Accepted
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   async approveDataMonthlyTarget(
     plan_id: number,
     kpi_template_id: number,
     user_id: number,
     month: number,
     approve: ApproveRegistration,
+    dept: Dept,
   ) {
+    const kpi_template = await this.kpiTemplatesService.getKpiTemplateById(
+      kpi_template_id,
+    );
+    if (kpi_template.kpi_category.kpi_category_name !== 'Cá nhân') {
+      const plan = await this.getPlanById(plan_id);
+      const quarterly_targets_of_dept = await this.getQuarterlyTargetsOfDept(
+        plan,
+        kpi_template,
+        dept,
+      );
+      if (this.isAccepted(quarterly_targets_of_dept, month)) {
+        throw new CustomBadRequestException(
+          `Không thể thay đổi số liệu của quý đã được Ban Giám Đốc phê duyệt`,
+        );
+      }
+    }
     const record = await this.planKpiTemplateUsersRepository.findOne({
       where: {
         plan_kpi_template: {
