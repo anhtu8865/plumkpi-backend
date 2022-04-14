@@ -1,5 +1,7 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -18,9 +20,10 @@ export class ApproveQuarterlyTargetDto {
   @IsNotEmpty()
   kpi_template_id: number;
 
-  @IsNumber()
-  @IsNotEmpty()
-  dept_id: number;
+  @IsNumber({}, { each: true })
+  @ArrayNotEmpty()
+  @IsArray()
+  dept_ids: number[];
 
   @IsNumber()
   @Min(1)

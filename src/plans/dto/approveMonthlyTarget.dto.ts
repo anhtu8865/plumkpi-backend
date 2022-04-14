@@ -1,4 +1,11 @@
-import { IsEnum, IsNumber, Max, Min } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsEnum,
+  IsNumber,
+  Max,
+  Min,
+} from 'class-validator';
 import ApproveRegistration from '../approveRegistration.enum';
 
 export class ApproveMonthlyTargetDto {
@@ -8,8 +15,10 @@ export class ApproveMonthlyTargetDto {
   @IsNumber()
   kpi_template_id: number;
 
-  @IsNumber()
-  user_id: number;
+  @IsNumber({}, { each: true })
+  @ArrayNotEmpty()
+  @IsArray()
+  user_ids: number[];
 
   @IsNumber()
   @Min(1)

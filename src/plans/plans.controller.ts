@@ -737,7 +737,7 @@ export default class PlansController {
     {
       plan_id,
       kpi_template_id,
-      dept_id,
+      dept_ids,
       quarter,
       approve,
     }: ApproveQuarterlyTargetDto,
@@ -745,7 +745,7 @@ export default class PlansController {
     return this.plansService.approveQuarterlyTarget(
       plan_id,
       kpi_template_id,
-      dept_id,
+      dept_ids,
       quarter,
       approve,
     );
@@ -758,7 +758,7 @@ export default class PlansController {
     {
       plan_id,
       kpi_template_id,
-      dept_id,
+      dept_ids,
       quarter,
       approve,
     }: ApproveQuarterlyTargetDto,
@@ -766,7 +766,7 @@ export default class PlansController {
     return this.plansService.approveDataQuarterlyTarget(
       plan_id,
       kpi_template_id,
-      dept_id,
+      dept_ids,
       quarter,
       approve,
     );
@@ -779,7 +779,7 @@ export default class PlansController {
     {
       plan_id,
       kpi_template_id,
-      user_id,
+      user_ids,
       month,
       approve,
     }: ApproveMonthlyTargetDto,
@@ -789,7 +789,7 @@ export default class PlansController {
     return this.plansService.approveDataMonthlyTarget(
       plan_id,
       kpi_template_id,
-      user_id,
+      user_ids,
       month,
       approve,
       dept,
@@ -803,7 +803,7 @@ export default class PlansController {
     {
       plan_id,
       kpi_template_id,
-      user_id,
+      user_ids,
       month,
       approve,
     }: ApproveMonthlyTargetDto,
@@ -811,7 +811,7 @@ export default class PlansController {
     return this.plansService.approveMonthlyTarget(
       plan_id,
       kpi_template_id,
-      user_id,
+      user_ids,
       month,
       approve,
     );

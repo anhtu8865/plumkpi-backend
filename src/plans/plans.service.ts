@@ -3059,17 +3059,17 @@ export default class PlansService {
   async approveQuarterlyTarget(
     plan_id: number,
     kpi_template_id: number,
-    dept_id: number,
+    dept_ids: number[],
     quarter: number,
     approve: ApproveRegistration,
   ) {
-    const record = await this.planKpiTemplateDeptsRepository.findOne({
+    const records = await this.planKpiTemplateDeptsRepository.find({
       where: {
         plan_kpi_template: {
           kpi_template: { kpi_template_id },
           plan: { plan_id },
         },
-        dept: { dept_id },
+        dept: { dept_id: In(dept_ids) },
       },
       relations: [
         'plan_kpi_template',
@@ -3078,45 +3078,13 @@ export default class PlansService {
         'plan_kpi_template.plan',
       ],
     });
-    if (record) {
-      switch (quarter) {
-        case 1:
-          if (!record.first_quarterly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu quý một`,
-            );
-          }
-          record.first_quarterly_target.approve = approve;
-          break;
-        case 2:
-          if (!record.second_quarterly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu quý hai`,
-            );
-          }
-          record.second_quarterly_target.approve = approve;
-          break;
-        case 3:
-          if (!record.third_quarterly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu quý ba1`,
-            );
-          }
-          record.third_quarterly_target.approve = approve;
-          break;
-        case 4:
-          if (!record.fourth_quarterly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu quý bốn`,
-            );
-          }
-          record.fourth_quarterly_target.approve = approve;
-          break;
-        default:
-          break;
-      }
 
-      await this.planKpiTemplateDeptsRepository.save(record);
+    if (records.length !== 0) {
+      const key = this.quarterlyKey(quarter);
+      for (const record of records) {
+        record[key].approve = approve;
+      }
+      await this.planKpiTemplateDeptsRepository.save(records);
       return { approve };
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
@@ -3125,17 +3093,17 @@ export default class PlansService {
   async approveDataQuarterlyTarget(
     plan_id: number,
     kpi_template_id: number,
-    dept_id: number,
+    dept_ids: number[],
     quarter: number,
     approve: ApproveRegistration,
   ) {
-    const record = await this.planKpiTemplateDeptsRepository.findOne({
+    const records = await this.planKpiTemplateDeptsRepository.find({
       where: {
         plan_kpi_template: {
           kpi_template: { kpi_template_id },
           plan: { plan_id },
         },
-        dept: { dept_id },
+        dept: { dept_id: In(dept_ids) },
       },
       relations: [
         'plan_kpi_template',
@@ -3144,45 +3112,12 @@ export default class PlansService {
         'plan_kpi_template.plan',
       ],
     });
-    if (record) {
-      switch (quarter) {
-        case 1:
-          if (!record.first_quarterly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu quý một`,
-            );
-          }
-          record.first_quarterly_target.actual.approve = approve;
-          break;
-        case 2:
-          if (!record.second_quarterly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu quý hai`,
-            );
-          }
-          record.second_quarterly_target.actual.approve = approve;
-          break;
-        case 3:
-          if (!record.third_quarterly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu quý ba1`,
-            );
-          }
-          record.third_quarterly_target.actual.approve = approve;
-          break;
-        case 4:
-          if (!record.fourth_quarterly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu quý bốn`,
-            );
-          }
-          record.fourth_quarterly_target.actual.approve = approve;
-          break;
-        default:
-          break;
+    if (records.length !== 0) {
+      const key = this.quarterlyKey(quarter);
+      for (const record of records) {
+        record[key].actual.approve = approve;
       }
-
-      await this.planKpiTemplateDeptsRepository.save(record);
+      await this.planKpiTemplateDeptsRepository.save(records);
       return { approve };
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
@@ -3221,7 +3156,7 @@ export default class PlansService {
   async approveDataMonthlyTarget(
     plan_id: number,
     kpi_template_id: number,
-    user_id: number,
+    user_ids: number[],
     month: number,
     approve: ApproveRegistration,
     dept: Dept,
@@ -3242,13 +3177,13 @@ export default class PlansService {
         );
       }
     }
-    const record = await this.planKpiTemplateUsersRepository.findOne({
+    const records = await this.planKpiTemplateUsersRepository.find({
       where: {
         plan_kpi_template: {
           kpi_template: { kpi_template_id },
           plan: { plan_id },
         },
-        user: { user_id },
+        user: { user_id: In(user_ids) },
       },
       relations: [
         'plan_kpi_template',
@@ -3257,109 +3192,12 @@ export default class PlansService {
         'plan_kpi_template.plan',
       ],
     });
-    if (record) {
-      switch (month) {
-        case 1:
-          if (!record.first_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng một`,
-            );
-          }
-          record.first_monthly_target.actual.approve = approve;
-          break;
-        case 2:
-          if (!record.second_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng hai`,
-            );
-          }
-          record.second_monthly_target.actual.approve = approve;
-          break;
-        case 3:
-          if (!record.third_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng ba`,
-            );
-          }
-          record.third_monthly_target.actual.approve = approve;
-          break;
-        case 4:
-          if (!record.fourth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng bốn`,
-            );
-          }
-          record.fourth_monthly_target.actual.approve = approve;
-          break;
-        case 5:
-          if (!record.fifth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng năm`,
-            );
-          }
-          record.fifth_monthly_target.actual.approve = approve;
-          break;
-        case 6:
-          if (!record.sixth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng sáu`,
-            );
-          }
-          record.sixth_monthly_target.actual.approve = approve;
-          break;
-        case 7:
-          if (!record.seventh_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng bảy`,
-            );
-          }
-          record.seventh_monthly_target.actual.approve = approve;
-          break;
-        case 8:
-          if (!record.eighth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng tám`,
-            );
-          }
-          record.eighth_monthly_target.actual.approve = approve;
-          break;
-        case 9:
-          if (!record.ninth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng chín`,
-            );
-          }
-          record.ninth_monthly_target.actual.approve = approve;
-          break;
-        case 10:
-          if (!record.tenth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng mười`,
-            );
-          }
-          record.tenth_monthly_target.actual.approve = approve;
-          break;
-        case 11:
-          if (!record.eleventh_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng mười một`,
-            );
-          }
-          record.eleventh_monthly_target.actual.approve = approve;
-          break;
-        case 12:
-          if (!record.twelfth_monthly_target.actual) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy số liệu tháng mười hai`,
-            );
-          }
-          record.twelfth_monthly_target.actual.approve = approve;
-          break;
-        default:
-          break;
+    if (records.length !== 0) {
+      const key = this.monthlyKey(month);
+      for (const record of records) {
+        record[key].actual.approve = approve;
       }
-
-      await this.planKpiTemplateUsersRepository.save(record);
+      await this.planKpiTemplateUsersRepository.save(records);
       return { approve };
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
@@ -3368,17 +3206,17 @@ export default class PlansService {
   async approveMonthlyTarget(
     plan_id: number,
     kpi_template_id: number,
-    user_id: number,
+    user_ids: number[],
     month: number,
     approve: ApproveRegistration,
   ) {
-    const record = await this.planKpiTemplateUsersRepository.findOne({
+    const records = await this.planKpiTemplateUsersRepository.find({
       where: {
         plan_kpi_template: {
           kpi_template: { kpi_template_id },
           plan: { plan_id },
         },
-        user: { user_id },
+        user: { user_id: In(user_ids) },
       },
       relations: [
         'plan_kpi_template',
@@ -3387,109 +3225,13 @@ export default class PlansService {
         'plan_kpi_template.plan',
       ],
     });
-    if (record) {
-      switch (month) {
-        case 1:
-          if (!record.first_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng một`,
-            );
-          }
-          record.first_monthly_target.approve = approve;
-          break;
-        case 2:
-          if (!record.second_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng hai`,
-            );
-          }
-          record.second_monthly_target.approve = approve;
-          break;
-        case 3:
-          if (!record.third_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng ba`,
-            );
-          }
-          record.third_monthly_target.approve = approve;
-          break;
-        case 4:
-          if (!record.fourth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng bốn`,
-            );
-          }
-          record.fourth_monthly_target.approve = approve;
-          break;
-        case 5:
-          if (!record.fifth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng năm`,
-            );
-          }
-          record.fifth_monthly_target.approve = approve;
-          break;
-        case 6:
-          if (!record.sixth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng sáu`,
-            );
-          }
-          record.sixth_monthly_target.approve = approve;
-          break;
-        case 7:
-          if (!record.seventh_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng bảy`,
-            );
-          }
-          record.seventh_monthly_target.approve = approve;
-          break;
-        case 8:
-          if (!record.eighth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng tám`,
-            );
-          }
-          record.eighth_monthly_target.approve = approve;
-          break;
-        case 9:
-          if (!record.ninth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng chín`,
-            );
-          }
-          record.ninth_monthly_target.approve = approve;
-          break;
-        case 10:
-          if (!record.tenth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng mười`,
-            );
-          }
-          record.tenth_monthly_target.approve = approve;
-          break;
-        case 11:
-          if (!record.eleventh_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng mười một`,
-            );
-          }
-          record.eleventh_monthly_target.approve = approve;
-          break;
-        case 12:
-          if (!record.twelfth_monthly_target) {
-            throw new CustomBadRequestException(
-              `Không tìm thấy mục tiêu tháng mười hai`,
-            );
-          }
-          record.twelfth_monthly_target.approve = approve;
-          break;
-        default:
-          break;
+    if (records.length !== 0) {
+      const key = this.monthlyKey(month);
+      for (const record of records) {
+        record[key].approve = approve;
       }
 
-      await this.planKpiTemplateUsersRepository.save(record);
+      await this.planKpiTemplateUsersRepository.save(records);
       return { approve };
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
