@@ -488,6 +488,7 @@ export default class PlansService {
       const deleteKpisId = kpisIdInDB.filter((item) => !kpisId.includes(item));
       await queryRunner.manager.delete(PlanKpiTemplate, {
         kpi_template: { kpi_template_id: In(deleteKpisId) },
+        plan: { plan_id },
       });
 
       const result = [];
