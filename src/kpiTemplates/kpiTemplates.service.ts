@@ -34,7 +34,7 @@ export default class KpiTemplatesService {
 
     const whereCondition = {
       kpi_template_name: name ? Like(`%${name}%`) : undefined,
-      kpi_category: { kpi_category_id },
+      kpi_category: kpi_category_id ? { kpi_category_id } : undefined,
     };
     Object.keys(whereCondition).forEach(
       (key) => whereCondition[key] === undefined && delete whereCondition[key],

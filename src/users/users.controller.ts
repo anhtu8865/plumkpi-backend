@@ -20,9 +20,7 @@ import CreateUserDto from './dto/createUser.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import RoleGuard from './role.guard';
 import Role from './role.enum';
-import { get } from 'http';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
-import { PaginationParams } from 'src/utils/types/paginationParams';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)

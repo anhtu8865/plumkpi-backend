@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import User from 'src/users/user.entity';
+import Role from 'src/users/role.enum';
 
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
-import { LessThanOrEqual, Like, Repository } from 'typeorm';
-import { CreateNotifDto } from './dto/notif.dto';
+import { Equal, LessThan, LessThanOrEqual, Like, Repository } from 'typeorm';
+import { CreateNotifDto, UpdateNotifDto } from './dto/notif.dto';
 import { Notif } from './notif.entity';
 import Time from './time.entity';
 
@@ -18,32 +18,10 @@ export default class NotifsService {
     private timesRepository: Repository<Time>,
   ) {}
 
-  async createNotif(
-    title: string,
-    content: string,
-    time: string,
-    user_ids: number[],
-  ) {
-    const data = user_ids.map((user_id) => {
-      return {
-        title,
-        content,
-        time,
-        user: { user_id },
-      };
-    });
-    return this.notifsRepository.save(data);
+  async createNotif(data: CreateNotifDto) {
+    const { content, day, month, role } = data;
+    return this.notifsRepository.save({ content, day, month, role });
   }
-
-  // async createNotif(data: CreateNotifDto) {
-  //   const { title, content, time, user_id } = data;
-  //   return this.notifsRepository.save({
-  //     title,
-  //     content,
-  //     time,
-  //     user: { user_id },
-  //   });
-  // }
 
   async getNotifById(notif_id: number) {
     const notif = await this.notifsRepository.findOne(notif_id);
@@ -55,21 +33,67 @@ export default class NotifsService {
     );
   }
 
-  async markedAsRead(notif_id: number) {
-    const notif = await this.getNotifById(notif_id);
-    notif.is_read = true;
-    return this.notifsRepository.save(notif);
+  async getNotifs(
+    offset: number,
+    limit: number,
+    content: string,
+    day: number,
+    month: number,
+    role: Role,
+  ) {
+    const whereCondition = {
+      content: Like(`%${content ? content : ''}%`),
+      day,
+      month,
+      role,
+    };
+
+    Object.keys(whereCondition).forEach(
+      (key) => whereCondition[key] === undefined && delete whereCondition[key],
+    );
+
+    const [items, count] = await this.notifsRepository.findAndCount({
+      where: [whereCondition],
+      order: { createdAt: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 
-  async getNotifs(user: User, offset: number, limit: number, title: string) {
+  async updateNotif(notif_id: number, data: UpdateNotifDto) {
+    const notif = await this.getNotifById(notif_id);
+    return this.notifsRepository.save({ ...notif, ...data });
+  }
+
+  async deleteNotif(notif_id: number) {
+    const notif = await this.getNotifById(notif_id);
+    return this.notifsRepository.remove(notif);
+  }
+
+  async getNotifsByUser(offset: number, limit: number, role: Role) {
     const { time } = await this.getTime();
+    const date = new Date(time);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+
     const [items, count] = await this.notifsRepository.findAndCount({
-      where: {
-        user,
-        time: LessThanOrEqual(time),
-        title: Like(`%${title ? title : ''}%`),
-      },
-      order: { time: 'DESC' },
+      where: [
+        {
+          role,
+          month: LessThan(month),
+        },
+        {
+          role,
+          month: Equal(month),
+          day: LessThanOrEqual(day),
+        },
+      ],
+      order: { month: 'DESC', day: 'DESC' },
       skip: offset,
       take: limit,
     });

@@ -26,7 +26,7 @@ import { PaginationParams } from 'src/utils/types/paginationParams';
 export default class KpiCategoriesController {
   constructor(private readonly kpiCategoriesService: KpiCategoriesService) {}
 
-  @UseGuards(RoleGuard([Role.Admin]))
+  @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getKpiCategories(@Query() { offset, limit, name }: PaginationParams) {
     return this.kpiCategoriesService.getKpiCategories(offset, limit, name);

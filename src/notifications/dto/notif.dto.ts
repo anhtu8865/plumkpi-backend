@@ -1,15 +1,49 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  Max,
+  Min,
+} from 'class-validator';
+import Role from 'src/users/role.enum';
 
 export class CreateNotifDto {
-  @IsNotEmpty({ message: 'Chủ đề không được để trống' })
-  title: string;
-
   @IsNotEmpty({ message: 'Nội dung không được để trống' })
   content: string;
 
-  @IsNotEmpty({ message: 'Thời gian không được để trống' })
-  time: string;
-
+  @Min(1)
+  @Max(31)
   @IsNumber()
-  user_id: number;
+  day: number;
+
+  @Min(1)
+  @Max(12)
+  @IsNumber()
+  month: number;
+
+  @IsEnum(Role)
+  role: Role;
+}
+
+export class UpdateNotifDto {
+  @IsNotEmpty({ message: 'Nội dung không được để trống' })
+  @IsOptional()
+  content: string;
+
+  @Min(1)
+  @Max(31)
+  @IsNumber()
+  @IsOptional()
+  day: number;
+
+  @Min(1)
+  @Max(12)
+  @IsNumber()
+  @IsOptional()
+  month: number;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role: Role;
 }

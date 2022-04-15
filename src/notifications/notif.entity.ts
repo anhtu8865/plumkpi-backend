@@ -1,10 +1,9 @@
 import { Exclude } from 'class-transformer';
-import User from 'src/users/user.entity';
+import Role from 'src/users/role.enum';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,19 +14,19 @@ export class Notif {
   notif_id: number;
 
   @Column()
-  title: string;
-
-  @Column()
   content: string;
 
-  @Column({ default: false })
-  is_read: boolean;
+  @Column()
+  day: number;
 
-  @Column({ type: 'date' })
-  time: string;
+  @Column()
+  month: number;
 
-  @ManyToOne(() => User)
-  user: User;
+  @Column({
+    type: 'enum',
+    enum: Role,
+  })
+  role: Role;
 
   @CreateDateColumn()
   @Exclude()

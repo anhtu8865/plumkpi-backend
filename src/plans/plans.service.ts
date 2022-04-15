@@ -1325,8 +1325,6 @@ export default class PlansService {
     month: number,
     users: TargetUsersDto[],
     dept: Dept,
-    resultDay: string,
-    manager: number,
   ) {
     const kpi_template = await this.kpiTemplatesService.getKpiTemplateById(
       kpi_template_id,
@@ -1384,9 +1382,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1412,9 +1409,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1441,9 +1437,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1469,9 +1464,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1497,9 +1491,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1525,9 +1518,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1553,9 +1545,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1581,9 +1572,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1609,9 +1599,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1637,9 +1626,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1665,9 +1653,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1693,9 +1680,8 @@ export default class PlansService {
                 ? {
                     target: user.target,
                     approve: ApproveRegistration.Accepted,
-                    resultDay,
                   }
-                : { target, approve: ApproveRegistration.Accepted, resultDay },
+                : { target, approve: ApproveRegistration.Accepted },
             };
           });
           toDeleteTargetRows = toDeleteTargetRows.map((row) => {
@@ -1712,27 +1698,7 @@ export default class PlansService {
         default:
           break;
       }
-
-      const kpi_template = await queryRunner.manager.findOne(
-        KpiTemplate,
-        kpi_template_id,
-      );
-
       await queryRunner.commitTransaction();
-
-      await this.notifsService.createNotif(
-        'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} tháng ${month} năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        resultDay,
-        userIds,
-      );
-
-      await this.notifsService.createNotif(
-        'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} tháng ${month} năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        resultDay,
-        [manager],
-      );
 
       for (const row of toUpdateTargetRows) {
         Object.keys(row).forEach((k) => row[k] === null && delete row[k]);
@@ -1750,11 +1716,6 @@ export default class PlansService {
     plan_id: number,
     kpi_template_id: number,
     depts: DeptsDto[],
-    first_quarterly_result_day: string,
-    second_quarterly_result_day: string,
-    third_quarterly_result_day: string,
-    fourth_quarterly_result_day: string,
-    director: number,
   ) {
     const queryRunner = await this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -1768,10 +1729,6 @@ export default class PlansService {
           },
           dept: { dept_id: item.dept_id },
           target: item.target,
-          first_quarterly_result_day,
-          second_quarterly_result_day,
-          third_quarterly_result_day,
-          fourth_quarterly_result_day,
         };
       });
       const { kpi_category, kpi_template_name } =
@@ -1854,74 +1811,7 @@ export default class PlansService {
 
       const result = await queryRunner.manager.save(PlanKpiTemplateDept, rows);
       await queryRunner.manager.save(PlanKpiCategoryDept, rows2);
-
-      const manager = await queryRunner.manager.find(User, {
-        where: {
-          manage: { dept_id: In(deptIds) },
-        },
-        relations: ['manage'],
-      });
-
       await queryRunner.commitTransaction();
-
-      const user_ids = manager.map((item) => item.user_id);
-      const plan = await this.getPlanById(plan_id);
-      await this.notifsService.createNotif(
-        'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 1 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        first_quarterly_result_day,
-        user_ids,
-      );
-
-      await this.notifsService.createNotif(
-        'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 2 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        second_quarterly_result_day,
-        user_ids,
-      );
-
-      await this.notifsService.createNotif(
-        'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 3 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        third_quarterly_result_day,
-        user_ids,
-      );
-
-      await this.notifsService.createNotif(
-        'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 4 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        fourth_quarterly_result_day,
-        user_ids,
-      );
-
-      await this.notifsService.createNotif(
-        'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 1 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        first_quarterly_result_day,
-        [director],
-      );
-
-      await this.notifsService.createNotif(
-        'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 2 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        second_quarterly_result_day,
-        [director],
-      );
-
-      await this.notifsService.createNotif(
-        'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 3 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        third_quarterly_result_day,
-        [director],
-      );
-
-      await this.notifsService.createNotif(
-        'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 4 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
-        fourth_quarterly_result_day,
-        [director],
-      );
-
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -1987,6 +1877,17 @@ export default class PlansService {
       toDeleteRows = toDeleteRows.filter(
         (row) => !userIds.includes(row.user.user_id),
       );
+
+      for (const toDeleteRow of toDeleteRows) {
+        for (let i = 0; i <= 12; i++) {
+          const key = this.monthlyKey(i);
+          if (toDeleteRow[key]?.actual) {
+            throw new CustomBadRequestException(
+              `Không thể xoá KPI ${toDeleteRow.plan_kpi_template.kpi_template.kpi_template_name} của nhân viên ${toDeleteRow.user.user_name} vì đã có số liệu của tháng ${i}`,
+            );
+          }
+        }
+      }
 
       const userIdsToDelete = [];
       for (const toDeleteRow of toDeleteRows) {
@@ -2075,19 +1976,21 @@ export default class PlansService {
 
     for (const [i, row] of rows.entries()) {
       if (row.first_quarterly_target !== null) {
-        row.first_quarterly_target['resultDept'] = datasets[i].data[0].actual;
+        row.first_quarterly_target['actual_value'] = datasets[i].data[0].actual;
       }
 
       if (row.second_quarterly_target !== null) {
-        row.second_quarterly_target['resultDept'] = datasets[i].data[1].actual;
+        row.second_quarterly_target['actual_value'] =
+          datasets[i].data[1].actual;
       }
 
       if (row.third_quarterly_target !== null) {
-        row.third_quarterly_target['resultDept'] = datasets[i].data[2].actual;
+        row.third_quarterly_target['actual_value'] = datasets[i].data[2].actual;
       }
 
       if (row.fourth_quarterly_target !== null) {
-        row.fourth_quarterly_target['resultDept'] = datasets[i].data[3].actual;
+        row.fourth_quarterly_target['actual_value'] =
+          datasets[i].data[3].actual;
       }
     }
     return rows;

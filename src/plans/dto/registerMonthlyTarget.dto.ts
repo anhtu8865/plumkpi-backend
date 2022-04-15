@@ -33,9 +33,6 @@ export class RegisterMonthlyTargetDto {
   @Max(12)
   month: number;
 
-  @IsNotEmpty({ message: 'Vui lòng chọn ngày nhận kết quả' })
-  resultDay: string;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TargetUsersDto)
