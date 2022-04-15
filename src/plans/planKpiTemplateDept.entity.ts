@@ -43,16 +43,16 @@ export class PlanKpiTemplateDept {
   fourth_quarterly_target: RegisterTarget;
 
   @Column({ type: 'date', nullable: true })
-  first_quarterly_register_day: string;
+  first_quarterly_result_day: string;
 
   @Column({ type: 'date', nullable: true })
-  second_quarterly_register_day: string;
+  second_quarterly_result_day: string;
 
   @Column({ type: 'date', nullable: true })
-  third_quarterly_register_day: string;
+  third_quarterly_result_day: string;
 
   @Column({ type: 'date', nullable: true })
-  fourth_quarterly_register_day: string;
+  fourth_quarterly_result_day: string;
 
   @Exclude()
   @CreateDateColumn()

@@ -21,24 +21,24 @@ export class AssignKpiDeptsDto {
   kpi_template_id: number;
 
   @IsNotEmpty({
-    message: 'Vui lòng chọn thời điểm nhận kết quả đăng kí kpi quý 1',
+    message: 'Vui lòng chọn thời điểm nhận kết quả kpi quý 1',
   })
-  first_quarterly_register_day: string;
+  first_quarterly_result_day: string;
 
   @IsNotEmpty({
-    message: 'Vui lòng chọn thời điểm nhận kết quả đăng kí kpi quý 2',
+    message: 'Vui lòng chọn thời điểm nhận kết quả kpi quý 2',
   })
-  second_quarterly_register_day: string;
+  second_quarterly_result_day: string;
 
   @IsNotEmpty({
-    message: 'Vui lòng chọn thời điểm nhận kết quả đăng kí kpi quý 3',
+    message: 'Vui lòng chọn thời điểm nhận kết quả kpi quý 3',
   })
-  third_quarterly_register_day: string;
+  third_quarterly_result_day: string;
 
   @IsNotEmpty({
-    message: 'Vui lòng chọn thời điểm nhận kết quả đăng kí kpi quý 4',
+    message: 'Vui lòng chọn thời điểm nhận kết quả kpi quý 4',
   })
-  fourth_quarterly_register_day: string;
+  fourth_quarterly_result_day: string;
 
   @IsNotEmpty()
   @IsArray()

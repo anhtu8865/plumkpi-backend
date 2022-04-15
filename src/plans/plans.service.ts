@@ -1721,14 +1721,14 @@ export default class PlansService {
 
       await this.notifsService.createNotif(
         'Nhập số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của tháng ${month} đã đến, vui lòng kiểm tra lại số liệu`,
+        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} tháng ${month} năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
         resultDay,
         userIds,
       );
 
       await this.notifsService.createNotif(
         'Duyệt số liệu kpi',
-        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của tháng ${month} đã đến, vui lòng kiểm tra lại số liệu`,
+        `Thời hạn nhận kết quả kpi ${kpi_template.kpi_template_name} thuộc danh mục ${kpi_template.kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} tháng ${month} năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
         resultDay,
         [manager],
       );
@@ -1749,10 +1749,10 @@ export default class PlansService {
     plan_id: number,
     kpi_template_id: number,
     depts: DeptsDto[],
-    first_quarterly_register_day: string,
-    second_quarterly_register_day: string,
-    third_quarterly_register_day: string,
-    fourth_quarterly_register_day: string,
+    first_quarterly_result_day: string,
+    second_quarterly_result_day: string,
+    third_quarterly_result_day: string,
+    fourth_quarterly_result_day: string,
     director: number,
   ) {
     const queryRunner = await this.connection.createQueryRunner();
@@ -1767,10 +1767,10 @@ export default class PlansService {
           },
           dept: { dept_id: item.dept_id },
           target: item.target,
-          first_quarterly_register_day,
-          second_quarterly_register_day,
-          third_quarterly_register_day,
-          fourth_quarterly_register_day,
+          first_quarterly_result_day,
+          second_quarterly_result_day,
+          third_quarterly_result_day,
+          fourth_quarterly_result_day,
         };
       });
       const { kpi_category, kpi_template_name } =
@@ -1864,60 +1864,60 @@ export default class PlansService {
       await queryRunner.commitTransaction();
 
       const user_ids = manager.map((item) => item.user_id);
-
+      const plan = await this.getPlanById(plan_id);
       await this.notifsService.createNotif(
-        'Đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 1 đã đến, vui lòng kiểm tra lại số liệu`,
-        first_quarterly_register_day,
+        'Nhập số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 1 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        first_quarterly_result_day,
         user_ids,
       );
 
       await this.notifsService.createNotif(
-        'Đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 2 đã đến, vui lòng kiểm tra lại số liệu`,
-        second_quarterly_register_day,
+        'Nhập số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 2 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        second_quarterly_result_day,
         user_ids,
       );
 
       await this.notifsService.createNotif(
-        'Đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 3 đã đến, vui lòng kiểm tra lại số liệu`,
-        third_quarterly_register_day,
+        'Nhập số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 3 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        third_quarterly_result_day,
         user_ids,
       );
 
       await this.notifsService.createNotif(
-        'Đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 4 đã đến, vui lòng kiểm tra lại số liệu`,
-        fourth_quarterly_register_day,
+        'Nhập số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 4 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        fourth_quarterly_result_day,
         user_ids,
       );
 
       await this.notifsService.createNotif(
-        'Duyệt đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 1 đã đến, vui lòng kiểm tra lại số liệu`,
-        first_quarterly_register_day,
+        'Duyệt số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 1 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        first_quarterly_result_day,
         [director],
       );
 
       await this.notifsService.createNotif(
-        'Duyệt đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 2 đã đến, vui lòng kiểm tra lại số liệu`,
-        second_quarterly_register_day,
+        'Duyệt số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 2 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        second_quarterly_result_day,
         [director],
       );
 
       await this.notifsService.createNotif(
-        'Duyệt đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 3 đã đến, vui lòng kiểm tra lại số liệu`,
-        third_quarterly_register_day,
+        'Duyệt số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 3 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        third_quarterly_result_day,
         [director],
       );
 
       await this.notifsService.createNotif(
-        'Duyệt đăng kí chỉ tiêu kpi',
-        `Thời hạn nhận kết quả đăng kí kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của quý 4 đã đến, vui lòng kiểm tra lại số liệu`,
-        fourth_quarterly_register_day,
+        'Duyệt số liệu kpi',
+        `Thời hạn nhận kết quả kpi ${kpi_template_name} thuộc danh mục ${kpi_category.kpi_category_name} của kế hoạch ${plan.plan_name} quý 4 năm ${plan.year} đã đến, vui lòng kiểm tra lại số liệu`,
+        fourth_quarterly_result_day,
         [director],
       );
 
@@ -3082,7 +3082,7 @@ export default class PlansService {
     if (records.length !== 0) {
       const key = this.quarterlyKey(quarter);
       for (const record of records) {
-        record[key].approve = approve;
+        if (record[key]) record[key].approve = approve;
       }
       await this.planKpiTemplateDeptsRepository.save(records);
       return { approve };
@@ -3115,7 +3115,7 @@ export default class PlansService {
     if (records.length !== 0) {
       const key = this.quarterlyKey(quarter);
       for (const record of records) {
-        record[key].actual.approve = approve;
+        if (record[key]?.actual) record[key].actual.approve = approve;
       }
       await this.planKpiTemplateDeptsRepository.save(records);
       return { approve };
@@ -3195,7 +3195,7 @@ export default class PlansService {
     if (records.length !== 0) {
       const key = this.monthlyKey(month);
       for (const record of records) {
-        record[key].actual.approve = approve;
+        if (record[key]?.actual) record[key].actual.approve = approve;
       }
       await this.planKpiTemplateUsersRepository.save(records);
       return { approve };
@@ -3228,7 +3228,7 @@ export default class PlansService {
     if (records.length !== 0) {
       const key = this.monthlyKey(month);
       for (const record of records) {
-        record[key].approve = approve;
+        if (record[key]) record[key].approve = approve;
       }
 
       await this.planKpiTemplateUsersRepository.save(records);
