@@ -76,26 +76,35 @@ export default class KpiCategoriesService {
   }
 
   async updateKpiCategory(id: number, data: UpdateKpiCategoryDto) {
-    await this.getKpiCategoryById(id);
     try {
-      await this.kpiCategoriesRepository.save({
+      let kpiCategory = await this.getKpiCategoryById(id);
+      if (kpiCategory.kpi_category_name === 'Cá nhân')
+        throw new CustomBadRequestException(
+          `Không thể thay đổi danh mục KPI cá nhân`,
+        );
+
+      kpiCategory = await this.kpiCategoriesRepository.save({
+        ...kpiCategory,
         ...data,
-        kpi_category_id: id,
       });
-      const updateKpiCategory = await this.getKpiCategoryById(id);
-      return updateKpiCategory;
+      return kpiCategory;
     } catch (error) {
       if (error?.code === PostgresErrorCodes.UniqueViolation) {
         throw new CustomBadRequestException(
           `Tên danh mục ${data.kpi_category_name} đã tồn tại`,
         );
       }
-      throw new CustomInternalServerException();
+      throw error;
     }
   }
 
   async deleteKpiCategory(id: number) {
     try {
+      const kpiCategory = await this.getKpiCategoryById(id);
+      if (kpiCategory.kpi_category_name === 'Cá nhân')
+        throw new CustomBadRequestException(
+          `Không thể xoá danh mục KPI cá nhân`,
+        );
       const deleteResponse = await this.kpiCategoriesRepository.delete(id);
       if (!deleteResponse.affected) {
         throw new CustomNotFoundException(

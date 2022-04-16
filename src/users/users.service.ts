@@ -128,6 +128,11 @@ export class UsersService {
 
   async updateUser(id: number, user: UpdateUserDto) {
     const userInDB = await this.getById(id);
+    if ([Role.Admin, Role.Director].includes(userInDB.role)) {
+      throw new CustomBadRequestException(
+        `Không thể thay đổi thông tin của Admin hoặc Giám đốc`,
+      );
+    }
     if (userInDB.role === Role.Manager && user.dept) {
       throw new CustomBadRequestException(
         'Không thể thay đổi phòng ban của quản lý',
@@ -167,6 +172,9 @@ export class UsersService {
 
   async deleteUser(id: number) {
     const user = await this.getById(id);
+    if ([Role.Admin, Role.Director].includes(user.role)) {
+      throw new CustomBadRequestException(`Không thể xoá Admin hoặc Giám đốc`);
+    }
     try {
       const deleteResponse = await this.usersRepository.delete(id);
       if (!deleteResponse.affected) {
