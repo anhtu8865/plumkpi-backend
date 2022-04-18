@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Role from 'src/users/role.enum';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 
 import { CustomNotFoundException } from 'src/utils/exception/NotFound.exception';
 import { Equal, LessThan, LessThanOrEqual, Like, Repository } from 'typeorm';
@@ -20,6 +21,10 @@ export default class NotifsService {
 
   async createNotif(data: CreateNotifDto) {
     const { content, day, month, role } = data;
+    if ([4, 6, 9, 11].includes(month) && day === 31)
+      throw new CustomBadRequestException(`Ngày nhập không hợp lệ`);
+    else if (month === 2 && [29, 30, 31].includes(day))
+      throw new CustomBadRequestException(`Ngày nhập không hợp lệ`);
     return this.notifsRepository.save({ content, day, month, role });
   }
 
@@ -67,6 +72,12 @@ export default class NotifsService {
 
   async updateNotif(notif_id: number, data: UpdateNotifDto) {
     const notif = await this.getNotifById(notif_id);
+    const day = data.day ? data.day : notif.day;
+    const month = data.month ? data.month : notif.month;
+    if ([4, 6, 9, 11].includes(month) && day === 31)
+      throw new CustomBadRequestException(`Ngày nhập không hợp lệ`);
+    else if (month === 2 && [29, 30, 31].includes(day))
+      throw new CustomBadRequestException(`Ngày nhập không hợp lệ`);
     return this.notifsRepository.save({ ...notif, ...data });
   }
 
