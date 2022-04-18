@@ -17,6 +17,7 @@ import Role from 'src/users/role.enum';
 import RoleGuard from 'src/users/role.guard';
 import {
   NotifPaginationParams,
+  OptionalPaginationParams,
   PaginationParams,
 } from 'src/utils/types/paginationParams';
 import { CreateNotifDto, UpdateNotifDto } from './dto/notif.dto';
@@ -82,7 +83,7 @@ export default class NotifsController {
   @Get('user')
   async getNotifsByUser(
     @Query()
-    { offset, limit }: PaginationParams,
+    { offset, limit }: OptionalPaginationParams,
     @Req() request: RequestWithUser,
   ) {
     const role = request.user.role;

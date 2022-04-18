@@ -29,6 +29,21 @@ export class PaginationParams {
   name?: string;
 }
 
+export class OptionalPaginationParams {
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  offset: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  @IsOptional()
+  limit: number;
+}
+
 export class GetPersonalKpisParams extends PaginationParams {
   @Type(() => Number)
   @IsNumber()
