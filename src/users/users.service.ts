@@ -247,6 +247,7 @@ export class UsersService {
     dept_id: number,
     offset: number,
     limit: number,
+    user_id: number,
     user_name: string,
     email: string,
     phone: string,
@@ -254,6 +255,7 @@ export class UsersService {
     const whereCondition = {
       offset,
       limit,
+      user_id,
       user_name: Like(`%${user_name ? user_name : ''}%`),
       email: Like(`%${email ? email : ''}%`),
       phone: phone ? Like(`%${phone}%`) : undefined,

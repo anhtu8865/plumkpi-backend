@@ -24,6 +24,11 @@ export class UserParams {
   @IsNotEmpty()
   limit: number;
 
+  @Type(() => Number)
+  @Min(1, { message: 'ID của người dùng phải là số lớn hơn 0' })
+  @IsOptional()
+  user_id: number;
+
   @Type(() => String)
   @IsString()
   @IsNotEmpty()

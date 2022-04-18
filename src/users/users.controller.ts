@@ -31,11 +31,13 @@ export default class UsersController {
   @UseGuards(RoleGuard([Role.Admin, Role.Director]))
   @Get()
   getAllUsers(
-    @Query() { offset, limit, user_name, email, role, phone, dept }: UserParams,
+    @Query()
+    { offset, limit, user_id, user_name, email, role, phone, dept }: UserParams,
   ) {
     return this.usersService.getAllUsers({
       offset,
       limit,
+      user_id,
       user_name,
       email,
       role,
@@ -94,13 +96,14 @@ export default class UsersController {
   @Get('employees/manager/info')
   async getEmployeesInDeptInfo(
     @Req() request: RequestWithUser,
-    @Query() { offset, limit, user_name, email, phone }: UserParams,
+    @Query() { offset, limit, user_id, user_name, email, phone }: UserParams,
   ) {
     const dept_id = request.user.manage.dept_id;
     return this.usersService.getEmployeesInDeptInfo(
       dept_id,
       offset,
       limit,
+      user_id,
       user_name,
       email,
       phone,
