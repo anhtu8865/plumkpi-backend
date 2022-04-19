@@ -2,7 +2,7 @@ import { PlansModule } from './plans/plans.module';
 import { KpiTemplatesModule } from './kpiTemplates/kpiTemplates.module';
 import { KpiCategoriesModule } from './kpiCategories/kpiCategories.module';
 import { DatabaseModule } from './database/database.module';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { DeptsModule } from './departments/depts.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
@@ -11,6 +11,8 @@ import { UsersModule } from './users/users.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { ChartsModule } from './charts/charts.module';
 import { NotifsModule } from './notifications/notifs.module';
+import LogsMiddleware from './utils/logs.middleware';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -40,8 +42,13 @@ import { NotifsModule } from './notifications/notifs.module';
     DashboardsModule,
     ChartsModule,
     NotifsModule,
+    LoggerModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogsMiddleware).forRoutes('*');
+  }
+}

@@ -5,9 +5,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { ExcludeNullInterceptor } from './utils/excludeNull.interceptor';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'aws-sdk';
+import getLogLevels from './utils/getLogLevels';
+import CustomLogger from './logger/customLogger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(CustomLogger));
   app.useGlobalPipes(new ValidationPipe());
   // app.useGlobalInterceptors(new ExcludeNullInterceptor());
   app.use(cookieParser());
