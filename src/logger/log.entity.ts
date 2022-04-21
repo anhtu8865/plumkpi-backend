@@ -10,13 +10,13 @@ class Log {
   @PrimaryGeneratedColumn()
   public log_id: number;
 
-  @Column()
+  @Column({ nullable: true })
   public context: string;
 
-  @Column()
+  @Column({ nullable: true })
   public message: string;
 
-  @Column()
+  @Column({ nullable: true })
   public level: string;
 
   @CreateDateColumn()
