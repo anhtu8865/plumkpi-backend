@@ -83,10 +83,17 @@ export default class NotifsController {
   @Get('user')
   async getNotifsByUser(
     @Query()
-    { offset, limit }: OptionalPaginationParams,
+    { offset, limit }: PaginationParams,
     @Req() request: RequestWithUser,
   ) {
     const role = request.user.role;
     return this.notifsService.getNotifsByUser(offset, limit, role);
+  }
+
+  @UseGuards(RoleGuard([Role.Director, Role.Manager, Role.Employee]))
+  @Get('user/scheduler')
+  async getSchedulerByUser(@Req() request: RequestWithUser) {
+    const role = request.user.role;
+    return this.notifsService.getSchedulerByUser(role);
   }
 }

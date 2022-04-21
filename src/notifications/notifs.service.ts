@@ -111,6 +111,15 @@ export default class NotifsService {
     return { items, count };
   }
 
+  async getSchedulerByUser(role: Role) {
+    return this.notifsRepository.find({
+      where: {
+        role,
+      },
+      order: { month: 'ASC', day: 'ASC' },
+    });
+  }
+
   async getTime() {
     return this.timesRepository.findOne(1);
   }
