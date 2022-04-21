@@ -20,6 +20,8 @@ import JwtAuthenticationGuard from './jwt-authentication.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import UpdateInfoDto from 'src/users/dto/updateInfo.dto';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
+import { isImage } from 'src/utils/utils.file';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor) //do not return password
@@ -92,6 +94,12 @@ export class AuthenticationController {
     @Req() request: RequestWithUser,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    if (!file) throw new CustomBadRequestException(`Không tìm thấy ảnh`);
+    if (!isImage(file.originalname))
+      throw new CustomBadRequestException(`Định dạng ảnh không phù hợp`);
+    if (file.size > 1000000)
+      throw new CustomBadRequestException(`Kích thước file vượt quá 1MB`);
+
     return this.usersService.addAvatar(
       request.user.user_id,
       file.buffer,

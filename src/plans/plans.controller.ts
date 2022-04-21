@@ -54,6 +54,7 @@ import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetB
 import { DeptParam, UserParam } from './params/deptParam';
 import { monthParams, quarterParams } from 'src/utils/types/monthParams';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CustomBadRequestException } from 'src/utils/exception/BadRequest.exception';
 
 @Controller('plans')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -610,6 +611,9 @@ export default class PlansController {
     @Req() request: RequestWithUser,
     @Body() { plan_id, kpi_template_id, month }: FileMonthlyTargetDto,
   ) {
+    if (!file) throw new CustomBadRequestException(`Không tìm thấy tệp tin`);
+    if (file.size > 5000000)
+      throw new CustomBadRequestException(`Kích thước file vượt quá 5MB`);
     plan_id = Number(plan_id);
     kpi_template_id = Number(kpi_template_id);
     month = Number(month);
@@ -651,6 +655,9 @@ export default class PlansController {
     @Req() request: RequestWithUser,
     @Body() { plan_id, kpi_template_id, quarter }: FileQuarterlyTargetDto,
   ) {
+    if (!file) throw new CustomBadRequestException(`Không tìm thấy tệp tin`);
+    if (file.size > 5000000)
+      throw new CustomBadRequestException(`Kích thước file vượt quá 5MB`);
     plan_id = Number(plan_id);
     kpi_template_id = Number(kpi_template_id);
     quarter = Number(quarter);
