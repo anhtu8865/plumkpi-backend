@@ -68,12 +68,9 @@ export default class UsersController {
   @Put(':id')
   async replaceUser(
     @Param() { id }: FindOneParams,
-    @Body() { user_name, email, dept, password, is_active }: UpdateUserDto,
+    @Body() { password, is_active }: UpdateUserDto,
   ) {
     return this.usersService.updateUser(Number(id), {
-      user_name,
-      email,
-      dept,
       password,
       is_active,
     });

@@ -98,6 +98,11 @@ export class UsersService {
   }
 
   async createUser(user_name: string, email: string, dept: Dept) {
+    if (!dept?.dept_id)
+      throw new CustomBadRequestException(
+        `Vui lòng chọn phòng ban cho nhân viên`,
+      );
+
     await this.deptsService.getDeptById(dept.dept_id);
     const hashedPassword = await bcrypt.hash('123456', 10);
     try {
@@ -128,14 +133,9 @@ export class UsersService {
 
   async updateUser(id: number, user: UpdateUserDto) {
     const userInDB = await this.getById(id);
-    if ([Role.Admin, Role.Director].includes(userInDB.role)) {
+    if ([Role.Admin].includes(userInDB.role)) {
       throw new CustomBadRequestException(
-        `Không thể thay đổi thông tin của Admin hoặc Giám đốc`,
-      );
-    }
-    if (userInDB.role === Role.Manager && user.dept) {
-      throw new CustomBadRequestException(
-        'Không thể thay đổi phòng ban của quản lý',
+        `Không thể thay đổi thông tin của Admin`,
       );
     }
 
@@ -150,9 +150,6 @@ export class UsersService {
         return UpdatedUser;
       }
     } catch (error) {
-      if (error?.code === PostgresErrorCodes.UniqueViolation) {
-        throw new CustomBadRequestException(`Email ${user?.email} đã tồn tại`);
-      }
       throw new CustomInternalServerException();
     }
   }
@@ -184,6 +181,11 @@ export class UsersService {
       if (error?.constraint === 'FK_74948b4b9d61132c17b9ff2edb6') {
         throw new CustomBadRequestException(
           `Người dùng ${user.user_name} đang quản lý phòng ban ${user.manage.dept_name}`,
+        );
+      }
+      if (error?.constraint === 'FK_40b514e5b9486533b4949f79dc9') {
+        throw new CustomBadRequestException(
+          `Hệ thống đang sử dụng dữ liệu của người dùng`,
         );
       }
       throw error;

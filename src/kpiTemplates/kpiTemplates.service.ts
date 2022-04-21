@@ -160,9 +160,18 @@ export default class KpiTemplatesService {
   }
 
   async deleteKpiTemplate(id: number) {
-    const deleteResponse = await this.kpiTemplatesRepository.delete(id);
-    if (!deleteResponse.affected) {
-      throw new CustomNotFoundException(`KPI template id ${id} không tồn tại`);
+    try {
+      const deleteResponse = await this.kpiTemplatesRepository.delete(id);
+      if (!deleteResponse.affected) {
+        throw new CustomNotFoundException(
+          `KPI template id ${id} không tồn tại`,
+        );
+      }
+    } catch (error) {
+      if (error?.constraint === 'FK_b5ae39ca0e0b31ed88a7f950058') {
+        throw new CustomBadRequestException(`KPI đang được sử dụng`);
+      }
+      throw error;
     }
   }
 

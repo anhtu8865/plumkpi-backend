@@ -117,6 +117,11 @@ export default class KpiCategoriesService {
           `Danh mục KPI này đang có KPI template`,
         );
       }
+      if (error?.constraint === 'FK_3c262a4b53aacb91870fa1cca97') {
+        throw new CustomBadRequestException(
+          `Danh mục KPI này đang được vận hành`,
+        );
+      }
       throw error;
     }
   }

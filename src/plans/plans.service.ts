@@ -154,6 +154,9 @@ export default class PlansService {
         throw new CustomNotFoundException(`Kế hoạch id ${id} không tồn tại`);
       }
     } catch (error) {
+      if (error?.constraint === 'FK_2ed0373afdc4f6ed164f95aa7c4') {
+        throw new CustomBadRequestException(`Kế hoạch đã vận hành`);
+      }
       throw error;
     }
   }

@@ -174,6 +174,9 @@ export default class DeptsService {
       if (error?.constraint === 'FK_8f95099ca7134ed69d2238f533b') {
         throw new CustomBadRequestException(`Phòng ban đang có người dùng`);
       }
+      if (error?.constraint === 'FK_1e5a58a4cbda2e681fd29df825e') {
+        throw new CustomBadRequestException(`Phòng ban đang vận hành`);
+      }
       throw error;
     }
   }

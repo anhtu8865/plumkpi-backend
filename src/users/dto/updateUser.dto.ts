@@ -10,18 +10,18 @@ import {
 import Dept from 'src/departments/dept.entity';
 
 export class UpdateUserDto {
-  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
-  @IsOptional()
-  user_name?: string;
+  // @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
+  // @IsOptional()
+  // user_name?: string;
 
-  @IsEmail({}, { message: 'Email người dùng không hợp lệ' })
-  @IsNotEmpty({ message: 'Email người dùng không được để trống' })
-  @IsOptional()
-  email?: string;
+  // @IsEmail({}, { message: 'Email người dùng không hợp lệ' })
+  // @IsNotEmpty({ message: 'Email người dùng không được để trống' })
+  // @IsOptional()
+  // email?: string;
 
-  @IsNotEmpty({ message: 'Phòng ban không được để trống' })
-  @IsOptional()
-  dept?: Dept;
+  // @IsNotEmpty({ message: 'Phòng ban không được để trống' })
+  // @IsOptional()
+  // dept?: Dept;
 
   @MinLength(6, { message: 'Password người dùng phải dài hơn 6 ký tự' })
   @IsNotEmpty({ message: 'Password người dùng không được để trống' })
