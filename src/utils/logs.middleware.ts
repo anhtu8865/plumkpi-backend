@@ -8,6 +8,7 @@ class LogsMiddleware implements NestMiddleware {
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', () => {
       const { method, originalUrl, body, user } = request;
+      const byUser = user ? ` BY user_id ${user['user_id']}` : '';
 
       const { statusCode, statusMessage } = response;
 
@@ -15,7 +16,7 @@ class LogsMiddleware implements NestMiddleware {
         statusCode >= 400 && ['POST', 'PUT'].includes(method)
           ? JSON.stringify(body)
           : ''
-      } ${statusCode} ${statusMessage} BY user_id ${user['user_id']}`;
+      } ${statusCode} ${statusMessage}${byUser}`;
 
       if (statusCode >= 500) {
         return this.logger.error(message);
