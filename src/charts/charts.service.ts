@@ -203,7 +203,7 @@ export default class ChartsService {
           dateType,
           period,
         );
-        dataset.label = user.user_name;
+        dataset.label = `${user.user_name} (ID: ${user.user_id})`;
         datasets.push(dataset);
       }
     } else {
