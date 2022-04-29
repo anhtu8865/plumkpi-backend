@@ -17,7 +17,10 @@ import { KpiDto } from './dto/registerKpis.dto';
 import { DeptsDto } from './dto/assignKpiDepts.dto';
 import { PlanKpiTemplateDept } from './planKpiTemplateDept.entity';
 import ApproveRegistration from './approveRegistration.enum';
-import { UsersDto } from './dto/assignKpiEmployees.dto';
+import {
+  RegisterPlanForEmployeesDto,
+  UsersDto,
+} from './dto/assignKpiEmployees.dto';
 import { TargetUsersDto } from './dto/registerMonthlyTarget.dto';
 import { PersonalKpiDto } from './dto/registerPersonalKpis.dto';
 import KpiCategory from 'src/kpiCategories/kpiCategory.entity';
@@ -1954,6 +1957,150 @@ export default class PlansService {
     }
   }
 
+  async registerPlanForEmployees(
+    dept_id: number,
+    data: RegisterPlanForEmployeesDto,
+  ) {
+    const { plan_id, user_ids, kpi_categories } = data;
+    const sum = kpi_categories.reduce((result, item) => {
+      return result + item.weight;
+    }, 0);
+    if (sum !== 100 && kpi_categories.length !== 0) {
+      throw new CustomBadRequestException(
+        `Tổng trọng số các danh mục KPI phải bằng 100%`,
+      );
+    }
+
+    for (const kpi_category of kpi_categories) {
+      const sum = kpi_category.kpi_templates.reduce((result, item) => {
+        return result + item.weight;
+      }, 0);
+      if (sum !== 100 && kpi_category.kpi_templates.length !== 0) {
+        throw new CustomBadRequestException(
+          `Tổng trọng số các KPI phải bằng 100%`,
+        );
+      }
+    }
+
+    const queryRunner = await this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const planKpiTemplateUsers = await queryRunner.manager.find(
+        PlanKpiTemplateUser,
+        {
+          where: {
+            plan_kpi_template: {
+              plan: { plan_id },
+            },
+            user: { user_id: In(user_ids) },
+          },
+          relations: [
+            'plan_kpi_template',
+            'plan_kpi_template.plan',
+            'plan_kpi_template.kpi_template',
+            'user',
+          ],
+        },
+      );
+
+      await queryRunner.manager.remove(
+        PlanKpiTemplateUser,
+        planKpiTemplateUsers,
+      );
+
+      const planKpiCategoryUsers = await queryRunner.manager.find(
+        PlanKpiCategoryUser,
+        {
+          where: {
+            plan_kpi_category: {
+              plan: { plan_id },
+            },
+            user: { user_id: In(user_ids) },
+          },
+          relations: [
+            'plan_kpi_category',
+            'plan_kpi_category.plan',
+            'plan_kpi_category.kpi_category',
+            'user',
+          ],
+        },
+      );
+
+      await queryRunner.manager.remove(
+        PlanKpiCategoryUser,
+        planKpiCategoryUsers,
+      );
+
+      // TODO register kpi categories for employees
+      const planKpiCategories = kpi_categories.map((item) => {
+        return {
+          weight: item.weight,
+          plan_kpi_category: {
+            plan: { plan_id },
+            kpi_category: { kpi_category_id: item.kpi_category_id },
+          },
+        };
+      });
+
+      const planKpiCategoryUsersToSave = [];
+
+      for (const planKpiCategory of planKpiCategories) {
+        const planKpiCategoryUsers = user_ids.map((user_id) => {
+          return {
+            ...planKpiCategory,
+            user: { user_id },
+          };
+        });
+        planKpiCategoryUsersToSave.push(...planKpiCategoryUsers);
+      }
+
+      await queryRunner.manager.save(
+        PlanKpiCategoryUser,
+        planKpiCategoryUsersToSave,
+      );
+
+      // TODO register kpi templates for employees
+      const planKpiTemplates = [];
+      for (const kpi_category of kpi_categories) {
+        const result = kpi_category.kpi_templates.map((item) => {
+          return {
+            weight: item.weight,
+            plan_kpi_template: {
+              plan: { plan_id },
+              kpi_template: { kpi_template_id: item.kpi_template_id },
+            },
+          };
+        });
+        planKpiTemplates.push(...result);
+      }
+
+      const planKpiTemplateUsersToSave = [];
+
+      for (const planKpiTemplate of planKpiTemplates) {
+        const planKpiTemplateUsers = user_ids.map((user_id) => {
+          return {
+            ...planKpiTemplate,
+            user: { user_id },
+          };
+        });
+        planKpiTemplateUsersToSave.push(...planKpiTemplateUsers);
+      }
+
+      await queryRunner.manager.save(
+        PlanKpiTemplateUser,
+        planKpiTemplateUsersToSave,
+      );
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async getTargetKpiOfdeptsWithActual(
     plan_id: number,
     kpi_template_id: number,
@@ -2106,6 +2253,48 @@ export default class PlansService {
         kpi_category: row.plan_kpi_category.kpi_category,
       };
     });
+    return result;
+  }
+
+  async getPlanOfDeptByManager(plan_id: number, dept_id: number) {
+    const rows = await this.plansKpiCategoryDeptsRepository.find({
+      where: { plan_kpi_category: { plan: { plan_id } }, dept: { dept_id } },
+      relations: [
+        'plan_kpi_category',
+        'plan_kpi_category.plan',
+        'plan_kpi_category.kpi_category',
+        'dept',
+      ],
+      order: { createdAt: 'ASC' },
+    });
+    const result = [];
+    for (const row of rows) {
+      const rows2 = await this.getKpisOfOneCategoryByManager(
+        plan_id,
+        null,
+        null,
+        null,
+        row.plan_kpi_category.kpi_category.kpi_category_id,
+        dept_id,
+      );
+
+      const kpi_templates = rows2.items.map((row) => {
+        return {
+          weight: row.weight,
+          kpi_template_id: row.plan_kpi_template.kpi_template.kpi_template_id,
+          kpi_template_name:
+            row.plan_kpi_template.kpi_template.kpi_template_name,
+        };
+      });
+
+      result.push({
+        weight: row.weight,
+        kpi_category_id: row.plan_kpi_category.kpi_category.kpi_category_id,
+        kpi_category_name: row.plan_kpi_category.kpi_category.kpi_category_name,
+        kpi_templates,
+      });
+    }
+
     return result;
   }
 

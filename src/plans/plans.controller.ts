@@ -47,7 +47,10 @@ import {
   RegisterQuarterlyTargetDto,
 } from './dto/registerQuarterlyTarget.dto';
 import { ApproveQuarterlyTargetDto } from './dto/approveQuarterlyTarget.dto';
-import { AssignKpiEmployeesDto } from './dto/assignKpiEmployees.dto';
+import {
+  AssignKpiEmployeesDto,
+  RegisterPlanForEmployeesDto,
+} from './dto/assignKpiEmployees.dto';
 import { RegisterMonthlyTargetDto } from './dto/registerMonthlyTarget.dto';
 import { RegisterPersonalKpisDto } from './dto/registerPersonalKpis.dto';
 import { RegisterMonthlyTargetByEmployeeDto } from './dto/registerMonthlyTargetByEmployee.dto';
@@ -309,6 +312,16 @@ export default class PlansController {
   ) {
     const dept_id = request.user.manage.dept_id;
     return this.plansService.getPlanKpiCategoriesByManager(Number(id), dept_id);
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Get(':id/plan-of-dept/manager')
+  getPlanOfDeptByManager(
+    @Param() { id }: FindOneParams,
+    @Req() request: RequestWithUser,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.getPlanOfDeptByManager(Number(id), dept_id);
   }
 
   @UseGuards(RoleGuard([Role.Employee]))
@@ -842,6 +855,16 @@ export default class PlansController {
       dept_id,
       users,
     );
+  }
+
+  @UseGuards(RoleGuard([Role.Manager]))
+  @Post('register-plan-for-employees')
+  async registerPlanForEmployees(
+    @Req() request: RequestWithUser,
+    @Body() data: RegisterPlanForEmployeesDto,
+  ) {
+    const dept_id = request.user.manage.dept_id;
+    return this.plansService.registerPlanForEmployees(dept_id, data);
   }
 
   @UseGuards(RoleGuard([Role.Manager]))
