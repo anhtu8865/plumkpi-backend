@@ -2439,16 +2439,36 @@ export default class PlansService {
           );
 
           if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
-            target = kpi.first_quarterly_target?.target;
+            target =
+              kpi.first_quarterly_target?.target &&
+              kpi.first_quarterly_target?.approve ===
+                ApproveRegistration.Accepted
+                ? kpi.first_quarterly_target.target
+                : undefined;
           }
           if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
-            target = kpi.second_quarterly_target?.target;
+            target =
+              kpi.second_quarterly_target?.target &&
+              kpi.second_quarterly_target?.approve ===
+                ApproveRegistration.Accepted
+                ? kpi.second_quarterly_target.target
+                : undefined;
           }
           if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
-            target = kpi.third_quarterly_target?.target;
+            target =
+              kpi.third_quarterly_target?.target &&
+              kpi.third_quarterly_target?.approve ===
+                ApproveRegistration.Accepted
+                ? kpi.third_quarterly_target.target
+                : undefined;
           }
           if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
-            target = kpi.fourth_quarterly_target?.target;
+            target =
+              kpi.fourth_quarterly_target?.target &&
+              kpi.fourth_quarterly_target?.approve ===
+                ApproveRegistration.Accepted
+                ? kpi.fourth_quarterly_target.target
+                : undefined;
           }
           if (months.length === 12) {
             target = kpi.target ? kpi.target : undefined;
@@ -2661,7 +2681,10 @@ export default class PlansService {
               key = this.quarterlyKey(4);
             }
             for (const target_kpi_of_dept of target_kpi_of_depts) {
-              if (target_kpi_of_dept[key])
+              if (
+                target_kpi_of_dept[key] &&
+                target_kpi_of_dept[key].approve === ApproveRegistration.Accepted
+              )
                 targets.push(target_kpi_of_dept[key].target);
             }
             target = this.aggregateNumbers(
