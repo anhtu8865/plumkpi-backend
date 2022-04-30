@@ -518,7 +518,10 @@ export default class ChartsService {
         key = this.plansService.quarterlyKey(4);
       }
       for (const target_kpi_of_dept of target_kpi_of_depts) {
-        if (target_kpi_of_dept[key])
+        if (
+          target_kpi_of_dept[key] &&
+          target_kpi_of_dept[key].approve === ApproveRegistration.Accepted
+        )
           targets.push(target_kpi_of_dept[key].target);
       }
       target = this.plansService.aggregateNumbers(
@@ -528,7 +531,10 @@ export default class ChartsService {
     }
 
     if (months.length === 12) {
-      target = yearly_target_kpi.target ? yearly_target_kpi.target : undefined;
+      target =
+        yearly_target_kpi.target !== null
+          ? yearly_target_kpi.target
+          : undefined;
     }
 
     const resultOfKpi = this.plansService.resultOfKpi(
@@ -609,17 +615,38 @@ export default class ChartsService {
     );
 
     if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
-      target = quarterly_targets_of_dept.first_quarterly_target?.target;
+      target =
+        quarterly_targets_of_dept.first_quarterly_target &&
+        quarterly_targets_of_dept.first_quarterly_target.approve ===
+          ApproveRegistration.Accepted
+          ? quarterly_targets_of_dept.first_quarterly_target.target
+          : undefined;
     } else if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
-      target = quarterly_targets_of_dept.second_quarterly_target?.target;
+      target =
+        quarterly_targets_of_dept.second_quarterly_target &&
+        quarterly_targets_of_dept.second_quarterly_target.approve ===
+          ApproveRegistration.Accepted
+          ? quarterly_targets_of_dept.second_quarterly_target.target
+          : undefined;
     } else if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
-      target = quarterly_targets_of_dept.third_quarterly_target?.target;
+      target =
+        quarterly_targets_of_dept.third_quarterly_target &&
+        quarterly_targets_of_dept.third_quarterly_target.approve ===
+          ApproveRegistration.Accepted
+          ? quarterly_targets_of_dept.third_quarterly_target.target
+          : undefined;
     } else if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
-      target = quarterly_targets_of_dept.fourth_quarterly_target?.target;
+      target =
+        quarterly_targets_of_dept.fourth_quarterly_target &&
+        quarterly_targets_of_dept.fourth_quarterly_target.approve ===
+          ApproveRegistration.Accepted
+          ? quarterly_targets_of_dept.fourth_quarterly_target.target
+          : undefined;
     } else if (months.length === 12) {
-      target = quarterly_targets_of_dept.target
-        ? quarterly_targets_of_dept.target
-        : undefined;
+      target =
+        quarterly_targets_of_dept.target !== null
+          ? quarterly_targets_of_dept.target
+          : undefined;
     }
 
     const resultOfKpi = this.plansService.resultOfKpi(

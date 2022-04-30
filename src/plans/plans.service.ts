@@ -716,89 +716,17 @@ export default class PlansService {
       ],
     });
     if (record) {
-      let quarterly_target;
-      switch (quarter) {
-        case 1:
-          if (
-            record.first_quarterly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target = {
-            first_quarterly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 2:
-          if (
-            record.second_quarterly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target = {
-            second_quarterly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 3:
-          if (
-            record.third_quarterly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target = {
-            third_quarterly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 4:
-          if (
-            record.fourth_quarterly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
-            );
-          }
-          quarterly_target = {
-            fourth_quarterly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        default:
-          break;
-      }
-
-      await this.planKpiTemplateDeptsRepository.save({
-        ...record,
-        ...quarterly_target,
-      });
-      return quarterly_target;
+      const key = this.quarterlyKey(quarter);
+      if (record[key]?.approve === ApproveRegistration.Accepted)
+        throw new CustomBadRequestException(
+          `Không thể thay đổi mục tiêu đã được Ban Giám Đốc phê duyệt`,
+        );
+      record[key] =
+        target === null
+          ? null
+          : { target, approve: ApproveRegistration.Pending };
+      await this.planKpiTemplateDeptsRepository.save(record);
+      return record[key];
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
@@ -1092,234 +1020,18 @@ export default class PlansService {
       ],
     });
     if (record) {
-      let monthly_target;
-      switch (month) {
-        case 1:
-          if (
-            record.first_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            first_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 2:
-          if (
-            record.second_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            second_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 3:
-          if (
-            record.third_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            third_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 4:
-          if (
-            record.fourth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            fourth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 5:
-          if (
-            record.fifth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            fifth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 6:
-          if (
-            record.sixth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            sixth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 7:
-          if (
-            record.seventh_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            seventh_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
+      const key = this.monthlyKey(month);
+      if (record[key]?.approve === ApproveRegistration.Accepted)
+        throw new CustomBadRequestException(
+          `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
+        );
 
-        case 8:
-          if (
-            record.eighth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            eighth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 9:
-          if (
-            record.ninth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            ninth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 10:
-          if (
-            record.tenth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            tenth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 11:
-          if (
-            record.eleventh_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            eleventh_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        case 12:
-          if (
-            record.twelfth_monthly_target?.approve ===
-            ApproveRegistration.Accepted
-          ) {
-            throw new CustomBadRequestException(
-              `Không thể thay đổi mục tiêu đã được Quản lý phê duyệt`,
-            );
-          }
-          monthly_target = {
-            twelfth_monthly_target: target
-              ? {
-                  target,
-                  approve: ApproveRegistration.Pending,
-                }
-              : null,
-          };
-          break;
-        default:
-          break;
-      }
-
-      await this.planKpiTemplateUsersRepository.save({
-        ...record,
-        ...monthly_target,
-      });
-      return monthly_target;
+      record[key] =
+        target === null
+          ? null
+          : { target, approve: ApproveRegistration.Pending };
+      await this.planKpiTemplateUsersRepository.save(record);
+      return record[key];
     }
     throw new CustomNotFoundException(`Không tìm thấy`);
   }
@@ -2629,7 +2341,7 @@ export default class PlansService {
 
           if (JSON.stringify(months) == JSON.stringify([1, 2, 3])) {
             target =
-              kpi.first_quarterly_target?.target &&
+              kpi.first_quarterly_target &&
               kpi.first_quarterly_target?.approve ===
                 ApproveRegistration.Accepted
                 ? kpi.first_quarterly_target.target
@@ -2637,7 +2349,7 @@ export default class PlansService {
           }
           if (JSON.stringify(months) == JSON.stringify([4, 5, 6])) {
             target =
-              kpi.second_quarterly_target?.target &&
+              kpi.second_quarterly_target &&
               kpi.second_quarterly_target?.approve ===
                 ApproveRegistration.Accepted
                 ? kpi.second_quarterly_target.target
@@ -2645,7 +2357,7 @@ export default class PlansService {
           }
           if (JSON.stringify(months) == JSON.stringify([7, 8, 9])) {
             target =
-              kpi.third_quarterly_target?.target &&
+              kpi.third_quarterly_target &&
               kpi.third_quarterly_target?.approve ===
                 ApproveRegistration.Accepted
                 ? kpi.third_quarterly_target.target
@@ -2653,14 +2365,14 @@ export default class PlansService {
           }
           if (JSON.stringify(months) == JSON.stringify([10, 11, 12])) {
             target =
-              kpi.fourth_quarterly_target?.target &&
+              kpi.fourth_quarterly_target &&
               kpi.fourth_quarterly_target?.approve ===
                 ApproveRegistration.Accepted
                 ? kpi.fourth_quarterly_target.target
                 : undefined;
           }
           if (months.length === 12) {
-            target = kpi.target ? kpi.target : undefined;
+            target = kpi.target !== null ? kpi.target : undefined;
           }
           const resultOfKpi = this.resultOfKpi(
             target,
@@ -2883,7 +2595,7 @@ export default class PlansService {
           }
 
           if (months.length === 12) {
-            target = kpi.target ? kpi.target : undefined;
+            target = kpi.target !== null ? kpi.target : undefined;
           }
           const resultOfKpi = this.resultOfKpi(
             target,
