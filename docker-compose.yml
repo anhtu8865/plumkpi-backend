@@ -1,5 +1,61 @@
-version: '3'
+version: '3.8'
+
 services:
+  app:
+    container_name: app-dev
+    # image: fe
+    build:
+      context: ../plumkpi-frontend
+      target: development
+      dockerfile: ../plumkpi-frontend/Dockerfile
+    command: npm run start
+    volumes:
+      - ../plumkpi-frontend/src:/app/src
+    ports:
+      - 3000:3000
+    networks:
+      - nesjs-network
+  dev:
+    container_name: nestjs_api_dev
+    # image: be // docker build -t be --target development .
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    ports:
+      - 4000:4000
+      - 9229:9229
+    networks:
+      - nesjs-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    restart: unless-stopped
+  # prod:
+  #   container_name: nestjs_api_prod
+  #   image: nestjs-api-prod:1.0.0
+  #   build:
+  #     context: .
+  #     target: production
+  #     dockerfile: ./Dockerfile
+  #   command: npm run start:prod
+  #   ports:
+  #     - 4000:4000
+  #     - 9229:9229
+  #   networks:
+  #     - nesjs-network
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   env_file:
+  #     - .env
+  #   restart: unless-stopped
+
   postgres:
     container_name: plumkpi-backend_postgres
     image: postgres:latest
@@ -10,7 +66,7 @@ services:
     env_file:
       - docker.env
     networks:
-      - postgres
+      - nesjs-network
 
   pgadmin:
     links:
@@ -24,8 +80,40 @@ services:
     env_file:
       - docker.env
     networks:
-      - postgres
+      - nesjs-network
 
 networks:
-  postgres:
-    driver: bridge
+  nesjs-network:
+
+
+# version: '3'
+# services:
+#   postgres:
+#     container_name: plumkpi-backend_postgres
+#     image: postgres:latest
+#     ports:
+#       - '5432:5432'
+#     volumes:
+#       - /data/postgres:/data/postgres
+#     env_file:
+#       - docker.env
+#     networks:
+#       - postgres
+
+#   pgadmin:
+#     links:
+#       - postgres:postgres
+#     container_name: plumkpi-backend_pgadmin
+#     image: dpage/pgadmin4
+#     ports:
+#       - '8080:80'
+#     volumes:
+#       - /data/pgadmin:/root/.pgadmin
+#     env_file:
+#       - docker.env
+#     networks:
+#       - postgres
+
+# networks:
+#   postgres:
+#     driver: bridge
