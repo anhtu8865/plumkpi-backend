@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  app:
-    container_name: app-dev
-    # image: fe
+  web:
+    container_name: web
+    image: web
     build:
       context: ../plumkpi-frontend
       target: development
@@ -13,48 +13,26 @@ services:
       - ../plumkpi-frontend/src:/app/src
     ports:
       - 3000:3000
-    networks:
-      - nesjs-network
-  dev:
-    container_name: nestjs_api_dev
-    # image: be // docker build -t be --target development .
+
+  api_prod:
+    container_name: api_prod
+    image: api_prod
     build:
       context: .
-      target: development
+      target: production
       dockerfile: ./Dockerfile
-    command: npm run start:debug
+    command: npm run start:prod
     ports:
       - 4000:4000
       - 9229:9229
     networks:
-      - nesjs-network
+      - api-network
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     env_file:
       - .env
-    depends_on:
-      - postgres
     restart: unless-stopped
-  # prod:
-  #   container_name: nestjs_api_prod
-  #   image: nestjs-api-prod:1.0.0
-  #   build:
-  #     context: .
-  #     target: production
-  #     dockerfile: ./Dockerfile
-  #   command: npm run start:prod
-  #   ports:
-  #     - 4000:4000
-  #     - 9229:9229
-  #   networks:
-  #     - nesjs-network
-  #   volumes:
-  #     - .:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   env_file:
-  #     - .env
-  #   restart: unless-stopped
 
   postgres:
     container_name: plumkpi-backend_postgres
@@ -66,7 +44,7 @@ services:
     env_file:
       - docker.env
     networks:
-      - nesjs-network
+      - api-network
 
   pgadmin:
     links:
@@ -80,40 +58,30 @@ services:
     env_file:
       - docker.env
     networks:
-      - nesjs-network
+      - api-network
 
 networks:
-  nesjs-network:
+  api-network:
 
 
-# version: '3'
-# services:
-#   postgres:
-#     container_name: plumkpi-backend_postgres
-#     image: postgres:latest
+# dev:
+#     container_name: nestjs_api_dev
+#     # image: be // docker build -t be --target development .
+#     build:
+#       context: .
+#       target: development
+#       dockerfile: ./Dockerfile
+#     command: npm run start:debug
 #     ports:
-#       - '5432:5432'
-#     volumes:
-#       - /data/postgres:/data/postgres
-#     env_file:
-#       - docker.env
+#       - 4000:4000
+#       - 9229:9229
 #     networks:
-#       - postgres
-
-#   pgadmin:
-#     links:
-#       - postgres:postgres
-#     container_name: plumkpi-backend_pgadmin
-#     image: dpage/pgadmin4
-#     ports:
-#       - '8080:80'
+#       - nesjs-network
 #     volumes:
-#       - /data/pgadmin:/root/.pgadmin
+#       - .:/usr/src/app
+#       - /usr/src/app/node_modules
 #     env_file:
-#       - docker.env
-#     networks:
+#       - .env
+#     depends_on:
 #       - postgres
-
-# networks:
-#   postgres:
-#     driver: bridge
+#     restart: unless-stopped
